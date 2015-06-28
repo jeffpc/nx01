@@ -20,13 +20,6 @@
 # SOFTWARE.
 #
 
-include_directories(
-	sunavl/include
-	sunlist/include
+add_executable(nomad-server
+	main.c
 )
-
-add_subdirectory(sunavl)
-add_subdirectory(sunlist)
-add_subdirectory(server)
-add_subdirectory(client)
-add_subdirectory(tool)
