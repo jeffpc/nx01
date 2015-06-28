@@ -1,0 +1,12 @@
+Nomad is a distributed file system supporting disconnected operation.
+
+The current goals include:
+ - architecture and OS agnostic code
+ - client-server architecture
+ - untrusted client
+ - disconnected operation
+ - support for special files (named pipes, symlinks, etc.)
+ - Unix-style file permissions
+ - multi-user capable server
+
+Once these are done, we will reevaluate the next set of goals.
