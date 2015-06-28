@@ -20,15 +20,9 @@
 # SOFTWARE.
 #
 
-include_directories(
-	sunavl/include
-	sunlist/include
-	common/include
+add_library(nomad_common SHARED
+	vclock.c
 )
 
-add_subdirectory(sunavl)
-add_subdirectory(sunlist)
-add_subdirectory(common)
-add_subdirectory(server)
-add_subdirectory(client)
-add_subdirectory(tool)
+# for convenience
+add_library(common ALIAS nomad_common)
