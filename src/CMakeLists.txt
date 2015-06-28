@@ -23,6 +23,7 @@
 include_directories(
 	sunavl/include
 	sunlist/include
+	common/include
 )
 
 add_subdirectory(sunavl)
