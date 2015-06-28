@@ -23,3 +23,10 @@
 add_library(sunavl SHARED
 	avl.c
 )
+
+install(TARGETS	sunavl DESTINATION lib
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+install(FILES	include/sys/avl.h
+		include/sys/avl_impl.h
+	DESTINATION include/sys
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)

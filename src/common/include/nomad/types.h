@@ -24,6 +24,7 @@
 #define __NOMAD_TYPES_H
 
 #include <stdint.h>
+#include <errno.h>
 
 /* object id */
 typedef struct {

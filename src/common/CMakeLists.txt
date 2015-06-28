@@ -24,5 +24,11 @@ add_library(nomad_common SHARED
 	vclock.c
 )
 
+install(TARGETS nomad_common DESTINATION lib
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+install(FILES	include/nomad/types.h
+	DESTINATION include/nomad
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+
 # for convenience
 add_library(common ALIAS nomad_common)

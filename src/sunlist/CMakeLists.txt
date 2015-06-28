@@ -23,3 +23,10 @@
 add_library(sunlist SHARED
 	list.c
 )
+
+install(TARGETS	sunlist DESTINATION lib
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+install(FILES	include/sys/list.h
+		include/sys/list_impl.h
+	DESTINATION include/sys
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)

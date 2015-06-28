@@ -23,3 +23,6 @@
 add_executable(nomad
 	main.c
 )
+
+install(TARGETS nomad DESTINATION bin
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
