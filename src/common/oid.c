@@ -36,3 +36,10 @@ int noid_cmp(const struct noid *n1, const struct noid *n2)
 
 	return 0;
 }
+
+void noid_set(struct noid *oid, uint32_t ds, uint64_t uniq)
+{
+	oid->ds = ds;
+	oid->uniq = uniq;
+	oid->_reserved = 0;
+}

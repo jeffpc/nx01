@@ -55,6 +55,7 @@ struct nuuid {
 extern int nomad_set_local_node_id(uint64_t newid);
 extern uint64_t nomad_local_node_id(void);
 
+extern void noid_set(struct noid *n1, uint32_t ds, uint64_t uniq);
 extern int noid_cmp(const struct noid *n1, const struct noid *n2);
 
 extern struct nvclock *nvclock_alloc(void);
