@@ -26,31 +26,31 @@
 #include <stdint.h>
 
 /* object id */
-typedef struct {
+struct noid {
 	uint32_t ds;
 	uint32_t _reserved; /* must be zero */
 	uint64_t uniq;
-} noid_t;
+};
 
 /* version vector */
-typedef struct nvclockent {
+struct nvclockent {
 	uint64_t node;
 	uint64_t seq;
-} nvclockent_t;
+};
 
-typedef struct {
+struct nvclock {
 	uint16_t _reserved; /* must be zero */
 	uint16_t nnodes;
 	struct nvclockent ent[0];
-} nvclock_t;
+};
 
 /* uuid */
 struct nuuid {
 	uint8_t raw[16];
 };
 
-extern nvclock_t *nvclock_alloc(uint16_t nodes);
-extern void nvclock_free(nvclock_t *clock);
+extern struct nvclock *nvclock_alloc(uint16_t nodes);
+extern void nvclock_free(struct nvclock *clock);
 
 extern void nuuid_clear(struct nuuid *uuid);
 extern int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2);

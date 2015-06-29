@@ -24,15 +24,16 @@
 
 #include <nomad/types.h>
 
-nvclock_t *nvclock_alloc(uint16_t nodes)
+struct nvclock *nvclock_alloc(uint16_t nodes)
 {
 	if (!nodes)
 		return NULL;
 
-	return malloc(sizeof(nvclock_t) + nodes * sizeof(nvclockent_t*));
+	return malloc(sizeof(struct nvclock) +
+		      nodes * sizeof(struct nvclockent *));
 }
 
-void nvclock_free(nvclock_t *clock)
+void nvclock_free(struct nvclock *clock)
 {
 	free(clock);
 }
