@@ -56,8 +56,11 @@ extern int noid_cmp(const struct noid *n1, const struct noid *n2);
 
 extern struct nvclock *nvclock_alloc(void);
 extern void nvclock_free(struct nvclock *clock);
+extern uint64_t nvclock_get_node(struct nvclock *clock, uint64_t node);
+extern int nvclock_remove_node(struct nvclock *clock, uint64_t node);
 extern int nvclock_set_node(struct nvclock *clock, uint64_t node,
 			    uint64_t seq);
+extern int nvclock_inc_node(struct nvclock *clock, uint64_t node);
 
 extern void nuuid_clear(struct nuuid *uuid);
 extern int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2);

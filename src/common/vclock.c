@@ -41,7 +41,7 @@
  * array is managed as follows:
  *
  * (1) nodes with zero sequence id are *not* stored.  This is important for
- *     the set/inc functions.  Whenever the new sequence id ends up equal to
+ *     the set function.  Whenever the new sequence id ends up equal to
  *     zero, the <node, seq> pair is removed from the vector.
  * (2) entries may not be used contiguously.
  */
@@ -98,11 +98,34 @@ uint64_t nvclock_get_node(struct nvclock *clock, uint64_t node)
 }
 
 /*
+ * Remove @node from @clock.
+ */
+int nvclock_remove_node(struct nvclock *clock, uint64_t node)
+{
+	struct nvclockent *ent;
+
+	if (!clock || !node)
+		return EINVAL;
+
+	ent = __get_ent(clock, node, false);
+	if (IS_ERR(ent))
+		return 0;
+
+	ent->node = 0;
+	ent->seq = 0;
+
+	return 0;
+}
+
+/*
  * Set @clock's @node to @seq.
  */
 int nvclock_set_node(struct nvclock *clock, uint64_t node, uint64_t seq)
 {
 	struct nvclockent *ent;
+
+	if (!seq)
+		return nvclock_remove_node(clock, node);
 
 	ent = __get_ent(clock, node, true);
 	if (IS_ERR(ent))
