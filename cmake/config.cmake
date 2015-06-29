@@ -22,3 +22,4 @@
 
 set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")
 find_package(umem)
+find_package(avl)

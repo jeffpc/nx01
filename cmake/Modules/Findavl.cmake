@@ -20,25 +20,22 @@
 # SOFTWARE.
 #
 
-if(NOT UMEM_FOUND)
-	set(UMEM_LIBRARY fakeumem)
-	include_directories(fakeumem/include)
-	add_subdirectory(fakeumem)
-endif()
+#
+# Find the AVL includes and library.
+#
+# This module defines:
+#   AVL_INCLUDE_DIR
+#   AVL_LIBRARY
+#   AVL_FOUND
+#
 
-if(NOT AVL_FOUND)
-	set(AVL_LIBRARY sunavl)
-	include_directories(sunavl/include)
-	add_subdirectory(sunavl)
-endif()
+find_path(AVL_INCLUDE_DIR sys/avl.h)
+find_library(AVL_LIBRARY NAMES avl libavl.so.1)
 
-include_directories(
-	sunlist/include
-	common/include
-)
-
-add_subdirectory(sunlist)
-add_subdirectory(common)
-add_subdirectory(server)
-add_subdirectory(client)
-add_subdirectory(tool)
+#
+# Handle the QUIETLY and REQUIRED arguments and set AVL_FOUND to TRUE if
+# all listed variables are TRUE.
+#
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(AVL DEFAULT_MSG AVL_LIBRARY
+	AVL_INCLUDE_DIR)
