@@ -25,6 +25,8 @@
 
 #include <stdint.h>
 
+#include <nomad/attr.h>
+
 /* object id */
 struct noid {
 	uint32_t ds;
