@@ -20,17 +20,12 @@
 # SOFTWARE.
 #
 
-include_directories(
-	sunavl/include
-	sunlist/include
-	fakeumem/include
-	common/include
+add_library(fakeumem SHARED
+	fakeumem.c
 )
 
-add_subdirectory(sunavl)
-add_subdirectory(sunlist)
-add_subdirectory(fakeumem)
-add_subdirectory(common)
-add_subdirectory(server)
-add_subdirectory(client)
-add_subdirectory(tool)
+install(TARGETS	fakeumem DESTINATION lib
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+install(FILES	include/umem.h
+	DESTINATION include
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
