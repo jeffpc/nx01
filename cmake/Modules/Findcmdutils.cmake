@@ -20,32 +20,22 @@
 # SOFTWARE.
 #
 
-if(NOT UMEM_FOUND)
-	set(UMEM_LIBRARY fakeumem)
-	include_directories(fakeumem/include)
-	add_subdirectory(fakeumem)
-endif()
+#
+# Find the CMDUTILS includes and library.
+#
+# This module defines:
+#   CMDUTILS_INCLUDE_DIR
+#   CMDUTILS_LIBRARY
+#   CMDUTILS_FOUND
+#
 
-if(NOT AVL_FOUND)
-	set(AVL_LIBRARY sunavl)
-	include_directories(sunavl/include)
-	add_subdirectory(sunavl)
-endif()
+find_path(CMDUTILS_INCLUDE_DIR sys/list.h)
+find_library(CMDUTILS_LIBRARY NAMES cmdutils libcmdutils.so.1)
 
-if(NOT CMDUTILS_FOUND)
-	set(LIST_LIBRARY sunlist)
-	include_directories(sunavl/include)
-	add_subdirectory(sunavl)
-else()
-	set(LIST_LIBRARY ${CMDUTILS_LIBRARY})
-endif()
-
-include_directories(
-	common/include
-)
-
-add_subdirectory(sunlist)
-add_subdirectory(common)
-add_subdirectory(server)
-add_subdirectory(client)
-add_subdirectory(tool)
+#
+# Handle the QUIETLY and REQUIRED arguments and set CMDUTILS_FOUND to TRUE if
+# all listed variables are TRUE.
+#
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(CMDUTILS DEFAULT_MSG CMDUTILS_LIBRARY
+	CMDUTILS_INCLUDE_DIR)
