@@ -21,6 +21,7 @@
 #
 
 add_library(nomad_common SHARED
+	node.c
 	oid.c
 	uuid.c
 	vclock.c
