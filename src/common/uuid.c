@@ -20,41 +20,21 @@
  * SOFTWARE.
  */
 
-#ifndef __NOMAD_TYPES_H
-#define __NOMAD_TYPES_H
+#include <uuid/uuid.h>
 
-#include <stdint.h>
-#include <errno.h>
+#include <nomad/types.h>
 
-/* object id */
-typedef struct {
-	uint32_t ds;
-	uint32_t _reserved; /* must be zero */
-	uint64_t uniq;
-} noid_t;
+void nuuid_clear(struct nuuid *uuid)
+{
+	uuid_clear(uuid->raw);
+}
 
-/* version vector */
-typedef struct nvclockent {
-	uint64_t node;
-	uint64_t seq;
-} nvclockent_t;
+int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2)
+{
+	return uuid_compare((uint8_t *) u1->raw, (uint8_t *) u2->raw);
+}
 
-typedef struct {
-	uint16_t _reserved; /* must be zero */
-	uint16_t nnodes;
-	struct nvclockent ent[0];
-} nvclock_t;
-
-/* uuid */
-struct nuuid {
-	uint8_t raw[16];
-};
-
-extern nvclock_t *nvclock_alloc(uint16_t nodes);
-extern void nvclock_free(nvclock_t *clock);
-
-extern void nuuid_clear(struct nuuid *uuid);
-extern int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2);
-extern void nuuid_generate(struct nuuid *uuid);
-
-#endif
+void nuuid_generate(struct nuuid *uuid)
+{
+	uuid_generate_random(uuid->raw);
+}

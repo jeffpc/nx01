@@ -21,7 +21,12 @@
 #
 
 add_library(nomad_common SHARED
+	uuid.c
 	vclock.c
+)
+
+target_link_libraries(nomad_common
+	uuid
 )
 
 install(TARGETS nomad_common DESTINATION lib
