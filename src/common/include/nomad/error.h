@@ -20,40 +20,29 @@
  * SOFTWARE.
  */
 
-#ifndef __NOMAD_TYPES_H
-#define __NOMAD_TYPES_H
+#ifndef __NOMAD_ERROR_H
+#define __NOMAD_ERROR_H
 
 #include <stdint.h>
+#include <errno.h>
 
-/* object id */
-typedef struct {
-	uint32_t ds;
-	uint32_t _reserved; /* must be zero */
-	uint64_t uniq;
-} noid_t;
+#define MAX_ERRNO	1023
 
-/* version vector */
-typedef struct nvclockent {
-	uint64_t node;
-	uint64_t seq;
-} nvclockent_t;
+static inline int PTR_ERR(void *ptr)
+{
+	return -(intptr_t) ptr;
+}
 
-typedef struct {
-	uint16_t _reserved; /* must be zero */
-	uint16_t nnodes;
-	struct nvclockent ent[0];
-} nvclock_t;
+static inline void *ERR_PTR(int err)
+{
+	return (void *)(intptr_t) -err;
+}
 
-/* uuid */
-struct nuuid {
-	uint8_t raw[16];
-};
+static inline int IS_ERR(void *ptr)
+{
+	intptr_t err = (intptr_t) ptr;
 
-extern nvclock_t *nvclock_alloc(uint16_t nodes);
-extern void nvclock_free(nvclock_t *clock);
-
-extern void nuuid_clear(struct nuuid *uuid);
-extern int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2);
-extern void nuuid_generate(struct nuuid *uuid);
+	return (err < 0) && (err >= -MAX_ERRNO);
+}
 
 #endif

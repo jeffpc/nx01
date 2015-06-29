@@ -32,6 +32,7 @@ target_link_libraries(nomad_common
 install(TARGETS nomad_common DESTINATION lib
 	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
 install(FILES	include/nomad/types.h
+		include/nomad/error.h
 	DESTINATION include/nomad
 	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
 
