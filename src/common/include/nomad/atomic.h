@@ -29,6 +29,10 @@ typedef struct {
 	volatile uint32_t v;
 } atomic_t;
 
+typedef struct {
+	volatile uint64_t v;
+} atomic64_t;
+
 /*
  * WARNING: atomic_set and atomic_read may break on some really quirky
  * architectures.
