@@ -66,4 +66,24 @@ extern void nuuid_clear(struct nuuid *uuid);
 extern int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2);
 extern void nuuid_generate(struct nuuid *uuid);
 
+static inline uint64_t nvclock_get(struct nvclock *clock)
+{
+	return nvclock_get_node(clock, nomad_local_node_id());
+}
+
+static inline int nvclock_remove(struct nvclock *clock)
+{
+	return nvclock_remove_node(clock, nomad_local_node_id());
+}
+
+static inline int nvclock_set(struct nvclock *clock, uint64_t seq)
+{
+	return nvclock_set_node(clock, nomad_local_node_id(), seq);
+}
+
+static inline int nvclock_inc(struct nvclock *clock)
+{
+	return nvclock_inc_node(clock, nomad_local_node_id());
+}
+
 #endif
