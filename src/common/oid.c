@@ -20,44 +20,19 @@
  * SOFTWARE.
  */
 
-#ifndef __NOMAD_TYPES_H
-#define __NOMAD_TYPES_H
+#include <nomad/types.h>
 
-#include <stdint.h>
+int noid_cmp(const struct noid *n1, const struct noid *n2)
+{
+	if (n1->ds < n2->ds)
+		return -1;
+	if (n1->ds > n2->ds)
+		return 1;
 
-#include <nomad/attr.h>
+	if (n1->uniq < n2->uniq)
+		return -1;
+	if (n1->uniq > n2->uniq)
+		return 1;
 
-/* object id */
-struct noid {
-	uint32_t ds;		/* dataset id */
-	uint32_t _reserved;	/* must be zero */
-	uint64_t uniq;		/* dataset-local id */
-};
-
-/* version vector */
-struct nvclockent {
-	uint64_t node;
-	uint64_t seq;
-};
-
-struct nvclock {
-	uint16_t _reserved; /* must be zero */
-	uint16_t nnodes;
-	struct nvclockent ent[0];
-};
-
-/* uuid */
-struct nuuid {
-	uint8_t raw[16];
-};
-
-extern int noid_cmp(const struct noid *n1, const struct noid *n2);
-
-extern struct nvclock *nvclock_alloc(uint16_t nodes);
-extern void nvclock_free(struct nvclock *clock);
-
-extern void nuuid_clear(struct nuuid *uuid);
-extern int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2);
-extern void nuuid_generate(struct nuuid *uuid);
-
-#endif
+	return 0;
+}
