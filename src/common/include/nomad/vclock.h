@@ -20,35 +20,41 @@
  * SOFTWARE.
  */
 
-#ifndef __NOMAD_TYPES_H
-#define __NOMAD_TYPES_H
+#ifndef __NOMAD_VCLOCK_H
+#define __NOMAD_VCLOCK_H
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include <nomad/attr.h>
-#include <nomad/vclock.h>
+/* version vector */
+#define NVCLOCK_NUM_NODES	16 /* ought to be enough for everyone */
 
-/* object id */
-struct noid {
-	uint32_t ds;		/* dataset id */
-	uint32_t _reserved;	/* must be zero */
-	uint64_t uniq;		/* dataset-local id */
+enum nvclockcmp {
+	NVC_LT = -1,
+	NVC_EQ = 0,
+	NVC_GT = 1,
+	NVC_DIV = 2,
 };
 
-/* uuid */
-struct nuuid {
-	uint8_t raw[16];
+struct nvclockent {
+	uint64_t node;
+	uint64_t seq;
 };
 
-extern int nomad_set_local_node_id(uint64_t newid);
-extern uint64_t nomad_local_node_id(void);
+struct nvclock {
+	struct nvclockent ent[NVCLOCK_NUM_NODES];
+};
 
-extern void noid_set(struct noid *n1, uint32_t ds, uint64_t uniq);
-extern int noid_cmp(const struct noid *n1, const struct noid *n2);
-
-extern void nuuid_clear(struct nuuid *uuid);
-extern int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2);
-extern void nuuid_generate(struct nuuid *uuid);
+extern struct nvclock *nvclock_alloc(void);
+extern struct nvclock *nvclock_dup(struct nvclock *clock);
+extern void nvclock_free(struct nvclock *clock);
+extern uint64_t nvclock_get_node(struct nvclock *clock, uint64_t node);
+extern int nvclock_remove_node(struct nvclock *clock, uint64_t node);
+extern int nvclock_set_node(struct nvclock *clock, uint64_t node,
+			    uint64_t seq);
+extern int nvclock_inc_node(struct nvclock *clock, uint64_t node);
+extern uint64_t nvclock_get(struct nvclock *clock);
+extern int nvclock_remove(struct nvclock *clock);
+extern int nvclock_set(struct nvclock *clock, uint64_t seq);
+extern int nvclock_inc(struct nvclock *clock);
 
 #endif

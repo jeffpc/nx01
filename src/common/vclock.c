@@ -21,6 +21,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <nomad/types.h>
 #include <nomad/error.h>
@@ -49,6 +50,19 @@
 struct nvclock *nvclock_alloc(void)
 {
 	return malloc(sizeof(struct nvclock));
+}
+
+struct nvclock *nvclock_dup(struct nvclock *clock)
+{
+	struct nvclock *ret;
+
+	ret = nvclock_alloc();
+	if (!ret)
+		return NULL;
+
+	memcpy(ret, clock, sizeof(*ret));
+
+	return ret;
 }
 
 void nvclock_free(struct nvclock *clock)
@@ -97,6 +111,11 @@ uint64_t nvclock_get_node(struct nvclock *clock, uint64_t node)
 	return IS_ERR(ent) ? 0 : ent->seq;
 }
 
+uint64_t nvclock_get(struct nvclock *clock)
+{
+	return nvclock_get_node(clock, nomad_local_node_id());
+}
+
 /*
  * Remove @node from @clock.
  */
@@ -115,6 +134,11 @@ int nvclock_remove_node(struct nvclock *clock, uint64_t node)
 	ent->seq = 0;
 
 	return 0;
+}
+
+int nvclock_remove(struct nvclock *clock)
+{
+	return nvclock_remove_node(clock, nomad_local_node_id());
 }
 
 /*
@@ -136,6 +160,11 @@ int nvclock_set_node(struct nvclock *clock, uint64_t node, uint64_t seq)
 	return 0;
 }
 
+int nvclock_set(struct nvclock *clock, uint64_t seq)
+{
+	return nvclock_set_node(clock, nomad_local_node_id(), seq);
+}
+
 /*
  * Increment @clock's @node by 1.
  */
@@ -150,4 +179,9 @@ int nvclock_inc_node(struct nvclock *clock, uint64_t node)
 	ent->seq++;
 
 	return 0;
+}
+
+int nvclock_inc(struct nvclock *clock)
+{
+	return nvclock_inc_node(clock, nomad_local_node_id());
 }
