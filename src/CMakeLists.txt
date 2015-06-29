@@ -40,6 +40,14 @@ else()
 	set(LIST_LIBRARY ${CMDUTILS_LIBRARY})
 endif()
 
+#
+# From this point on, use these variables instead of hardcoding lib names:
+#
+#  AVL_LIBRARY
+#  LIST_LIBRARY
+#  UMEM_LIBRARY
+#
+
 include_directories(
 	common/include
 )
