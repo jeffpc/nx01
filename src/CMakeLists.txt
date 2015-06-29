@@ -20,16 +20,19 @@
 # SOFTWARE.
 #
 
+if(NOT UMEM_FOUND)
+	include_directories(fakeumem/include)
+	add_subdirectory(fakeumem)
+endif()
+
 include_directories(
 	sunavl/include
 	sunlist/include
-	fakeumem/include
 	common/include
 )
 
 add_subdirectory(sunavl)
 add_subdirectory(sunlist)
-add_subdirectory(fakeumem)
 add_subdirectory(common)
 add_subdirectory(server)
 add_subdirectory(client)

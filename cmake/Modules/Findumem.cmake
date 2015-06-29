@@ -20,18 +20,22 @@
 # SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 2.8.5)
-project(nomad)
+#
+# Find the UMEM includes and library.
+#
+# This module defines:
+#   UMEM_INCLUDE_DIR
+#   UMEM_LIBRARY
+#   UMEM_FOUND
+#
 
-enable_testing()
+find_path(UMEM_INCLUDE_DIR umem.h)
+find_library(UMEM_LIBRARY NAMES umem)
 
-set(CMAKE_C_FLAGS "-Wall -O2 -g -std=gnu99 -D_XOPEN_SOURCE=700 -D__EXTENSIONS__ -D_REENTRANT")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-inline-small-functions")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-inline-functions-called-once")
-
-set(CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-include(cmake/config.cmake)
-
-add_subdirectory(src)
+#
+# Handle the QUIETLY and REQUIRED arguments and set UMEM_FOUND to TRUE if
+# all listed variables are TRUE.
+#
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(UMEM DEFAULT_MSG UMEM_LIBRARY
+	UMEM_INCLUDE_DIR)
