@@ -23,17 +23,108 @@
 #include <stdlib.h>
 
 #include <nomad/types.h>
+#include <nomad/error.h>
 
-struct nvclock *nvclock_alloc(uint16_t nodes)
+/*
+ * Vector clocks
+ *
+ * A vector clock is a set of <node, sequence id> pairs.  Since it is a set,
+ * each node may appear at most once.  There are a few implied behaviors:
+ *
+ * (1) if a node doesn't appear in the vector, it's sequence id is assumed
+ *     to be zero.
+ * (2) node zero is reserved.  Internally to this code, it can be used to
+ *     indicate an unused entry.  However, a sequence id get of node zero
+ *     will return zero.
+ *
+ * As far as this implementation of vector clocks is concerned, the ent[]
+ * array is managed as follows:
+ *
+ * (1) nodes with zero sequence id are *not* stored.  This is important for
+ *     the set/inc functions.  Whenever the new sequence id ends up equal to
+ *     zero, the <node, seq> pair is removed from the vector.
+ * (2) entries may not be used contiguously.
+ */
+
+struct nvclock *nvclock_alloc(void)
 {
-	if (!nodes)
-		return NULL;
-
-	return malloc(sizeof(struct nvclock) +
-		      nodes * sizeof(struct nvclockent *));
+	return malloc(sizeof(struct nvclock));
 }
 
 void nvclock_free(struct nvclock *clock)
 {
 	free(clock);
+}
+
+static struct nvclockent *__get_ent(struct nvclock *clock, uint64_t node,
+				    bool alloc)
+{
+	int i;
+
+	if (!clock || !node)
+		return ERR_PTR(EINVAL);
+
+	for (i = 0; i < NVCLOCK_NUM_NODES; i++)
+		if (clock->ent[i].node == node)
+			return &clock->ent[i];
+
+	if (!alloc)
+		return ERR_PTR(ENOENT);
+
+	/*
+	 * We didn't find it; we're supposed to allocate an entry.
+	 */
+
+	for (i = 0; i < NVCLOCK_NUM_NODES; i++) {
+		if (!clock->ent[i].node) {
+			clock->ent[i].node = node;
+			return &clock->ent[i];
+		}
+	}
+
+	return ERR_PTR(ENOMEM);
+}
+
+/*
+ * Get @clock's @node sequence id.
+ */
+uint64_t nvclock_get_node(struct nvclock *clock, uint64_t node)
+{
+	struct nvclockent *ent;
+
+	ent = __get_ent(clock, node, false);
+
+	return IS_ERR(ent) ? 0 : ent->seq;
+}
+
+/*
+ * Set @clock's @node to @seq.
+ */
+int nvclock_set_node(struct nvclock *clock, uint64_t node, uint64_t seq)
+{
+	struct nvclockent *ent;
+
+	ent = __get_ent(clock, node, true);
+	if (IS_ERR(ent))
+		return PTR_ERR(ent);
+
+	ent->seq = seq;
+
+	return 0;
+}
+
+/*
+ * Increment @clock's @node by 1.
+ */
+int nvclock_inc_node(struct nvclock *clock, uint64_t node)
+{
+	struct nvclockent *ent;
+
+	ent = __get_ent(clock, node, true);
+	if (IS_ERR(ent))
+		return PTR_ERR(ent);
+
+	ent->seq++;
+
+	return 0;
 }

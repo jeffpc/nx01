@@ -24,6 +24,7 @@
 #define __NOMAD_TYPES_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <nomad/attr.h>
 
@@ -35,15 +36,15 @@ struct noid {
 };
 
 /* version vector */
+#define NVCLOCK_NUM_NODES	16 /* ought to be enough for everyone */
+
 struct nvclockent {
 	uint64_t node;
 	uint64_t seq;
 };
 
 struct nvclock {
-	uint16_t _reserved; /* must be zero */
-	uint16_t nnodes;
-	struct nvclockent ent[0];
+	struct nvclockent ent[NVCLOCK_NUM_NODES];
 };
 
 /* uuid */
@@ -53,8 +54,10 @@ struct nuuid {
 
 extern int noid_cmp(const struct noid *n1, const struct noid *n2);
 
-extern struct nvclock *nvclock_alloc(uint16_t nodes);
+extern struct nvclock *nvclock_alloc(void);
 extern void nvclock_free(struct nvclock *clock);
+extern int nvclock_set_node(struct nvclock *clock, uint64_t node,
+			    uint64_t seq);
 
 extern void nuuid_clear(struct nuuid *uuid);
 extern int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2);
