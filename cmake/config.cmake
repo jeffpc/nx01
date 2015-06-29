@@ -22,7 +22,3 @@
 
 set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")
 find_package(umem)
-
-if(NOT UMEM_FOUND)
-	set(UMEM_LIBRARY fakeumem)
-endif()

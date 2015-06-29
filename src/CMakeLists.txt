@@ -21,6 +21,7 @@
 #
 
 if(NOT UMEM_FOUND)
+	set(UMEM_LIBRARY fakeumem)
 	include_directories(fakeumem/include)
 	add_subdirectory(fakeumem)
 endif()
