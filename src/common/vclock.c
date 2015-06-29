@@ -185,3 +185,36 @@ int nvclock_inc(struct nvclock *clock)
 {
 	return nvclock_inc_node(clock, nomad_local_node_id());
 }
+
+enum nvclockcmp nvclock_cmp(const struct nvclock *c1, const struct nvclock *c2)
+{
+#warning "not yet implemented"
+	// XXX: actually compare
+}
+
+int nvclock_cmp_total(const struct nvclock *c1, const struct nvclock *c2)
+{
+	switch (nvclock_cmp(c1, c2)) {
+		case NVC_LT:
+			return -1;
+		case NVC_EQ:
+			return 0;
+		case NVC_GT:
+			return 1;
+		case NVC_DIV:
+			/* this is the hard part...see below */
+			break;
+	}
+
+	/*
+	 * We have two clocks and neither is an ancestor of the other.
+	 * Since we are after a total ordering, we need to decide whether we
+	 * should return -1 or +1.  (We cannot return 0 since that'd imply
+	 * that the two clocks are equivalent - and they definitely aren't.)
+	 *
+	 * XXX: describe algo
+	 */
+
+#warning "not yet implemented"
+	// XXX
+}
