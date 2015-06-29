@@ -20,41 +20,13 @@
 # SOFTWARE.
 #
 
-if(NOT UMEM_FOUND)
-	set(UMEM_LIBRARY fakeumem)
-	include_directories(fakeumem/include)
-	add_subdirectory(fakeumem)
-endif()
-
-if(NOT AVL_FOUND)
-	set(AVL_LIBRARY sunavl)
-	include_directories(sunavl/include)
-	add_subdirectory(sunavl)
-endif()
-
-if(NOT CMDUTILS_FOUND)
-	set(LIST_LIBRARY sunlist)
-	include_directories(sunavl/include)
-	add_subdirectory(sunlist)
-else()
-	set(LIST_LIBRARY ${CMDUTILS_LIBRARY})
-endif()
-
-#
-# From this point on, use these variables instead of hardcoding lib names:
-#
-#  AVL_LIBRARY
-#  LIST_LIBRARY
-#  UMEM_LIBRARY
-#
-
-include_directories(
-	common/include
-	objstore/include
+add_library(nomad_objstore SHARED
+	objstore.c
 )
 
-add_subdirectory(common)
-add_subdirectory(objstore)
-add_subdirectory(server)
-add_subdirectory(client)
-add_subdirectory(tool)
+install(TARGETS nomad_objstore DESTINATION lib
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+install(FILES	include/nomad/objstore.h
+		include/nomad/objstore_impl.h
+	DESTINATION include/nomad
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
