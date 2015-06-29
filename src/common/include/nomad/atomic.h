@@ -44,5 +44,8 @@ typedef struct {
 #define atomic_sub(var, val)	__sync_sub_and_fetch(&(var)->v, -(val))
 #define atomic_inc(var)		atomic_add((var), 1)
 #define atomic_dec(var)		atomic_sub((var), 1)
+#define atomic_cas(var, old, new)	\
+				__sync_val_compare_and_swap(&(var)->v, \
+							    (old), (new))
 
 #endif
