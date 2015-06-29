@@ -38,6 +38,7 @@ struct backend {
  * TODO: eventually turn this into something that can support multiple
  * backends.
  */
+static struct backend mem_backend;
 static struct backend *backend;
 
 static int load_backend(struct backend *backend, const char *name)
@@ -61,6 +62,14 @@ static int load_backend(struct backend *backend, const char *name)
 
 int objstore_init(void)
 {
+	int ret;
+
+	ret = load_backend(&mem_backend, "mem");
+	if (ret)
+		return ret;
+
+	backend = &mem_backend;
+
 	return 0;
 }
 

@@ -20,14 +20,15 @@
 # SOFTWARE.
 #
 
-add_library(nomad_objstore SHARED
-	objstore.c
+add_library(nomad_objstore_mem MODULE
+	main.c
 )
 
-install(TARGETS nomad_objstore DESTINATION lib
+target_link_libraries(nomad_objstore_mem
+	${AVL_LIBRARY}
+	${LIST_LIBRARY}
+	common
+)
+
+install(TARGETS nomad_objstore_mem DESTINATION lib
 	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
-install(FILES	include/nomad/objstore.h
-		include/nomad/objstore_impl.h
-	DESTINATION include/nomad
-	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
-add_subdirectory(mem)
