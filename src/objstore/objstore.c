@@ -20,14 +20,83 @@
  * SOFTWARE.
  */
 
+#include <dlfcn.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 #include <nomad/error.h>
 #include <nomad/objstore.h>
+#include <nomad/objstore_impl.h>
 
-#include <stdlib.h>
+struct backend {
+	const struct objstore_def *def;
+	void *module;
+};
 
-struct objstore *objstore_store_create(const char *path)
+/*
+ * TODO: eventually turn this into something that can support multiple
+ * backends.
+ */
+static struct backend *backend;
+
+static int load_backend(struct backend *backend, const char *name)
 {
-	return ERR_PTR(ENOTSUP);
+	char path[FILENAME_MAX];
+
+	snprintf(path, sizeof(path), "libnomad_objstore_%s.so", name);
+
+	backend->module = dlopen(path, RTLD_NOW | RTLD_LOCAL);
+	if (!backend->module)
+		return ENOENT;
+
+	backend->def = dlsym(backend->module, "objstore");
+	if (!backend->def) {
+		dlclose(backend->module);
+		return ENOENT;
+	}
+
+	return 0;
+}
+
+int objstore_init(void)
+{
+	return 0;
+}
+
+struct objstore *objstore_store_create(const char *path, enum objstore_mode mode)
+{
+	struct objstore *s;
+	int ret;
+
+	if (!backend->def->store_ops->create)
+		return ERR_PTR(ENOTSUP);
+
+	s = malloc(sizeof(struct objstore));
+	if (!s)
+		return ERR_PTR(ENOMEM);
+
+	s->def = backend->def;
+	s->mode = mode;
+	s->path = strdup(path);
+	if (!s->path) {
+		ret = ENOMEM;
+		goto err;
+	}
+
+	ret = s->def->store_ops->create(s);
+	if (ret)
+		goto err_path;
+
+	return s;
+
+err_path:
+	free((char *) s->path);
+
+err:
+	free(s);
+
+	return ERR_PTR(ret);
 }
 
 struct objstore *objstore_store_load(struct nuuid *uuid, const char *path)

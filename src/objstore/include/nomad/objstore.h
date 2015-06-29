@@ -38,10 +38,13 @@ struct objstore {
 	struct nuuid uuid;
 	const char *path;
 	enum objstore_mode mode;
+
+	void *private;
 };
 
-extern void objstore_init(void);
-extern struct objstore *objstore_store_create(const char *path);
+extern int objstore_init(void);
+extern struct objstore *objstore_store_create(const char *path,
+					      enum objstore_mode mode);
 extern struct objstore *objstore_store_load(struct nuuid *uuid, const char *path);
 
 #endif
