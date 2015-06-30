@@ -135,8 +135,27 @@ static int mem_store_create(struct objstore *store)
 	return 0;
 }
 
+static int mem_store_getroot(struct objstore *store, struct objhndl *hndl)
+{
+	struct memstore *ms;
+
+	if (!store || !store->private || !hndl)
+		return EINVAL;
+
+	ms = store->private;
+
+	hndl->noid = ms->root->oid;
+	hndl->clock = nvclock_dup(ms->root->ver);
+
+	if (!hndl->clock)
+		return ENOMEM;
+
+	return 0;
+}
+
 static const struct objstore_ops store_ops = {
 	.create = mem_store_create,
+	.getroot = mem_store_getroot,
 };
 
 static const struct obj_ops obj_ops = {

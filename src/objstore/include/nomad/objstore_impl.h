@@ -33,6 +33,7 @@ struct objhndl {
 struct objstore_ops {
 	int (*create)(struct objstore *store);
 	int (*load)(struct objstore *store);
+	int (*getroot)(struct objstore *store, struct objhndl *hndl);
 };
 
 struct obj_ops {
