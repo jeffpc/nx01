@@ -25,6 +25,11 @@
 
 #include <nomad/objstore.h>
 
+struct objhndl {
+	struct noid noid;
+	struct nvclock *clock;
+};
+
 struct objstore_ops {
 	int (*create)(struct objstore *store);
 	int (*load)(struct objstore *store);

@@ -21,7 +21,6 @@
  */
 
 #include <sys/avl.h>
-#include <sys/list.h>
 #include <stdlib.h>
 #include <stddef.h>
 
@@ -30,19 +29,18 @@
 #include <nomad/atomic.h>
 #include <nomad/objstore_impl.h>
 
-/* each version of an an object */
-struct memobjver {
-	struct nvclock *version;
+/* each <oid,ver> */
+struct memobj {
+	/* key */
+	struct noid oid;
+	struct nvclock *ver;
+
+	/* value */
 	struct nattr attrs;
 	void *blob;
-	list_node_t node;
-};
 
-/* each object */
-struct memobj {
-	struct noid oid;
+	/* misc */
 	avl_node_t node;
-	list_t versions;
 };
 
 /* the whole store */
@@ -56,51 +54,51 @@ struct memstore {
 
 static int cmp(const void *va, const void *vb)
 {
-	return noid_cmp(va, vb);
+	const struct memobj *a = va;
+	const struct memobj *b = vb;
+	int ret;
+
+	ret = noid_cmp(&a->oid, &b->oid);
+	if (ret)
+		return ret;
+
+	return nvclock_cmp_total(a->ver, b->ver);
 }
 
 static struct memobj *newobj(uint16_t mode)
 {
 	struct memobj *obj;
-	struct memobjver *ver;
 	int ret;
 
 	ret = ENOMEM;
 
 	obj = malloc(sizeof(struct memobj));
-	ver = malloc(sizeof(struct memobjver));
-	if (!obj || !ver)
+	if (!obj)
 		goto err;
 
-	list_create(&obj->versions, sizeof(struct memobjver),
-		    offsetof(struct memobjver, node));
-
-	ver->version = nvclock_alloc();
-	if (!ver->version)
+	obj->ver = nvclock_alloc();
+	if (!obj->ver)
 		goto err;
 
-	ret = nvclock_set(ver->version, 1);
+	ret = nvclock_set(obj->ver, 1);
 	if (ret)
 		goto err_vector;
 
-	ver->attrs._reserved = 0;
-	ver->attrs.mode = mode;
-	ver->attrs.nlink = 0;
-	ver->attrs.size = 0;
-	ver->attrs.atime = gettime();
-	ver->attrs.btime = ver->attrs.atime;
-	ver->attrs.ctime = ver->attrs.atime;
-	ver->attrs.mtime = ver->attrs.atime;
-
-	list_insert_tail(&obj->versions, ver);
+	obj->attrs._reserved = 0;
+	obj->attrs.mode = mode;
+	obj->attrs.nlink = 0;
+	obj->attrs.size = 0;
+	obj->attrs.atime = gettime();
+	obj->attrs.btime = obj->attrs.atime;
+	obj->attrs.ctime = obj->attrs.atime;
+	obj->attrs.mtime = obj->attrs.atime;
 
 	return obj;
 
 err_vector:
-	nvclock_free(ver->version);
+	nvclock_free(obj->ver);
 
 err:
-	free(ver);
 	free(obj);
 
 	return ERR_PTR(ret);
@@ -109,6 +107,7 @@ err:
 static int mem_store_create(struct objstore *store)
 {
 	struct memstore *ms;
+	struct memobj *obj;
 
 	ms = malloc(sizeof(struct memstore));
 	if (!ms)
@@ -118,19 +117,18 @@ static int mem_store_create(struct objstore *store)
 	avl_create(&ms->objs, cmp, sizeof(struct memobj),
 		   offsetof(struct memobj, node));
 
-	ms->root = newobj(NATTR_DIR | 0777);
-	if (IS_ERR(ms->root)) {
-		int ret = PTR_ERR(ms->root);
-
+	obj = newobj(NATTR_DIR | 0777);
+	if (IS_ERR(obj)) {
 		free(ms);
-		return ret;
+		return PTR_ERR(obj);
 	}
 
 	ms->ds = 0x1234; /* TODO: this should be generated randomly */
 
-	noid_set(&ms->root->oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
+	noid_set(&obj->oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
 
-	avl_add(&ms->objs, ms->root);
+	ms->root = obj;
+	avl_add(&ms->objs, obj);
 
 	store->private = ms;
 
