@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
 #include <nomad/attr.h>
 #include <nomad/vclock.h>
