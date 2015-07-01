@@ -38,6 +38,24 @@ struct objstore_ops {
 
 struct obj_ops {
 	int (*getversions)();
+
+	/* open objects must be closed */
+	int (*open)();		/* open an object */
+	int (*close)();		/* close an object */
+
+	/* created/cloned objects must be committed/aborted */
+	int (*create)();	/* create a new temp object */
+	int (*clone)();		/*
+				 * create a new temp obj as a copy of
+				 * existing obj
+				 */
+	int (*commit)();	/* make temp object live */
+	int (*abort)();		/* delete temp object */
+
+	int (*getattr)();	/* get attributes for object */
+	int (*setattr)();	/* set attributes of an object */
+	ssize_t (*read)();	/* read portion of an object */
+	ssize_t (*write)();	/* write portion of an object */
 };
 
 struct objstore_def {
