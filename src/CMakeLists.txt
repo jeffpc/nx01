@@ -48,6 +48,13 @@ endif()
 #  UMEM_LIBRARY
 #
 
+#
+# We link all the binaries against these libs
+#
+set(BASE_LIBS
+	${UMEM_LIBRARY}
+)
+
 include_directories(
 	common/include
 	objstore/include

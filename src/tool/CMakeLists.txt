@@ -24,5 +24,9 @@ add_executable(nomad
 	main.c
 )
 
+target_link_libraries(nomad
+	${BASE_LIBS}
+)
+
 install(TARGETS nomad DESTINATION bin
 	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)

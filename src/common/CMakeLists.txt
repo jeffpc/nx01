@@ -28,6 +28,7 @@ add_library(nomad_common SHARED
 )
 
 target_link_libraries(nomad_common
+	${BASE_LIBS}
 	uuid
 )
 

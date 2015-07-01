@@ -24,6 +24,10 @@ add_library(nomad_objstore SHARED
 	objstore.c
 )
 
+target_link_libraries(nomad_objstore
+	${BASE_LIBS}
+)
+
 install(TARGETS nomad_objstore DESTINATION lib
 	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
 install(FILES	include/nomad/objstore.h
