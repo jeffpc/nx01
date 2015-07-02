@@ -49,7 +49,7 @@
 
 struct nvclock *nvclock_alloc(void)
 {
-	return malloc(sizeof(struct nvclock));
+	return zalloc(sizeof(struct nvclock));
 }
 
 struct nvclock *nvclock_dup(struct nvclock *clock)
