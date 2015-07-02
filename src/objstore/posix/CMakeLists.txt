@@ -20,20 +20,13 @@
 # SOFTWARE.
 #
 
-add_library(nomad_objstore SHARED
-	objstore.c
+add_library(nomad_objstore_posix MODULE
+	main.c
 )
 
-target_link_libraries(nomad_objstore
+target_link_libraries(nomad_objstore_posix
 	${BASE_LIBS}
 )
 
-install(TARGETS nomad_objstore DESTINATION lib
+install(TARGETS nomad_objstore_posix DESTINATION lib
 	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
-install(FILES	include/nomad/objstore.h
-		include/nomad/objstore_impl.h
-	DESTINATION include/nomad
-	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
-
-add_subdirectory(mem)
-add_subdirectory(posix)
