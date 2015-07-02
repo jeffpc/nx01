@@ -20,37 +20,22 @@
  * SOFTWARE.
  */
 
-#ifndef __NOMAD_TYPES_H
-#define __NOMAD_TYPES_H
+#ifndef __NOMAD_MALLOC_H
+#define __NOMAD_MALLOC_H
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <sys/types.h>
+#include <stdlib.h>
+#include <alloca.h>
+#include <string.h>
 
-#include <nomad/attr.h>
-#include <nomad/vclock.h>
-#include <nomad/malloc.h>
+static inline void *zalloc(size_t len)
+{
+	void *buf;
 
-/* object id */
-struct noid {
-	uint32_t ds;		/* dataset id */
-	uint32_t _reserved;	/* must be zero */
-	uint64_t uniq;		/* dataset-local id */
-};
+	buf = malloc(len);
+	if (buf)
+		memset(buf, 0, len);
 
-/* uuid */
-struct nuuid {
-	uint8_t raw[16];
-};
-
-extern int nomad_set_local_node_id(uint64_t newid);
-extern uint64_t nomad_local_node_id(void);
-
-extern void noid_set(struct noid *n1, uint32_t ds, uint64_t uniq);
-extern int noid_cmp(const struct noid *n1, const struct noid *n2);
-
-extern void nuuid_clear(struct nuuid *uuid);
-extern int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2);
-extern void nuuid_generate(struct nuuid *uuid);
+	return buf;
+}
 
 #endif
