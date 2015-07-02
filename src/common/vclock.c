@@ -316,6 +316,9 @@ int nvclock_cmp_total(const struct nvclock *c1, const struct nvclock *c2)
 	 * should return -1 or +1.  (We cannot return 0 since that'd imply
 	 * that the two clocks are equivalent - and they definitely aren't.)
 	 *
+	 * Note that (c1, c2) must return the opposite value of (c2, c1)
+	 * otherwise this comparator can't be used to sort deterministically.
+	 *
 	 * XXX: describe algo
 	 */
 
