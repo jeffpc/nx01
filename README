@@ -10,3 +10,14 @@ The current goals include:
  - multi-user capable server
 
 Once these are done, we will reevaluate the next set of goals.
+
+
+Building and Installing
+=======================
+
+$ cmake . -DCMAKE_INSTALL_PREFIX=/prefix
+$ make
+$ make install
+
+This will build and install the binaries and libraries under the specficied
+prefix.
