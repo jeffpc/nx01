@@ -24,3 +24,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")
 find_package(umem)
 find_package(avl)
 find_package(cmdutils)
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/common/include/nomad/config.h.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/src/common/include/nomad/config.h")

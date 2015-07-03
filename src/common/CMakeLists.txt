@@ -36,6 +36,7 @@ install(TARGETS nomad_common DESTINATION lib
 	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
 install(FILES	include/nomad/atomic.h
 		include/nomad/attr.h
+		include/nomad/config.h
 		include/nomad/error.h
 		include/nomad/time.h
 		include/nomad/types.h
