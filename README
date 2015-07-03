@@ -21,3 +21,28 @@ $ make install
 
 This will build and install the binaries and libraries under the specficied
 prefix.
+
+
+Internal Dependencies
+=====================
+
+             | sunavl | sunlist | common | fakeumem | objstore
+-------------+--------+---------+--------+----------+----------
+sunavl       |   -    |    n    |   n    |    n     |    n
+sunlist      |   n    |    -    |   n    |    n     |    n
+common       |   n    |    n    |   -    |    y     |    n
+fakeumem     |   n    |    n    |   n    |    -     |    n
+objstore     |   n    |    n    |   n    |    y     |    -
+objs. module |   ?    |    ?    |   y    |    y     |    n
+client       |   n    |    n    |   n    |    y     |    n
+server       |   n    |    n    |   n    |    y     |    n
+tool         |   n    |    n    |   n    |    y     |    n
+
+  y = yes, linked against
+  n = no, not linked against
+  - = not applicable
+  ? = may be linked against as necessary
+
+The above table assumes the lack of avl, cmdutils, and umem libraries on the
+system.  If they are present, they are used instead of sunavl, sunlist, and
+fakeumem respectively.
