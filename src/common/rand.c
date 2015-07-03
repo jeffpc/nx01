@@ -20,9 +20,26 @@
  * SOFTWARE.
  */
 
-#ifndef __NOMAD_CONFIG_H
-#define __NOMAD_CONFIG_H
+#include <nomad/types.h>
+#include <nomad/rand.h>
+#include <nomad/config.h>
 
-#cmakedefine HAVE_ARC4RANDOM 1
-
+uint32_t rand32(void)
+{
+#ifdef HAVE_ARC4RANDOM
+	return arc4random();
+#else
+#error "Need a way to generate random uint32_t"
 #endif
+}
+
+uint64_t rand64(void)
+{
+	uint64_t tmp;
+
+	tmp   = rand32();
+	tmp <<= 32;
+	tmp  |= rand32();
+
+	return tmp;
+}

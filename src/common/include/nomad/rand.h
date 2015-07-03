@@ -20,9 +20,10 @@
  * SOFTWARE.
  */
 
-#ifndef __NOMAD_CONFIG_H
-#define __NOMAD_CONFIG_H
+#ifndef __NOMAD_RAND_H
+#define __NOMAD_RAND_H
 
-#cmakedefine HAVE_ARC4RANDOM 1
+extern uint32_t rand32(void);
+extern uint64_t rand64(void);
 
 #endif

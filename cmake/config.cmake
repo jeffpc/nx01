@@ -20,6 +20,10 @@
 # SOFTWARE.
 #
 
+include(CheckFunctionExists)
+
+check_function_exists(arc4random HAVE_ARC4RANDOM)
+
 set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")
 find_package(umem)
 find_package(avl)

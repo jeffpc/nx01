@@ -23,6 +23,7 @@
 add_library(nomad_common SHARED
 	node.c
 	oid.c
+	rand.c
 	uuid.c
 	vclock.c
 )
@@ -38,6 +39,7 @@ install(FILES	include/nomad/atomic.h
 		include/nomad/attr.h
 		include/nomad/config.h
 		include/nomad/error.h
+		include/nomad/rand.h
 		include/nomad/time.h
 		include/nomad/types.h
 	DESTINATION include/nomad
