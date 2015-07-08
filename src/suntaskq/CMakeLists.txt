@@ -28,3 +28,9 @@ target_link_libraries(suntaskq
 	${BASE_LIBS}
 	common
 )
+
+install(TARGETS suntaskq DESTINATION lib
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+install(FILES	include/nomad/taskq.h
+	DESTINATION include/nomad
+	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
