@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <errno.h>
+#include <string.h>
 
 #define MAX_ERRNO	1023
 
