@@ -84,6 +84,19 @@ void condwait(pthread_cond_t *c, pthread_mutex_t *m)
 	VERIFY0(pthread_cond_wait(c, m));
 }
 
+int condreltimedwait(pthread_cond_t *c, pthread_mutex_t *m,
+		     const struct timespec *reltime)
+{
+	int ret;
+
+	ret = pthread_cond_reltimedwait_np(c, m, reltime);
+
+	if ((ret != 0) || (ret != ETIMEDOUT))
+		VERIFY(0);
+
+	return ret;
+}
+
 void condsig(pthread_cond_t *c)
 {
 	VERIFY0(pthread_cond_signal(c));

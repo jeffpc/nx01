@@ -39,6 +39,8 @@ extern void rwunlock(pthread_rwlock_t *l);
 extern void condinit(pthread_cond_t *c);
 extern void conddestroy(pthread_cond_t *c);
 extern void condwait(pthread_cond_t *c, pthread_mutex_t *m);
+extern int condreltimedwait(pthread_cond_t *c, pthread_mutex_t *m,
+			    const struct timespec *reltime);
 extern void condsig(pthread_cond_t *c);
 extern void condbcast(pthread_cond_t *c);
 
