@@ -31,6 +31,9 @@
 #include <nomad/vclock.h>
 #include <nomad/malloc.h>
 
+#define MIN(a, b)	(((a) < (b)) ? (a) : (b))
+#define MAX(a, b)	(((a) > (b)) ? (a) : (b))
+
 /* object id */
 struct noid {
 	uint32_t ds;		/* dataset id */
