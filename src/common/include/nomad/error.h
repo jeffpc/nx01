@@ -50,7 +50,7 @@ extern void assfail(const char *, const char *, int);
 extern void assfail3(const char *, uintmax_t, const char *, uintmax_t,
 		     const char *, int);
 
-#define ASSERT3P(l, op, r)						\
+#define VERIFY3P(l, op, r)						\
 	do {								\
 		uintptr_t lhs = (uintptr_t) (l);			\
 		uintptr_t rhs = (uintptr_t) (r);			\
@@ -59,7 +59,7 @@ extern void assfail3(const char *, uintmax_t, const char *, uintmax_t,
 				 __FILE__, __LINE__);			\
 	} while (0)
 
-#define ASSERT3U(l, op, r)						\
+#define VERIFY3U(l, op, r)						\
 	do {								\
 		uint64_t lhs = (l);			\
 		uint64_t rhs = (r);			\
@@ -68,7 +68,7 @@ extern void assfail3(const char *, uintmax_t, const char *, uintmax_t,
 				 __FILE__, __LINE__);			\
 	} while (0)
 
-#define ASSERT3S(l, op, r)						\
+#define VERIFY3S(l, op, r)						\
 	do {								\
 		int64_t lhs = (l);			\
 		int64_t rhs = (r);			\
@@ -77,12 +77,18 @@ extern void assfail3(const char *, uintmax_t, const char *, uintmax_t,
 				 __FILE__, __LINE__);			\
 	} while (0)
 
-#define ASSERT(c)							\
+#define VERIFY(c)							\
 	do {								\
 		if (!(c))						\
 			assfail(#c, __FILE__, __LINE__);		\
 	} while (0)
 
-#define ASSERT0(c)	ASSERT3U((c), ==, 0)
+#define VERIFY0(c)	VERIFY3U((c), ==, 0)
+
+#define ASSERT3P(l, op, r)	VERIFY3P(l, op, r)
+#define ASSERT3U(l, op, r)	VERIFY3U(l, op, r)
+#define ASSERT3S(l, op, r)	VERIFY3S(l, op, r)
+#define ASSERT0(c)		VERIFY0(c)
+#define ASSERT(c)		VERIFY(c)
 
 #endif
