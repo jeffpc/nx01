@@ -21,6 +21,7 @@
 #
 
 add_library(nomad_common SHARED
+	mutex.c
 	node.c
 	oid.c
 	rand.c
@@ -40,6 +41,7 @@ install(FILES	include/nomad/atomic.h
 		include/nomad/config.h
 		include/nomad/error.h
 		include/nomad/malloc.h
+		include/nomad/mutex.h
 		include/nomad/rand.h
 		include/nomad/time.h
 		include/nomad/types.h
