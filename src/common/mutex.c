@@ -46,6 +46,29 @@ void mxunlock(pthread_mutex_t *m)
 	VERIFY0(pthread_mutex_unlock(m));
 }
 
+void rwinit(pthread_rwlock_t *l)
+{
+	VERIFY0(pthread_rwlock_init(l, NULL));
+}
+
+void rwdestroy(pthread_rwlock_t *l)
+{
+	VERIFY0(pthread_rwlock_destroy(l));
+}
+
+void rwlock(pthread_rwlock_t *l, bool wr)
+{
+	if (wr)
+		VERIFY0(pthread_rwlock_wrlock(l));
+	else
+		VERIFY0(pthread_rwlock_rdlock(l));
+}
+
+void rwunlock(pthread_rwlock_t *l)
+{
+	VERIFY0(pthread_rwlock_unlock(l));
+}
+
 void condinit(pthread_cond_t *c)
 {
 	VERIFY0(pthread_cond_init(c, NULL));

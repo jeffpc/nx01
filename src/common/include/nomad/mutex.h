@@ -23,12 +23,18 @@
 #ifndef __NOMAD_MUTEX_H
 #define __NOMAD_MUTEX_H
 
+#include <stdbool.h>
 #include <pthread.h>
 
 extern void mxinit(pthread_mutex_t *m);
 extern void mxdestroy(pthread_mutex_t *m);
 extern void mxlock(pthread_mutex_t *m);
 extern void mxunlock(pthread_mutex_t *m);
+
+extern void rwinit(pthread_rwlock_t *l);
+extern void rwdestroy(pthread_rwlock_t *l);
+extern void rwlock(pthread_rwlock_t *l, bool wr);
+extern void rwunlock(pthread_rwlock_t *l);
 
 extern void condinit(pthread_cond_t *c);
 extern void conddestroy(pthread_cond_t *c);
