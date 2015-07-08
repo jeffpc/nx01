@@ -34,7 +34,7 @@
 #include <nomad/types.h>
 #include <nomad/error.h>
 #include <nomad/mutex.h>
-#include <sys/taskq.h>
+#include <nomad/taskq.h>
 
 /* Maximum percentage allowed for TASKQ_THREADS_CPU_PCT */
 static int taskq_cpupct_max_percent = 1000;

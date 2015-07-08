@@ -25,8 +25,8 @@
  * Copyright (c) 2012, Joyent, Inc. All rights reserved.
  */
 
-#ifndef	_TASKQ_H
-#define	_TASKQ_H
+#ifndef	__NOMAD_TASKQ_H
+#define	__NOMAD_TASKQ_H
 
 #include <stdint.h>
 #include <umem.h>
@@ -74,4 +74,4 @@ extern int	taskq_member(taskq_t *, void *);
 }
 #endif
 
-#endif	/* _TASKQ_H */
+#endif	/* __NOMAD_TASKQ_H */
