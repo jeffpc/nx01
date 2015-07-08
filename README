@@ -26,17 +26,18 @@ prefix.
 Internal Dependencies
 =====================
 
-             | sunavl | sunlist | common | fakeumem | objstore
--------------+--------+---------+--------+----------+----------
-sunavl       |   -    |    n    |   n    |    n     |    n
-sunlist      |   n    |    -    |   n    |    n     |    n
-common       |   n    |    n    |   -    |    y     |    n
-fakeumem     |   n    |    n    |   n    |    -     |    n
-objstore     |   n    |    n    |   n    |    y     |    -
-objs. module |   ?    |    ?    |   y    |    y     |    n
-client       |   n    |    n    |   n    |    y     |    n
-server       |   n    |    n    |   n    |    y     |    n
-tool         |   n    |    n    |   n    |    y     |    n
+             | sunavl | sunlist | common | fakeumem | objstore | suntaskq
+-------------+--------+---------+--------+----------+----------+----------
+sunavl       |   -    |    n    |   n    |    n     |    n     |     n
+sunlist      |   n    |    -    |   n    |    n     |    n     |     n
+common       |   n    |    n    |   -    |    y     |    n     |     n 
+fakeumem     |   n    |    n    |   n    |    -     |    n     |     n
+objstore     |   n    |    n    |   n    |    y     |    -     |     n
+suntaskq     |   n    |    n    |   y    |    y     |    n     |     -
+objs. module |   ?    |    ?    |   y    |    y     |    n     |     n
+client       |   n    |    n    |   n    |    y     |    n     |     n
+server       |   n    |    n    |   n    |    y     |    n     |     n
+tool         |   n    |    n    |   n    |    y     |    n     |     n
 
   y = yes, linked against
   n = no, not linked against

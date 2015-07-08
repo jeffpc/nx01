@@ -20,53 +20,11 @@
 # SOFTWARE.
 #
 
-if(NOT UMEM_FOUND)
-	set(UMEM_LIBRARY fakeumem)
-	include_directories(fakeumem/include)
-	add_subdirectory(fakeumem)
-endif()
-
-if(NOT AVL_FOUND)
-	set(AVL_LIBRARY sunavl)
-	include_directories(sunavl/include)
-	add_subdirectory(sunavl)
-endif()
-
-if(NOT CMDUTILS_FOUND)
-	set(LIST_LIBRARY sunlist)
-	include_directories(sunavl/include)
-	add_subdirectory(sunlist)
-else()
-	set(LIST_LIBRARY ${CMDUTILS_LIBRARY})
-endif()
-
-set(TASKQ_LIBRARY suntaskq)
-
-#
-# From this point on, use these variables instead of hardcoding lib names:
-#
-#  AVL_LIBRARY
-#  LIST_LIBRARY
-#  TASKQ_LIBRARY
-#  UMEM_LIBRARY
-#
-
-#
-# We link all the binaries against these libs
-#
-set(BASE_LIBS
-	${UMEM_LIBRARY}
+add_library(suntaskq SHARED
+	taskq.c
 )
 
-include_directories(
-	common/include
-	objstore/include
-	suntaskq/include
+target_link_libraries(suntaskq
+	${BASE_LIBS}
+	common
 )
-
-add_subdirectory(common)
-add_subdirectory(suntaskq)
-add_subdirectory(objstore)
-add_subdirectory(server)
-add_subdirectory(client)
-add_subdirectory(tool)
