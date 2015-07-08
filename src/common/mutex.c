@@ -26,56 +26,47 @@
 #include <nomad/error.h>
 #include <nomad/mutex.h>
 
-static void mutex_assert0(int v)
-{
-	if (!v)
-		return;
-
-	fprintf(stderr, "MUTEX ASSERTION FAILURE: ret = %s\n", strerror(v));
-	abort();
-}
-
 void mxinit(pthread_mutex_t *m)
 {
-	mutex_assert0(pthread_mutex_init(m, NULL));
+	VERIFY0(pthread_mutex_init(m, NULL));
 }
 
 void mxdestroy(pthread_mutex_t *m)
 {
-	mutex_assert0(pthread_mutex_destroy(m));
+	VERIFY0(pthread_mutex_destroy(m));
 }
 
 void mxlock(pthread_mutex_t *m)
 {
-	mutex_assert0(pthread_mutex_lock(m));
+	VERIFY0(pthread_mutex_lock(m));
 }
 
 void mxunlock(pthread_mutex_t *m)
 {
-	mutex_assert0(pthread_mutex_unlock(m));
+	VERIFY0(pthread_mutex_unlock(m));
 }
 
 void condinit(pthread_cond_t *c)
 {
-	mutex_assert0(pthread_cond_init(c, NULL));
+	VERIFY0(pthread_cond_init(c, NULL));
 }
 
 void conddestroy(pthread_cond_t *c)
 {
-	mutex_assert0(pthread_cond_destroy(c));
+	VERIFY0(pthread_cond_destroy(c));
 }
 
 void condwait(pthread_cond_t *c, pthread_mutex_t *m)
 {
-	mutex_assert0(pthread_cond_wait(c, m));
+	VERIFY0(pthread_cond_wait(c, m));
 }
 
 void condsig(pthread_cond_t *c)
 {
-	mutex_assert0(pthread_cond_signal(c));
+	VERIFY0(pthread_cond_signal(c));
 }
 
 void condbcast(pthread_cond_t *c)
 {
-	mutex_assert0(pthread_cond_broadcast(c));
+	VERIFY0(pthread_cond_broadcast(c));
 }
