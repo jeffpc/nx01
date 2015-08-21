@@ -62,9 +62,9 @@ typedef struct taskq_ent {
 
 extern taskq_t *system_taskq;
 
-extern taskq_t	*taskq_create(const char *, int, int, int, uint_t);
-extern taskqid_t taskq_dispatch(taskq_t *, task_func_t, void *, uint_t);
-extern void	taskq_dispatch_ent(taskq_t *, task_func_t, void *, uint_t,
+extern taskq_t	*taskq_create(const char *, int, int, int, unsigned int);
+extern taskqid_t taskq_dispatch(taskq_t *, task_func_t, void *, unsigned int);
+extern void	taskq_dispatch_ent(taskq_t *, task_func_t, void *, unsigned int,
     taskq_ent_t *);
 extern void	taskq_destroy(taskq_t *);
 extern void	taskq_wait(taskq_t *);

@@ -67,7 +67,7 @@ static taskq_ent_t *
 task_alloc(taskq_t *tq, int tqflags)
 {
 	taskq_ent_t *t;
-	timestruc_t ts;
+	struct timespec ts;
 	int err;
 
 again:	if ((t = tq->tq_freelist) != NULL && tq->tq_nalloc >= tq->tq_minalloc) {
@@ -127,7 +127,7 @@ task_free(taskq_t *tq, taskq_ent_t *t)
 }
 
 taskqid_t
-taskq_dispatch(taskq_t *tq, task_func_t func, void *arg, uint_t tqflags)
+taskq_dispatch(taskq_t *tq, task_func_t func, void *arg, unsigned int tqflags)
 {
 	taskq_ent_t *t;
 
@@ -160,7 +160,7 @@ taskq_dispatch(taskq_t *tq, task_func_t func, void *arg, uint_t tqflags)
 }
 
 void
-taskq_dispatch_ent(taskq_t *tq, task_func_t func, void *arg, uint_t flags,
+taskq_dispatch_ent(taskq_t *tq, task_func_t func, void *arg, unsigned int flags,
     taskq_ent_t *t)
 {
 	ASSERT(func != NULL);
@@ -205,7 +205,7 @@ taskq_thread(void *arg)
 {
 	taskq_t *tq = arg;
 	taskq_ent_t *t;
-	boolean_t prealloc;
+	bool prealloc;
 
 	mxlock(&tq->tq_lock);
 	while (tq->tq_flags & TASKQ_ACTIVE) {
@@ -240,7 +240,7 @@ taskq_thread(void *arg)
 /*ARGSUSED*/
 taskq_t *
 taskq_create(const char *name, int nthreads,
-	int minalloc, int maxalloc, uint_t flags)
+	int minalloc, int maxalloc, unsigned int flags)
 {
 	taskq_t *tq;
 	int t;
