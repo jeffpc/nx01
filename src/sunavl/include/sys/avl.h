@@ -40,6 +40,7 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/avl_impl.h>
 
