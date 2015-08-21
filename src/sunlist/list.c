@@ -26,16 +26,13 @@
  * Generic doubly-linked list implementation
  */
 
+#include <stdlib.h>
 #include <sys/list.h>
 #include <sys/list_impl.h>
 #include <sys/types.h>
 #include <sys/sysmacros.h>
-#ifdef _KERNEL
-#include <sys/debug.h>
-#else
 #include <assert.h>
 #define	ASSERT(a)	assert(a)
-#endif
 
 #ifdef lint
 extern list_node_t *list_d2l(list_t *list, void *obj);
