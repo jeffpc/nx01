@@ -34,7 +34,7 @@ endif()
 
 if(NOT CMDUTILS_FOUND)
 	set(LIST_LIBRARY sunlist)
-	include_directories(sunavl/include)
+	include_directories(sunlist/include)
 	add_subdirectory(sunlist)
 else()
 	set(LIST_LIBRARY ${CMDUTILS_LIBRARY})
