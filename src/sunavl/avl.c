@@ -97,11 +97,11 @@
  * dependencies from avl.c.
  */
 
+#include <assert.h>
+#include <inttypes.h>
 #include <sys/types.h>
 #include <sys/param.h>
-#include <sys/debug.h>
 #include <sys/avl.h>
-#include <sys/cmn_err.h>
 
 /*
  * Small arrays to translate between balance (or diff) values and child indices.
@@ -230,7 +230,7 @@ avl_nearest(avl_tree_t *tree, avl_index_t where, int direction)
 	size_t off = tree->avl_offset;
 
 	if (node == NULL) {
-		ASSERT(tree->avl_root == NULL);
+		assert(tree->avl_root == NULL);
 		return (NULL);
 	}
 	data = AVL_NODE2DATA(node, off);
@@ -265,7 +265,7 @@ avl_find(avl_tree_t *tree, const void *value, avl_index_t *where)
 		prev = node;
 
 		diff = tree->avl_compar(value, AVL_NODE2DATA(node, off));
-		ASSERT(-1 <= diff && diff <= 1);
+		assert(-1 <= diff && diff <= 1);
 		if (diff == 0) {
 #ifdef DEBUG
 			if (where != NULL)
@@ -487,9 +487,9 @@ avl_insert(avl_tree_t *tree, void *new_data, avl_index_t where)
 	int which_child = AVL_INDEX2CHILD(where);
 	size_t off = tree->avl_offset;
 
-	ASSERT(tree);
+	assert(tree);
 #ifdef _LP64
-	ASSERT(((uintptr_t)new_data & 0x7) == 0);
+	assert(((uintptr_t)new_data & 0x7) == 0);
 #endif
 
 	node = AVL_DATA2NODE(new_data, off);
@@ -506,10 +506,10 @@ avl_insert(avl_tree_t *tree, void *new_data, avl_index_t where)
 	AVL_SETBALANCE(node, 0);
 	AVL_SETPARENT(node, parent);
 	if (parent != NULL) {
-		ASSERT(parent->avl_child[which_child] == NULL);
+		assert(parent->avl_child[which_child] == NULL);
 		parent->avl_child[which_child] = node;
 	} else {
-		ASSERT(tree->avl_root == NULL);
+		assert(tree->avl_root == NULL);
 		tree->avl_root = node;
 	}
 	/*
@@ -580,10 +580,10 @@ avl_insert_here(
 	int diff;
 #endif
 
-	ASSERT(tree != NULL);
-	ASSERT(new_data != NULL);
-	ASSERT(here != NULL);
-	ASSERT(direction == AVL_BEFORE || direction == AVL_AFTER);
+	assert(tree != NULL);
+	assert(new_data != NULL);
+	assert(here != NULL);
+	assert(direction == AVL_BEFORE || direction == AVL_AFTER);
 
 	/*
 	 * If corresponding child of node is not NULL, go to the neighboring
@@ -593,9 +593,9 @@ avl_insert_here(
 
 #ifdef DEBUG
 	diff = tree->avl_compar(new_data, here);
-	ASSERT(-1 <= diff && diff <= 1);
-	ASSERT(diff != 0);
-	ASSERT(diff > 0 ? child == 1 : child == 0);
+	assert(-1 <= diff && diff <= 1);
+	assert(diff != 0);
+	assert(diff > 0 ? child == 1 : child == 0);
 #endif
 
 	if (node->avl_child[child] != NULL) {
@@ -605,21 +605,21 @@ avl_insert_here(
 #ifdef DEBUG
 			diff = tree->avl_compar(new_data,
 			    AVL_NODE2DATA(node, tree->avl_offset));
-			ASSERT(-1 <= diff && diff <= 1);
-			ASSERT(diff != 0);
-			ASSERT(diff > 0 ? child == 1 : child == 0);
+			assert(-1 <= diff && diff <= 1);
+			assert(diff != 0);
+			assert(diff > 0 ? child == 1 : child == 0);
 #endif
 			node = node->avl_child[child];
 		}
 #ifdef DEBUG
 		diff = tree->avl_compar(new_data,
 		    AVL_NODE2DATA(node, tree->avl_offset));
-		ASSERT(-1 <= diff && diff <= 1);
-		ASSERT(diff != 0);
-		ASSERT(diff > 0 ? child == 1 : child == 0);
+		assert(-1 <= diff && diff <= 1);
+		assert(diff != 0);
+		assert(diff > 0 ? child == 1 : child == 0);
 #endif
 	}
-	ASSERT(node->avl_child[child] == NULL);
+	assert(node->avl_child[child] == NULL);
 
 	avl_insert(tree, new_data, AVL_MKINDEX(node, child));
 }
@@ -632,18 +632,8 @@ avl_add(avl_tree_t *tree, void *new_node)
 {
 	avl_index_t where;
 
-	/*
-	 * This is unfortunate.  We want to call panic() here, even for
-	 * non-DEBUG kernels.  In userland, however, we can't depend on anything
-	 * in libc or else the rtld build process gets confused.  So, all we can
-	 * do in userland is resort to a normal ASSERT().
-	 */
 	if (avl_find(tree, new_node, &where) != NULL)
-#ifdef _KERNEL
-		panic("avl_find() succeeded inside avl_add()");
-#else
-		ASSERT(0);
-#endif
+		assert(0);
 	avl_insert(tree, new_node, where);
 }
 
@@ -684,7 +674,7 @@ avl_remove(avl_tree_t *tree, void *data)
 	int which_child;
 	size_t off = tree->avl_offset;
 
-	ASSERT(tree);
+	assert(tree);
 
 	delete = AVL_DATA2NODE(data, off);
 
@@ -751,7 +741,7 @@ avl_remove(avl_tree_t *tree, void *data)
 	 * Here we know "delete" is at least partially a leaf node. It can
 	 * be easily removed from the tree.
 	 */
-	ASSERT(tree->avl_numnodes > 0);
+	assert(tree->avl_numnodes > 0);
 	--tree->avl_numnodes;
 	parent = AVL_XPARENT(delete);
 	which_child = AVL_XCHILD(delete);
@@ -820,12 +810,12 @@ avl_remove(avl_tree_t *tree, void *data)
 	avl_remove((tree), (obj));	\
 	avl_add((tree), (obj))
 
-boolean_t
+bool
 avl_update_lt(avl_tree_t *t, void *obj)
 {
 	void *neighbor;
 
-	ASSERT(((neighbor = AVL_NEXT(t, obj)) == NULL) ||
+	assert(((neighbor = AVL_NEXT(t, obj)) == NULL) ||
 	    (t->avl_compar(obj, neighbor) <= 0));
 
 	neighbor = AVL_PREV(t, obj);
@@ -837,12 +827,12 @@ avl_update_lt(avl_tree_t *t, void *obj)
 	return (0);
 }
 
-boolean_t
+bool
 avl_update_gt(avl_tree_t *t, void *obj)
 {
 	void *neighbor;
 
-	ASSERT(((neighbor = AVL_PREV(t, obj)) == NULL) ||
+	assert(((neighbor = AVL_PREV(t, obj)) == NULL) ||
 	    (t->avl_compar(obj, neighbor) >= 0));
 
 	neighbor = AVL_NEXT(t, obj);
@@ -854,7 +844,7 @@ avl_update_gt(avl_tree_t *t, void *obj)
 	return (0);
 }
 
-boolean_t
+bool
 avl_update(avl_tree_t *t, void *obj)
 {
 	void *neighbor;
@@ -878,11 +868,11 @@ void
 avl_swap(avl_tree_t *tree1, avl_tree_t *tree2)
 {
 	avl_node_t *temp_node;
-	ulong_t temp_numnodes;
+	unsigned long temp_numnodes;
 
-	ASSERT3P(tree1->avl_compar, ==, tree2->avl_compar);
-	ASSERT3U(tree1->avl_offset, ==, tree2->avl_offset);
-	ASSERT3U(tree1->avl_size, ==, tree2->avl_size);
+	assert(tree1->avl_compar == tree2->avl_compar);
+	assert(tree1->avl_offset == tree2->avl_offset);
+	assert(tree1->avl_size == tree2->avl_size);
 
 	temp_node = tree1->avl_root;
 	temp_numnodes = tree1->avl_numnodes;
@@ -899,12 +889,12 @@ void
 avl_create(avl_tree_t *tree, int (*compar) (const void *, const void *),
     size_t size, size_t offset)
 {
-	ASSERT(tree);
-	ASSERT(compar);
-	ASSERT(size > 0);
-	ASSERT(size >= offset + sizeof (avl_node_t));
+	assert(tree);
+	assert(compar);
+	assert(size > 0);
+	assert(size >= offset + sizeof (avl_node_t));
 #ifdef _LP64
-	ASSERT((offset & 0x7) == 0);
+	assert((offset & 0x7) == 0);
 #endif
 
 	tree->avl_compar = compar;
@@ -921,26 +911,26 @@ avl_create(avl_tree_t *tree, int (*compar) (const void *, const void *),
 void
 avl_destroy(avl_tree_t *tree)
 {
-	ASSERT(tree);
-	ASSERT(tree->avl_numnodes == 0);
-	ASSERT(tree->avl_root == NULL);
+	assert(tree);
+	assert(tree->avl_numnodes == 0);
+	assert(tree->avl_root == NULL);
 }
 
 
 /*
  * Return the number of nodes in an AVL tree.
  */
-ulong_t
+unsigned long
 avl_numnodes(avl_tree_t *tree)
 {
-	ASSERT(tree);
+	assert(tree);
 	return (tree->avl_numnodes);
 }
 
-boolean_t
+bool
 avl_is_empty(avl_tree_t *tree)
 {
-	ASSERT(tree);
+	assert(tree);
 	return (tree->avl_numnodes == 0);
 }
 
@@ -999,7 +989,7 @@ avl_destroy_nodes(avl_tree_t *tree, void **cookie)
 	parent = (avl_node_t *)((uintptr_t)(*cookie) & ~CHILDBIT);
 	if (parent == NULL) {
 		if (tree->avl_root != NULL) {
-			ASSERT(tree->avl_numnodes == 1);
+			assert(tree->avl_numnodes == 1);
 			tree->avl_root = NULL;
 			tree->avl_numnodes = 0;
 		}
@@ -1011,7 +1001,7 @@ avl_destroy_nodes(avl_tree_t *tree, void **cookie)
 	 */
 	child = (uintptr_t)(*cookie) & CHILDBIT;
 	parent->avl_child[child] = NULL;
-	ASSERT(tree->avl_numnodes > 1);
+	assert(tree->avl_numnodes > 1);
 	--tree->avl_numnodes;
 
 	/*
@@ -1038,19 +1028,19 @@ avl_destroy_nodes(avl_tree_t *tree, void **cookie)
 	 */
 check_right_side:
 	if (node->avl_child[1] != NULL) {
-		ASSERT(AVL_XBALANCE(node) == 1);
+		assert(AVL_XBALANCE(node) == 1);
 		parent = node;
 		node = node->avl_child[1];
-		ASSERT(node->avl_child[0] == NULL &&
+		assert(node->avl_child[0] == NULL &&
 		    node->avl_child[1] == NULL);
 	} else {
-		ASSERT(AVL_XBALANCE(node) <= 0);
+		assert(AVL_XBALANCE(node) <= 0);
 	}
 
 done:
 	if (parent == NULL) {
 		*cookie = (void *)CHILDBIT;
-		ASSERT(node == tree->avl_root);
+		assert(node == tree->avl_root);
 	} else {
 		*cookie = (void *)((uintptr_t)parent | AVL_XCHILD(node));
 	}

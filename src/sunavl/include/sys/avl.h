@@ -39,6 +39,7 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
 #include <sys/types.h>
 #include <sys/avl_impl.h>
 
@@ -259,9 +260,9 @@ extern void avl_remove(avl_tree_t *tree, void *node);
  * avl_update_gt() only if you know the direction in which the order of the
  * node may change.
  */
-extern boolean_t avl_update(avl_tree_t *, void *);
-extern boolean_t avl_update_lt(avl_tree_t *, void *);
-extern boolean_t avl_update_gt(avl_tree_t *, void *);
+extern bool avl_update(avl_tree_t *, void *);
+extern bool avl_update_lt(avl_tree_t *, void *);
+extern bool avl_update_gt(avl_tree_t *, void *);
 
 /*
  * Swaps the contents of the two trees.
@@ -271,12 +272,12 @@ extern void avl_swap(avl_tree_t *tree1, avl_tree_t *tree2);
 /*
  * Return the number of nodes in the tree
  */
-extern ulong_t avl_numnodes(avl_tree_t *tree);
+extern unsigned long avl_numnodes(avl_tree_t *tree);
 
 /*
  * Return B_TRUE if there are zero nodes in the tree, B_FALSE otherwise.
  */
-extern boolean_t avl_is_empty(avl_tree_t *tree);
+extern bool avl_is_empty(avl_tree_t *tree);
 
 /*
  * Used to destroy any remaining nodes in a tree. The cookie argument should
