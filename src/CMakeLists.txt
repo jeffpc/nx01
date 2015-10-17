@@ -56,6 +56,7 @@ set(TASKQ_LIBRARY suntaskq)
 #
 set(BASE_LIBS
 	${UMEM_LIBRARY}
+	pthread
 )
 
 include_directories(
