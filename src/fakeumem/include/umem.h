@@ -51,4 +51,8 @@ extern void umem_cache_destroy(umem_cache_t *cache);
 extern void *umem_cache_alloc(umem_cache_t *cache, int flags);
 extern void umem_cache_free(umem_cache_t *cache, void *buf);
 
+extern void *umem_alloc(size_t size, int flags);
+extern void *umem_zalloc(size_t size, int flags);
+extern void umem_free(void *buf, size_t size);
+
 #endif

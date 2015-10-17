@@ -21,6 +21,7 @@
  */
 
 #include <errno.h>
+#include <string.h>
 
 #include <umem.h>
 
@@ -57,6 +58,39 @@ void *umem_cache_alloc(umem_cache_t *cache, int flags)
 }
 
 void umem_cache_free(umem_cache_t *cache, void *buf)
+{
+	free(buf);
+}
+
+void *umem_alloc(size_t size, int flags)
+{
+	void *tmp;
+
+	/*
+	 * Yes, this is terrible busy wait loop if we're short on memory.
+	 * Alas, it should work well enough for now.
+	 */
+	do {
+		tmp = malloc(size);
+		if (tmp)
+			return tmp;
+	} while (flags & UMEM_NOFAIL);
+
+	return NULL;
+}
+
+void *umem_zalloc(size_t size, int flags)
+{
+	void *tmp;
+
+	tmp = umem_alloc(size, flags);
+	if (tmp)
+		memset(tmp, 0, size);
+
+	return tmp;
+}
+
+void umem_free(void *buf, size_t size)
 {
 	free(buf);
 }
