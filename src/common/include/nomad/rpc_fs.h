@@ -20,44 +20,9 @@
  * SOFTWARE.
  */
 
-#include <nomad/types.h>
+#ifndef __NOMAD_RPC_FS_H
+#define __NOMAD_RPC_FS_H
 
-int noid_cmp(const struct noid *n1, const struct noid *n2)
-{
-	if (n1->ds < n2->ds)
-		return -1;
-	if (n1->ds > n2->ds)
-		return 1;
+#include <nomad/rpc_fs_xdr.h>
 
-	if (n1->uniq < n2->uniq)
-		return -1;
-	if (n1->uniq > n2->uniq)
-		return 1;
-
-	return 0;
-}
-
-void noid_set(struct noid *oid, uint32_t ds, uint64_t uniq)
-{
-	oid->ds = ds;
-	oid->uniq = uniq;
-	oid->_reserved = 0;
-}
-
-bool_t xdr_noid(XDR *xdrs, struct noid *oid)
-{
-	if (!xdr_uint32_t(xdrs, &oid->ds))
-		return FALSE;
-	if (!xdr_uint64_t(xdrs, &oid->uniq))
-		return FALSE;
-	return TRUE;
-}
-
-bool_t xdr_nobjhndl(XDR *xdrs, struct nobjhndl *hndl)
-{
-	if (!xdr_noid(xdrs, &hndl->oid))
-		return FALSE;
-	if (!xdr_nvclock(xdrs, hndl->clock))
-		return FALSE;
-	return TRUE;
-}
+#endif
