@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <nomad/error.h>
 #include <nomad/types.h>
 #include <nomad/objstore.h>
 #include <nomad/connsvc.h>
@@ -49,19 +50,36 @@ int main(int argc, char **argv)
 	 * generated randomly.
 	 */
 	nomad_set_local_node_id(0xabba);
-	ret = objstore_init();
 
-	fprintf(stderr, "objstore_init() = %d\n", ret);
+	ret = objstore_init();
+	if (ret) {
+		fprintf(stderr, "objstore_init() = %d (%s)\n", ret,
+			strerror(ret));
+
+		if (ret == ENOENT)
+			fprintf(stderr, "Did you set LD_LIBRARY_PATH?\n");
+
+		goto err;
+	}
 
 	store = objstore_store_create("abc", OS_MODE_STORE);
-
 	fprintf(stderr, "store = %p\n", store);
+
+	if (IS_ERR(store)) {
+		ret = PTR_ERR(store);
+		fprintf(stderr, "error: %s\n", strerror(ret));
+		goto err_objstore;
+	}
 
 	ret = connsvc(NULL, CLIENT_DAEMON_PORT, process_connection, store);
 
-	fprintf(stderr, "connsvc() = %d\n", ret);
+	fprintf(stderr, "connsvc() = %d (%s)\n", ret, strerror(ret));
 
-	abort();
+	/* XXX: undo objstore_store_create() */
 
-	return 0;
+err_objstore:
+	/* XXX: undo objstore_init() */
+
+err:
+	return ret;
 }
