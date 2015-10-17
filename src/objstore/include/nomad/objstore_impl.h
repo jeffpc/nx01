@@ -60,6 +60,8 @@ struct objstore_vol_def {
 	const struct obj_ops *obj_ops;
 };
 
+/* internal volume group management helpers */
 extern int objstore_vg_init(void);
+extern void objstore_vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
 
 #endif

@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 		goto err_init;
 	}
 
-	vol = objstore_vol_create("abc", OS_MODE_STORE);
+	vol = objstore_vol_create(vg, "fauxpath", OS_MODE_STORE);
 	fprintf(stderr, "vol = %p\n", vol);
 
 	if (IS_ERR(vol)) {
