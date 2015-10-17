@@ -31,6 +31,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-inline-small-functions")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-inline-functions-called-once")
 
 set(CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/build")
 
 include(cmake/config.cmake)
 include(cmake/rpcgen.cmake)
