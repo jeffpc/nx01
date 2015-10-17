@@ -101,7 +101,7 @@ static void handle_signals(void)
 static int bind_sock(struct state *state, int family, struct sockaddr *addr,
 		     int addrlen)
 {
-	int on = 1;
+	const int on = 1;
 	int ret;
 	int fd;
 
