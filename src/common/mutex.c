@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <nomad/config.h>
 #include <nomad/error.h>
 #include <nomad/mutex.h>
 
@@ -89,7 +90,11 @@ int condreltimedwait(pthread_cond_t *c, pthread_mutex_t *m,
 {
 	int ret;
 
+#ifdef HAVE_PTHREAD_COND_RELTIMEDWAIT_NP
 	ret = pthread_cond_reltimedwait_np(c, m, reltime);
+#else
+#error need a relative timed condition wait
+#endif
 
 	if ((ret != 0) || (ret != ETIMEDOUT))
 		VERIFY(0);
