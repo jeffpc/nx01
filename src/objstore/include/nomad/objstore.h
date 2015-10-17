@@ -23,6 +23,8 @@
 #ifndef __NOMAD_OBJSTORE_H
 #define __NOMAD_OBJSTORE_H
 
+#include <sys/list.h>
+
 #include <nomad/types.h>
 
 enum objstore_mode {
@@ -30,9 +32,19 @@ enum objstore_mode {
 	OS_MODE_STORE,
 };
 
+struct objstore {
+	list_node_t vgs;
+
+	const char *name;
+	list_t vols;		/* list of volumes */
+};
+
 struct objstore_vol_def;
 
 struct objstore_vol {
+	list_node_t vg_list;
+	struct objstore *vg;
+
 	const struct objstore_vol_def *def;
 
 	struct nuuid uuid;
@@ -43,6 +55,9 @@ struct objstore_vol {
 };
 
 extern int objstore_init(void);
+
+/* volume group management */
+extern struct objstore *objstore_vg_create(const char *name);
 
 /* volume management */
 extern struct objstore_vol *objstore_vol_create(const char *path,
