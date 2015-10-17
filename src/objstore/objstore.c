@@ -77,7 +77,8 @@ int objstore_init(void)
 	return 0;
 }
 
-struct objstore_vol *objstore_vol_create(const char *path, enum objstore_mode mode)
+struct objstore_vol *objstore_vol_create(struct objstore *vg, const char *path,
+					 enum objstore_mode mode)
 {
 	struct objstore_vol *s;
 	int ret;
@@ -101,6 +102,8 @@ struct objstore_vol *objstore_vol_create(const char *path, enum objstore_mode mo
 	if (ret)
 		goto err_path;
 
+	objstore_vg_add_vol(vg, s);
+
 	return s;
 
 err_path:
@@ -112,7 +115,8 @@ err:
 	return ERR_PTR(ret);
 }
 
-struct objstore_vol *objstore_vol_load(struct nuuid *uuid, const char *path)
+struct objstore_vol *objstore_vol_load(struct objstore *vg, struct nuuid *uuid,
+				       const char *path)
 {
 	return ERR_PTR(ENOTSUP);
 }

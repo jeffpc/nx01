@@ -23,7 +23,6 @@
 #include <stddef.h>
 
 #include <nomad/error.h>
-#include <nomad/mutex.h>
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
@@ -63,9 +62,18 @@ struct objstore *objstore_vg_create(const char *name)
 	list_create(&vg->vols, sizeof(struct objstore_vol),
 		    offsetof(struct objstore_vol, vg_list));
 
+	mxinit(&vg->lock);
+
 	mxlock(&vgs_lock);
 	list_insert_tail(&vgs, vg);
 	mxunlock(&vgs_lock);
 
 	return vg;
+}
+
+void objstore_vg_add_vol(struct objstore *vg, struct objstore_vol *vol)
+{
+	mxlock(&vg->lock);
+	list_insert_tail(&vg->vols, vol);
+	mxunlock(&vg->lock);
 }

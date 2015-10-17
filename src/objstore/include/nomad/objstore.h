@@ -26,6 +26,7 @@
 #include <sys/list.h>
 
 #include <nomad/types.h>
+#include <nomad/mutex.h>
 
 enum objstore_mode {
 	OS_MODE_CACHE,
@@ -35,6 +36,7 @@ enum objstore_mode {
 struct objstore {
 	list_node_t node;
 
+	pthread_mutex_t lock;
 	const char *name;
 	list_t vols;		/* list of volumes */
 };
@@ -60,9 +62,11 @@ extern int objstore_init(void);
 extern struct objstore *objstore_vg_create(const char *name);
 
 /* volume management */
-extern struct objstore_vol *objstore_vol_create(const char *path,
+extern struct objstore_vol *objstore_vol_create(struct objstore *vg,
+						const char *path,
 						enum objstore_mode mode);
-extern struct objstore_vol *objstore_vol_load(struct nuuid *uuid,
+extern struct objstore_vol *objstore_vol_load(struct objstore *vg,
+					      struct nuuid *uuid,
 					      const char *path);
 
 /* volume operations */
