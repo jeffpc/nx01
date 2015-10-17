@@ -20,6 +20,8 @@
 # SOFTWARE.
 #
 
+rpcgen(rpc_fs)
+
 add_library(nomad_common SHARED
 	assfail.c
 	connsvc.c
@@ -29,6 +31,8 @@ add_library(nomad_common SHARED
 	rand.c
 	uuid.c
 	vclock.c
+
+	rpc_fs_xdr.c
 )
 
 target_link_libraries(nomad_common
