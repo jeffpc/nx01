@@ -47,7 +47,8 @@ struct obj_ops {
 	int (*commit)();	/* make temp object live */
 	int (*abort)();		/* delete temp object */
 
-	int (*getattr)();	/* get attributes for object */
+	int (*getattr)(struct objstore *store, const struct nobjhndl *hndl,
+		       struct nattr *attr);
 	int (*setattr)();	/* set attributes of an object */
 	ssize_t (*read)();	/* read portion of an object */
 	ssize_t (*write)();	/* write portion of an object */

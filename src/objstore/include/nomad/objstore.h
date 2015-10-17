@@ -50,4 +50,9 @@ extern struct objstore *objstore_store_load(struct nuuid *uuid, const char *path
 /* store operations */
 extern int objstore_getroot(struct objstore *store, struct nobjhndl *hndl);
 
+/* object operations */
+extern int objstore_obj_getattr(struct objstore *store,
+				const struct nobjhndl *hndl,
+				struct nattr *attr);
+
 #endif

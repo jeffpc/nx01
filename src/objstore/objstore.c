@@ -123,3 +123,15 @@ int objstore_getroot(struct objstore *store, struct nobjhndl *hndl)
 
 	return store->def->store_ops->getroot(store, hndl);
 }
+
+int objstore_obj_getattr(struct objstore *store, const struct nobjhndl *hndl,
+			 struct nattr *attr)
+{
+	if (!hndl || !hndl->clock)
+		return EINVAL;
+
+	if (!store || !store->def->obj_ops || !store->def->obj_ops->getattr)
+		return EINVAL;
+
+	return store->def->obj_ops->getattr(store, hndl, attr);
+}
