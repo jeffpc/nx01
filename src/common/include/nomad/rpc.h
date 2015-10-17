@@ -23,10 +23,14 @@
 #ifndef __NOMAD_RPC_H
 #define __NOMAD_RPC_H
 
+#include <rpc/rpc.h>
+
 /* RPC error codes */
 #define NERR_UNKNOWN_ERROR     -1
 #define NERR_SUCCESS           0
 #define NERR_ENOENT            2
 #define NERR_EEXIST            17
+
+extern void xdrfd_create(XDR *xdr, int fd, enum xdr_op op);
 
 #endif

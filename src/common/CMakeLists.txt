@@ -31,6 +31,7 @@ add_library(nomad_common SHARED
 	rand.c
 	uuid.c
 	vclock.c
+	xdrfd.c
 
 	rpc_fs_xdr.c
 )
