@@ -24,5 +24,13 @@
 #define __NOMAD_RPC_FS_H
 
 #include <nomad/rpc_fs_xdr.h>
+#include <nomad/rpc.h>
+
+#define NRPC_NOP	0x0000
+#define NRPC_LOGIN	0x0001
+#define NRPC_STAT	0x0002
+#define NRPC_LOOKUP	0x0003
+#define NRPC_CREATE	0x0004
+#define NRPC_REMOVE	0x0005
 
 #endif
