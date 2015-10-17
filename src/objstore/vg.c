@@ -20,46 +20,52 @@
  * SOFTWARE.
  */
 
-#ifndef __NOMAD_OBJSTORE_IMPL_H
-#define __NOMAD_OBJSTORE_IMPL_H
+#include <stddef.h>
 
+#include <nomad/error.h>
+#include <nomad/mutex.h>
 #include <nomad/objstore.h>
+#include <nomad/objstore_impl.h>
 
-struct vol_ops {
-	int (*create)(struct objstore_vol *store);
-	int (*load)(struct objstore_vol *store);
-	int (*getroot)(struct objstore_vol *store, struct nobjhndl *hndl);
-};
+static pthread_mutex_t vgs_lock;
+static list_t vgs;
 
-struct obj_ops {
-	int (*getversions)();
+int objstore_vg_init(void)
+{
+	struct objstore *filecache;
 
-	/* open objects must be closed */
-	int (*open)();		/* open an object */
-	int (*close)();		/* close an object */
+	mxinit(&vgs_lock);
 
-	/* created/cloned objects must be committed/aborted */
-	int (*create)();	/* create a new temp object */
-	int (*clone)();		/*
-				 * create a new temp obj as a copy of
-				 * existing obj
-				 */
-	int (*commit)();	/* make temp object live */
-	int (*abort)();		/* delete temp object */
+	list_create(&vgs, sizeof(struct objstore),
+		    offsetof(struct objstore, node));
 
-	int (*getattr)(struct objstore_vol *store, const struct nobjhndl *hndl,
-		       struct nattr *attr);
-	int (*setattr)();	/* set attributes of an object */
-	ssize_t (*read)();	/* read portion of an object */
-	ssize_t (*write)();	/* write portion of an object */
-};
+	filecache = objstore_vg_create("file$");
+	if (IS_ERR(filecache))
+		return PTR_ERR(filecache);
 
-struct objstore_vol_def {
-	const char *name;
-	const struct vol_ops *vol_ops;
-	const struct obj_ops *obj_ops;
-};
+	return 0;
+}
 
-extern int objstore_vg_init(void);
+struct objstore *objstore_vg_create(const char *name)
+{
+	struct objstore *vg;
 
-#endif
+	vg = malloc(sizeof(struct objstore));
+	if (!vg)
+		return ERR_PTR(ENOMEM);
+
+	vg->name = strdup(name);
+	if (!vg->name) {
+		free(vg);
+		return ERR_PTR(ENOMEM);
+	}
+
+	list_create(&vg->vols, sizeof(struct objstore_vol),
+		    offsetof(struct objstore_vol, vg_list));
+
+	mxlock(&vgs_lock);
+	list_insert_tail(&vgs, vg);
+	mxunlock(&vgs_lock);
+
+	return vg;
+}

@@ -64,6 +64,10 @@ int objstore_init(void)
 {
 	int ret;
 
+	ret = objstore_vg_init();
+	if (ret)
+		return ret;
+
 	ret = load_backend(&mem_backend, "mem");
 	if (ret)
 		return ret;
