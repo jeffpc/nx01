@@ -104,7 +104,7 @@ err:
 	return ERR_PTR(ret);
 }
 
-static int mem_store_create(struct objstore *store)
+static int mem_vol_create(struct objstore_vol *store)
 {
 	struct memstore *ms;
 	struct memobj *obj;
@@ -135,7 +135,7 @@ static int mem_store_create(struct objstore *store)
 	return 0;
 }
 
-static int mem_store_getroot(struct objstore *store, struct nobjhndl *hndl)
+static int mem_vol_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
 {
 	struct memstore *ms;
 
@@ -153,16 +153,16 @@ static int mem_store_getroot(struct objstore *store, struct nobjhndl *hndl)
 	return 0;
 }
 
-static const struct objstore_ops store_ops = {
-	.create = mem_store_create,
-	.getroot = mem_store_getroot,
+static const struct vol_ops vol_ops = {
+	.create = mem_vol_create,
+	.getroot = mem_vol_getroot,
 };
 
 static const struct obj_ops obj_ops = {
 };
 
-const struct objstore_def objstore = {
+const struct objstore_vol_def objvol = {
 	.name = "mem",
-	.store_ops = &store_ops,
+	.vol_ops = &vol_ops,
 	.obj_ops = &obj_ops,
 };

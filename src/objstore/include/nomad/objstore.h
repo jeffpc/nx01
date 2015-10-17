@@ -30,10 +30,10 @@ enum objstore_mode {
 	OS_MODE_STORE,
 };
 
-struct objstore_def;
+struct objstore_vol_def;
 
-struct objstore {
-	const struct objstore_def *def;
+struct objstore_vol {
+	const struct objstore_vol_def *def;
 
 	struct nuuid uuid;
 	const char *path;
@@ -43,15 +43,18 @@ struct objstore {
 };
 
 extern int objstore_init(void);
-extern struct objstore *objstore_store_create(const char *path,
-					      enum objstore_mode mode);
-extern struct objstore *objstore_store_load(struct nuuid *uuid, const char *path);
 
-/* store operations */
-extern int objstore_getroot(struct objstore *store, struct nobjhndl *hndl);
+/* volume management */
+extern struct objstore_vol *objstore_vol_create(const char *path,
+						enum objstore_mode mode);
+extern struct objstore_vol *objstore_vol_load(struct nuuid *uuid,
+					      const char *path);
+
+/* volume operations */
+extern int objstore_getroot(struct objstore_vol *store, struct nobjhndl *hndl);
 
 /* object operations */
-extern int objstore_obj_getattr(struct objstore *store,
+extern int objstore_obj_getattr(struct objstore_vol *store,
 				const struct nobjhndl *hndl,
 				struct nattr *attr);
 

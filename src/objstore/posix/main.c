@@ -23,14 +23,14 @@
 #include <nomad/error.h>
 #include <nomad/objstore_impl.h>
 
-static const struct objstore_ops store_ops = {
+static const struct vol_ops vol_ops = {
 };
 
 static const struct obj_ops obj_ops = {
 };
 
-const struct objstore_def objstore = {
+const struct objstore_vol_def objvol = {
 	.name = "posix",
-	.store_ops = &store_ops,
+	.vol_ops = &vol_ops,
 	.obj_ops = &obj_ops,
 };

@@ -25,10 +25,10 @@
 
 #include <nomad/objstore.h>
 
-struct objstore_ops {
-	int (*create)(struct objstore *store);
-	int (*load)(struct objstore *store);
-	int (*getroot)(struct objstore *store, struct nobjhndl *hndl);
+struct vol_ops {
+	int (*create)(struct objstore_vol *store);
+	int (*load)(struct objstore_vol *store);
+	int (*getroot)(struct objstore_vol *store, struct nobjhndl *hndl);
 };
 
 struct obj_ops {
@@ -47,16 +47,16 @@ struct obj_ops {
 	int (*commit)();	/* make temp object live */
 	int (*abort)();		/* delete temp object */
 
-	int (*getattr)(struct objstore *store, const struct nobjhndl *hndl,
+	int (*getattr)(struct objstore_vol *store, const struct nobjhndl *hndl,
 		       struct nattr *attr);
 	int (*setattr)();	/* set attributes of an object */
 	ssize_t (*read)();	/* read portion of an object */
 	ssize_t (*write)();	/* write portion of an object */
 };
 
-struct objstore_def {
+struct objstore_vol_def {
 	const char *name;
-	const struct objstore_ops *store_ops;
+	const struct vol_ops *vol_ops;
 	const struct obj_ops *obj_ops;
 };
 
