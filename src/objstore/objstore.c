@@ -112,3 +112,14 @@ struct objstore *objstore_store_load(struct nuuid *uuid, const char *path)
 {
 	return ERR_PTR(ENOTSUP);
 }
+
+int objstore_getroot(struct objstore *store, struct nobjhndl *hndl)
+{
+	if (!hndl)
+		return EINVAL;
+
+	if (!store || !store->def->store_ops || !store->def->store_ops->getroot)
+		return EINVAL;
+
+	return store->def->store_ops->getroot(store, hndl);
+}

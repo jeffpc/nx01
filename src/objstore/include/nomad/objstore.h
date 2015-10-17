@@ -47,4 +47,7 @@ extern struct objstore *objstore_store_create(const char *path,
 					      enum objstore_mode mode);
 extern struct objstore *objstore_store_load(struct nuuid *uuid, const char *path);
 
+/* store operations */
+extern int objstore_getroot(struct objstore *store, struct nobjhndl *hndl);
+
 #endif
