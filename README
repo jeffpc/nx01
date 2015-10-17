@@ -19,7 +19,7 @@ $ cmake . -DCMAKE_INSTALL_PREFIX=/prefix
 $ make
 $ make install
 
-This will build and install the binaries and libraries under the specficied
+This will build and install the binaries and libraries under the specified
 prefix.
 
 
