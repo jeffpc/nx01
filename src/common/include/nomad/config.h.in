@@ -24,5 +24,6 @@
 #define __NOMAD_CONFIG_H
 
 #cmakedefine HAVE_ARC4RANDOM 1
+#cmakedefine HAVE_PTHREAD_COND_RELTIMEDWAIT_NP 1
 
 #endif

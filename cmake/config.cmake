@@ -23,6 +23,7 @@
 include(CheckFunctionExists)
 
 check_function_exists(arc4random HAVE_ARC4RANDOM)
+check_function_exists(pthread_cond_reltimedwait_np HAVE_PTHREAD_COND_RELTIMEDWAIT_NP)
 
 set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")
 find_package(umem)
