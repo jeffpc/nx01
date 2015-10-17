@@ -23,17 +23,31 @@
 #ifndef __NOMAD_OBJSTORE_H
 #define __NOMAD_OBJSTORE_H
 
+#include <sys/list.h>
+
 #include <nomad/types.h>
+#include <nomad/mutex.h>
 
 enum objstore_mode {
 	OS_MODE_CACHE,
 	OS_MODE_STORE,
 };
 
-struct objstore_def;
-
 struct objstore {
-	const struct objstore_def *def;
+	list_node_t vgs;
+
+	pthread_mutex_t lock;
+	const char *name;
+	list_t vols;		/* list of volumes */
+};
+
+struct objstore_vol_def;
+
+struct objstore_vol {
+	list_node_t vg_list;
+	struct objstore *vg;
+
+	const struct objstore_vol_def *def;
 
 	struct nuuid uuid;
 	const char *path;
@@ -43,15 +57,23 @@ struct objstore {
 };
 
 extern int objstore_init(void);
-extern struct objstore *objstore_store_create(const char *path,
-					      enum objstore_mode mode);
-extern struct objstore *objstore_store_load(struct nuuid *uuid, const char *path);
 
-/* store operations */
-extern int objstore_getroot(struct objstore *store, struct nobjhndl *hndl);
+/* volume group management */
+extern struct objstore *objstore_vg_create(const char *name);
+
+/* volume management */
+extern struct objstore_vol *objstore_vol_create(struct objstore *vg,
+						const char *path,
+						enum objstore_mode mode);
+extern struct objstore_vol *objstore_vol_load(struct objstore *vg,
+					      struct nuuid *uuid,
+					      const char *path);
+
+/* volume operations */
+extern int objstore_getroot(struct objstore_vol *store, struct nobjhndl *hndl);
 
 /* object operations */
-extern int objstore_obj_getattr(struct objstore *store,
+extern int objstore_obj_getattr(struct objstore_vol *store,
 				const struct nobjhndl *hndl,
 				struct nattr *attr);
 

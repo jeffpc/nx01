@@ -22,10 +22,12 @@
 
 add_library(nomad_objstore SHARED
 	objstore.c
+	vg.c
 )
 
 target_link_libraries(nomad_objstore
 	${BASE_LIBS}
+	${LIST_LIBRARY}
 	dl
 )
 

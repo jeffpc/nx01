@@ -40,7 +40,8 @@ static void process_connection(int fd, void *arg)
 
 int main(int argc, char **argv)
 {
-	struct objstore *store;
+	struct objstore *vg;
+	struct objstore_vol *vol;
 	int ret;
 
 	/*
@@ -62,22 +63,34 @@ int main(int argc, char **argv)
 		goto err;
 	}
 
-	store = objstore_store_create("abc", OS_MODE_STORE);
-	fprintf(stderr, "store = %p\n", store);
+	vg = objstore_vg_create("myfiles");
+	fprintf(stderr, "vg = %p\n", vg);
 
-	if (IS_ERR(store)) {
-		ret = PTR_ERR(store);
+	if (IS_ERR(vg)) {
+		ret = PTR_ERR(vg);
 		fprintf(stderr, "error: %s\n", strerror(ret));
-		goto err_objstore;
+		goto err_init;
 	}
 
-	ret = connsvc(NULL, CLIENT_DAEMON_PORT, process_connection, store);
+	vol = objstore_vol_create(vg, "fauxpath", OS_MODE_STORE);
+	fprintf(stderr, "vol = %p\n", vol);
+
+	if (IS_ERR(vol)) {
+		ret = PTR_ERR(vol);
+		fprintf(stderr, "error: %s\n", strerror(ret));
+		goto err_vg;
+	}
+
+	ret = connsvc(NULL, CLIENT_DAEMON_PORT, process_connection, vg);
 
 	fprintf(stderr, "connsvc() = %d (%s)\n", ret, strerror(ret));
 
-	/* XXX: undo objstore_store_create() */
+	/* XXX: undo objstore_vol_create() */
 
-err_objstore:
+err_vg:
+	/* XXX: undo objstore_vg_create() */
+
+err_init:
 	/* XXX: undo objstore_init() */
 
 err:

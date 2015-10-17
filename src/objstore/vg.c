@@ -20,17 +20,60 @@
  * SOFTWARE.
  */
 
+#include <stddef.h>
+
 #include <nomad/error.h>
+#include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-static const struct vol_ops vol_ops = {
-};
+static pthread_mutex_t vgs_lock;
+static list_t vgs;
 
-static const struct obj_ops obj_ops = {
-};
+int objstore_vg_init(void)
+{
+	struct objstore *filecache;
 
-const struct objstore_vol_def objvol = {
-	.name = "posix",
-	.vol_ops = &vol_ops,
-	.obj_ops = &obj_ops,
-};
+	mxinit(&vgs_lock);
+
+	list_create(&vgs, sizeof(struct objstore),
+		    offsetof(struct objstore, vgs));
+
+	filecache = objstore_vg_create("file$");
+	if (IS_ERR(filecache))
+		return PTR_ERR(filecache);
+
+	return 0;
+}
+
+struct objstore *objstore_vg_create(const char *name)
+{
+	struct objstore *vg;
+
+	vg = malloc(sizeof(struct objstore));
+	if (!vg)
+		return ERR_PTR(ENOMEM);
+
+	vg->name = strdup(name);
+	if (!vg->name) {
+		free(vg);
+		return ERR_PTR(ENOMEM);
+	}
+
+	list_create(&vg->vols, sizeof(struct objstore_vol),
+		    offsetof(struct objstore_vol, vg_list));
+
+	mxinit(&vg->lock);
+
+	mxlock(&vgs_lock);
+	list_insert_tail(&vgs, vg);
+	mxunlock(&vgs_lock);
+
+	return vg;
+}
+
+void objstore_vg_add_vol(struct objstore *vg, struct objstore_vol *vol)
+{
+	mxlock(&vg->lock);
+	list_insert_tail(&vg->vols, vol);
+	mxunlock(&vg->lock);
+}
