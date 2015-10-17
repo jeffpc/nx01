@@ -30,7 +30,7 @@
 #include <nomad/objstore_impl.h>
 
 struct backend {
-	const struct objstore_def *def;
+	const struct objstore_vol_def *def;
 	void *module;
 };
 
@@ -51,7 +51,7 @@ static int load_backend(struct backend *backend, const char *name)
 	if (!backend->module)
 		return ENOENT;
 
-	backend->def = dlsym(backend->module, "objstore");
+	backend->def = dlsym(backend->module, "objvol");
 	if (!backend->def) {
 		dlclose(backend->module);
 		return ENOENT;
@@ -73,15 +73,15 @@ int objstore_init(void)
 	return 0;
 }
 
-struct objstore *objstore_store_create(const char *path, enum objstore_mode mode)
+struct objstore_vol *objstore_vol_create(const char *path, enum objstore_mode mode)
 {
-	struct objstore *s;
+	struct objstore_vol *s;
 	int ret;
 
-	if (!backend->def->store_ops->create)
+	if (!backend->def->vol_ops->create)
 		return ERR_PTR(ENOTSUP);
 
-	s = malloc(sizeof(struct objstore));
+	s = malloc(sizeof(struct objstore_vol));
 	if (!s)
 		return ERR_PTR(ENOMEM);
 
@@ -93,7 +93,7 @@ struct objstore *objstore_store_create(const char *path, enum objstore_mode mode
 		goto err;
 	}
 
-	ret = s->def->store_ops->create(s);
+	ret = s->def->vol_ops->create(s);
 	if (ret)
 		goto err_path;
 
@@ -108,23 +108,23 @@ err:
 	return ERR_PTR(ret);
 }
 
-struct objstore *objstore_store_load(struct nuuid *uuid, const char *path)
+struct objstore_vol *objstore_vol_load(struct nuuid *uuid, const char *path)
 {
 	return ERR_PTR(ENOTSUP);
 }
 
-int objstore_getroot(struct objstore *store, struct nobjhndl *hndl)
+int objstore_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
 {
 	if (!hndl)
 		return EINVAL;
 
-	if (!store || !store->def->store_ops || !store->def->store_ops->getroot)
+	if (!store || !store->def->vol_ops || !store->def->vol_ops->getroot)
 		return EINVAL;
 
-	return store->def->store_ops->getroot(store, hndl);
+	return store->def->vol_ops->getroot(store, hndl);
 }
 
-int objstore_obj_getattr(struct objstore *store, const struct nobjhndl *hndl,
+int objstore_obj_getattr(struct objstore_vol *store, const struct nobjhndl *hndl,
 			 struct nattr *attr)
 {
 	if (!hndl || !hndl->clock)

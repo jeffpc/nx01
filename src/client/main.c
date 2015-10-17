@@ -40,7 +40,7 @@ static void process_connection(int fd, void *arg)
 
 int main(int argc, char **argv)
 {
-	struct objstore *store;
+	struct objstore_vol *vol;
 	int ret;
 
 	/*
@@ -62,22 +62,22 @@ int main(int argc, char **argv)
 		goto err;
 	}
 
-	store = objstore_store_create("abc", OS_MODE_STORE);
-	fprintf(stderr, "store = %p\n", store);
+	vol = objstore_vol_create("abc", OS_MODE_STORE);
+	fprintf(stderr, "vol = %p\n", vol);
 
-	if (IS_ERR(store)) {
-		ret = PTR_ERR(store);
+	if (IS_ERR(vol)) {
+		ret = PTR_ERR(vol);
 		fprintf(stderr, "error: %s\n", strerror(ret));
-		goto err_objstore;
+		goto err_vol;
 	}
 
-	ret = connsvc(NULL, CLIENT_DAEMON_PORT, process_connection, store);
+	ret = connsvc(NULL, CLIENT_DAEMON_PORT, process_connection, vol);
 
 	fprintf(stderr, "connsvc() = %d (%s)\n", ret, strerror(ret));
 
-	/* XXX: undo objstore_store_create() */
+	/* XXX: undo objstore_vol_create() */
 
-err_objstore:
+err_vol:
 	/* XXX: undo objstore_init() */
 
 err:
