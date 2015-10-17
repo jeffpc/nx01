@@ -135,7 +135,7 @@ static int mem_store_create(struct objstore *store)
 	return 0;
 }
 
-static int mem_store_getroot(struct objstore *store, struct objhndl *hndl)
+static int mem_store_getroot(struct objstore *store, struct nobjhndl *hndl)
 {
 	struct memstore *ms;
 
@@ -144,7 +144,7 @@ static int mem_store_getroot(struct objstore *store, struct objhndl *hndl)
 
 	ms = store->private;
 
-	hndl->noid = ms->root->oid;
+	hndl->oid = ms->root->oid;
 	hndl->clock = nvclock_dup(ms->root->ver);
 
 	if (!hndl->clock)

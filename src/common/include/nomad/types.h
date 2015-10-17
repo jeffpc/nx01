@@ -41,6 +41,12 @@ struct noid {
 	uint64_t uniq;		/* dataset-local id */
 };
 
+/* object handle: a specific version of an object */
+struct nobjhndl {
+	struct noid oid;
+	struct nvclock *clock;
+};
+
 /* uuid */
 struct nuuid {
 	uint8_t raw[16];
