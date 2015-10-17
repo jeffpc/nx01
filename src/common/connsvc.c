@@ -147,7 +147,7 @@ static int start_listening(struct state *state, const char *host,
 	snprintf(strport, sizeof(strport), "%d", port);
 
 	if (getaddrinfo(host, strport, &hints, &res))
-		return -1;
+		return -1; /* XXX: should return errno */
 
 	for (p = res; p; p = p->ai_next) {
 		struct sockaddr_in *ipv4;
