@@ -26,19 +26,21 @@ import fuse
 
 fuse.fuse_python_api = (0, 2)
 
+
 class Nomad(fuse.Fuse):
-	def __init__(self, *args, **kw):
-		fuse.Fuse.__init__(self, *args, **kw)
+    def __init__(self, *args, **kw):
+        fuse.Fuse.__init__(self, *args, **kw)
 
-	def getattr(self, path):
-		return -errno.ENOSYS
+    def getattr(self, path):
+        return -errno.ENOSYS
 
-	def getdir(self, path):
-		return -errno.ENOSYS
+    def getdir(self, path):
+        return -errno.ENOSYS
+
 
 if __name__ == "__main__":
-	fs = Nomad()
-	fs.flags = 0
-	fs.multithreaded = 0
-	fs.parse(errex=1)
-	fs.main()
+    fs = Nomad()
+    fs.flags = 0
+    fs.multithreaded = 0
+    fs.parse(errex=1)
+    fs.main()
