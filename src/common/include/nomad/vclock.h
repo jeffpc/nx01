@@ -24,6 +24,7 @@
 #define __NOMAD_VCLOCK_H
 
 #include <stdint.h>
+#include <rpc/rpc.h>
 
 /* version vector */
 #define NVCLOCK_NUM_NODES	16 /* ought to be enough for everyone */
@@ -60,5 +61,7 @@ extern uint64_t nvclock_get(struct nvclock *clock);
 extern int nvclock_remove(struct nvclock *clock);
 extern int nvclock_set(struct nvclock *clock, uint64_t seq);
 extern int nvclock_inc(struct nvclock *clock);
+
+extern bool_t xdr_nvclock(XDR *xdrs, struct nvclock *clock);
 
 #endif
