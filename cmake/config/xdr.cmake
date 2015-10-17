@@ -20,22 +20,29 @@
 # SOFTWARE.
 #
 
-include(CheckFunctionExists)
-include(CheckCSourceCompiles)
+set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Werror")
 
-check_function_exists(arc4random HAVE_ARC4RANDOM)
-check_function_exists(pthread_cond_reltimedwait_np HAVE_PTHREAD_COND_RELTIMEDWAIT_NP)
-check_function_exists(assfail HAVE_ASSFAIL)
-check_function_exists(assfail3 HAVE_ASSFAIL3)
+macro(xdr_check var op args)
+	check_c_source_compiles("
+#include <rpc/rpc.h>
 
-include(cmake/config/xdr.cmake)
+static bool_t fxn(XDR *xdr, ${args})
+{
+	return FALSE;
+}
 
-set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")
-find_package(umem)
-find_package(avl)
-find_package(cmdutils)
+static const struct xdr_ops ops = {
+	.x_${op} = fxn,
+};
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/common/include/nomad/config.h.in"
-	"${CMAKE_CURRENT_BINARY_DIR}/src/common/include/nomad/config.h")
+int main()
+{
+	return 0;
+}
+" ${var})
+endmacro()
 
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/src/common/include")
+xdr_check(HAVE_XDR_GETBYTES_UINT_ARG "getbytes" "caddr_t addr, u_int len")
+xdr_check(HAVE_XDR_PUTBYTES_CONST_CHAR_ARG "putbytes" "const char *addr, u_int len")
+xdr_check(HAVE_XDR_PUTINT32_CONST_ARG "putint32" "const int32_t *ptr")
+xdr_check(HAVE_XDR_PUTLONG_CONST_ARG "putlong" "const long *ptr")

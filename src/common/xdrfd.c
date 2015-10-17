@@ -22,6 +22,7 @@
 
 #include <unistd.h>
 
+#include <nomad/config.h>
 #include <nomad/error.h>
 #include <nomad/rpc.h>
 
@@ -54,7 +55,7 @@ static ssize_t safe_read(int fd, void *buf, size_t nbyte)
 	return total;
 }
 
-static ssize_t safe_write(int fd, void *buf, size_t nbyte)
+static ssize_t safe_write(int fd, const void *buf, size_t nbyte)
 {
 	const char *ptr = buf;
 	size_t total;
@@ -78,7 +79,11 @@ static ssize_t safe_write(int fd, void *buf, size_t nbyte)
 	return total;
 }
 
+#ifdef HAVE_XDR_GETBYTES_UINT_ARG
+static bool_t xdrfd_getbytes(XDR *xdr, caddr_t addr, u_int len)
+#else
 static bool_t xdrfd_getbytes(XDR *xdr, caddr_t addr, int len)
+#endif
 {
 	int fd = xdr->x_handy;
 
@@ -87,7 +92,11 @@ static bool_t xdrfd_getbytes(XDR *xdr, caddr_t addr, int len)
 	return TRUE;
 }
 
+#ifdef HAVE_XDR_PUTBYTES_CONST_CHAR_ARG
+static bool_t xdrfd_putbytes(XDR *xdr, const char *addr, u_int len)
+#else
 static bool_t xdrfd_putbytes(XDR *xdr, caddr_t addr, int len)
+#endif
 {
 	int fd = xdr->x_handy;
 
@@ -113,7 +122,11 @@ static bool_t xdrfd_getint32(XDR *xdr, int32_t *p)
 	return TRUE;
 }
 
+#ifdef HAVE_XDR_PUTINT32_CONST_ARG
+static bool_t xdrfd_putint32(XDR *xdr, const int32_t *p)
+#else
 static bool_t xdrfd_putint32(XDR *xdr, int32_t *p)
+#endif
 {
 	int fd = xdr->x_handy;
 	int32_t buf;
@@ -137,7 +150,11 @@ static bool_t xdrfd_getlong(XDR *xdrs, long *p)
         return TRUE;
 }
 
+#ifdef HAVE_XDR_PUTLONG_CONST_ARG
+static bool_t xdrfd_putlong(XDR *xdrs, const long *p)
+#else
 static bool_t xdrfd_putlong(XDR *xdrs, long *p)
+#endif
 {
         int32_t tmp = *p;
 
