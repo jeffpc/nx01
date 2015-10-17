@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +21,39 @@
  * SOFTWARE.
  */
 
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+
 #include <nomad/types.h>
 #include <nomad/rand.h>
 #include <nomad/config.h>
+#include <nomad/error.h>
 
 uint32_t rand32(void)
 {
 #ifdef HAVE_ARC4RANDOM
 	return arc4random();
 #else
-#error "Need a way to generate random uint32_t"
+	uint32_t ret;
+	int fd;
+
+	fd = open("/dev/random", O_RDONLY);
+	if (fd == -1) {
+		fprintf(stderr, "Failed to get random number: %s",
+		        strerror(errno));
+		ASSERT(0);
+	}
+
+	if (read(fd, &ret, sizeof(ret)) != sizeof(ret)) {
+		fprintf(stderr, "Failed to get random number: %s",
+		        strerror(errno));
+		ASSERT(0);
+	}
+
+	close(fd);
+
+	return ret;
 #endif
 }
 
