@@ -411,3 +411,17 @@ int nvclock_cmp_total(const struct nvclock *c1, const struct nvclock *c2)
 	ASSERT(0);
 	return 0xbad; /* pacify gcc */
 }
+
+bool_t xdr_nvclock(XDR *xdrs, struct nvclock *clock)
+{
+	int i;
+
+	for (i = 0; i < NVCLOCK_NUM_NODES; i++) {
+		if (!xdr_uint64_t(xdrs, &clock->ent[i].node))
+			return FALSE;
+		if (!xdr_uint64_t(xdrs, &clock->ent[i].seq))
+			return FALSE;
+	}
+
+	return TRUE;
+}
