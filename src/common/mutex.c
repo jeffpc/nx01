@@ -93,7 +93,20 @@ int condreltimedwait(pthread_cond_t *c, pthread_mutex_t *m,
 #ifdef HAVE_PTHREAD_COND_RELTIMEDWAIT_NP
 	ret = pthread_cond_reltimedwait_np(c, m, reltime);
 #else
-#error need a relative timed condition wait
+	struct timespec abstime;
+	struct timespec now;
+
+	clock_gettime(CLOCK_REALTIME, &now);
+
+	if ((now.tv_nsec + reltime->tv_nsec) >= 1000000000) {
+		now.tv_sec++;
+		now.tv_nsec -= 1000000000;
+	}
+
+	abstime.tv_sec  = now.tv_sec  + reltime->tv_sec;
+	abstime.tv_nsec = now.tv_nsec + reltime->tv_nsec;
+
+	ret = pthread_cond_timedwait(c, m, &abstime);
 #endif
 
 	if ((ret != 0) || (ret != ETIMEDOUT))
