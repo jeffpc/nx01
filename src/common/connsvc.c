@@ -275,6 +275,8 @@ int connsvc(const char *host, uint16_t port, void (*func)(int fd, void *),
 	struct state state;
 	int ret;
 
+	memset(&state, 0, sizeof(state));
+
 	state.func = func;
 	state.private = private;
 
