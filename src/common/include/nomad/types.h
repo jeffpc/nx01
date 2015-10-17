@@ -27,6 +27,7 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <sys/types.h>
+#include <rpc/rpc.h>
 
 #include <nomad/attr.h>
 #include <nomad/vclock.h>
@@ -63,6 +64,9 @@ extern uint64_t nomad_local_node_id(void);
 
 extern void noid_set(struct noid *n1, uint32_t ds, uint64_t uniq);
 extern int noid_cmp(const struct noid *n1, const struct noid *n2);
+extern bool_t xdr_noid(XDR *xdrs, struct noid *oid);
+
+extern bool_t xdr_nobjhndl(XDR *xdrs, struct nobjhndl *hndl);
 
 extern void nuuid_clear(struct nuuid *uuid);
 extern int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2);
