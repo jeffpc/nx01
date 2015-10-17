@@ -26,6 +26,8 @@ add_executable(nomad-client
 
 target_link_libraries(nomad-client
 	${BASE_LIBS}
+	common
+	nomad_objstore
 )
 
 install(TARGETS nomad-client DESTINATION bin

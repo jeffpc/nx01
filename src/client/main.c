@@ -20,7 +20,33 @@
  * SOFTWARE.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <nomad/types.h>
+#include <nomad/objstore.h>
+
 int main(int argc, char **argv)
 {
+	struct objstore *store;
+	int ret;
+
+	/*
+	 * TODO:
+	 * The local node id should be stored persistently in a config file
+	 * of some sort.  The initial value for the node id should be
+	 * generated randomly.
+	 */
+	nomad_set_local_node_id(0xabba);
+	ret = objstore_init();
+
+	fprintf(stderr, "objstore_init() = %d\n", ret);
+
+	store = objstore_store_create("abc", OS_MODE_STORE);
+
+	fprintf(stderr, "store = %p\n", store);
+
+	abort();
+
 	return 0;
 }
