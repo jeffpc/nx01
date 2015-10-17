@@ -24,6 +24,8 @@ include(CheckFunctionExists)
 
 check_function_exists(arc4random HAVE_ARC4RANDOM)
 check_function_exists(pthread_cond_reltimedwait_np HAVE_PTHREAD_COND_RELTIMEDWAIT_NP)
+check_function_exists(assfail HAVE_ASSFAIL)
+check_function_exists(assfail3 HAVE_ASSFAIL3)
 
 set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")
 find_package(umem)

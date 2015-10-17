@@ -21,6 +21,7 @@
 #
 
 add_library(nomad_common SHARED
+	assfail.c
 	mutex.c
 	node.c
 	oid.c

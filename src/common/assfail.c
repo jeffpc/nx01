@@ -20,12 +20,29 @@
  * SOFTWARE.
  */
 
-#ifndef __NOMAD_CONFIG_H
-#define __NOMAD_CONFIG_H
+#include <stdio.h>
+#include <inttypes.h>
+#include <assert.h>
 
-#cmakedefine HAVE_ARC4RANDOM 1
-#cmakedefine HAVE_PTHREAD_COND_RELTIMEDWAIT_NP 1
-#cmakedefine HAVE_ASSFAIL 1
-#cmakedefine HAVE_ASSFAIL3 1
+#include <nomad/config.h>
+#include <nomad/error.h>
 
+#ifndef HAVE_ASSFAIL
+void assfail(const char *assertion, const char *file, int line)
+{
+	__assert(assertion, file, line);
+}
+#endif
+
+#ifndef HAVE_ASSFAIL3
+void assfail3(const char *assertion, uintmax_t lhs, const char *op,
+	      uintmax_t rhs, const char *file, int line)
+{
+	char msg[512];
+
+	snprintf(msg, sizeof(msg), "%s (%#"PRIx64" %s %#"PRIx64")",
+		 assertion, lhs, op, rhs);
+
+	__assert(msg, file, line);
+}
 #endif
