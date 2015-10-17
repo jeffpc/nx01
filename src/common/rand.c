@@ -23,13 +23,12 @@
 
 #include <fcntl.h>
 #include <stdio.h>
-#include <errno.h>
-#include <assert.h>
 #include <unistd.h>
 
 #include <nomad/types.h>
 #include <nomad/rand.h>
 #include <nomad/config.h>
+#include <nomad/error.h>
 
 uint32_t rand32(void)
 {
@@ -43,13 +42,13 @@ uint32_t rand32(void)
 	if (fd == -1) {
 		fprintf(stderr, "Failed to get random number: %s",
 		        strerror(errno));
-		assert(0);
+		ASSERT(0);
 	}
 
 	if (read(fd, &ret, sizeof(ret)) != sizeof(ret)) {
 		fprintf(stderr, "Failed to get random number: %s",
 		        strerror(errno));
-		assert(0);
+		ASSERT(0);
 	}
 
 	close(fd);
