@@ -20,19 +20,20 @@
 # SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 2.8.12)
-project(nomad)
+macro(rpcgen src)
+	set(xfile "${CMAKE_CURRENT_SOURCE_DIR}/${src}.x")
+	set(cfile "${src}_xdr.c")
+	set(hfile "include/nomad/${src}_xdr.h")
 
-enable_testing()
+	# xdrgen(1) doesn't produce the cleanest code imaginable
+	set_source_files_properties("${cfile}" PROPERTIES
+		COMPILE_FLAGS "-Wno-unused-variable")
 
-set(CMAKE_C_FLAGS "-Wall -O2 -g -std=gnu99 -D_XOPEN_SOURCE=700 -D__EXTENSIONS__ -D_REENTRANT")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-inline-small-functions")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-inline-functions-called-once")
-
-set(CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-include(cmake/config.cmake)
-include(cmake/rpcgen.cmake)
-
-add_subdirectory(src)
+	add_custom_command(
+		OUTPUT "${cfile}" "${hfile}"
+		COMMAND rm -f "${cfile}" "${hfile}"
+		COMMAND rpcgen -C -h -o "${hfile}" "${xfile}"
+		COMMAND rpcgen -C -c -o "${cfile}" "${xfile}"
+		DEPENDS "${xfile}"
+	)
+endmacro()
