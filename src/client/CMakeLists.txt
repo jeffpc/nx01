@@ -29,6 +29,7 @@ target_link_libraries(nomad-client
 	${TASKQ_LIBRARY}
 	common
 	nomad_objstore
+	nsl
 )
 
 install(TARGETS nomad-client DESTINATION bin
