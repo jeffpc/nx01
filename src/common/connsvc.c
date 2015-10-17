@@ -113,6 +113,7 @@ static int bind_sock(struct state *state, int family, struct sockaddr *addr,
 		return errno;
 
 	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+	setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &on, sizeof(on));
 
 	if (bind(fd, addr, addrlen))
 		goto err;
