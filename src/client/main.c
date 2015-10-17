@@ -22,9 +22,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <nomad/types.h>
 #include <nomad/objstore.h>
+#include <nomad/connsvc.h>
+
+#define CLIENT_DAEMON_PORT	2323
+
+static void process_connection(int fd, void *arg)
+{
+	printf("%s: fd = %d, arg = %p\n", __func__, fd, arg);
+
+	close(fd);
+}
 
 int main(int argc, char **argv)
 {
@@ -45,6 +56,10 @@ int main(int argc, char **argv)
 	store = objstore_store_create("abc", OS_MODE_STORE);
 
 	fprintf(stderr, "store = %p\n", store);
+
+	ret = connsvc(NULL, CLIENT_DAEMON_PORT, process_connection, store);
+
+	fprintf(stderr, "connsvc() = %d\n", ret);
 
 	abort();
 

@@ -26,6 +26,7 @@ add_executable(nomad-client
 
 target_link_libraries(nomad-client
 	${BASE_LIBS}
+	${TASKQ_LIBRARY}
 	common
 	nomad_objstore
 )
