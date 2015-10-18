@@ -20,24 +20,20 @@
  * SOFTWARE.
  */
 
-#ifndef __NOMAD_RPC_H
-#define __NOMAD_RPC_H
+#include <nomad/error.h>
+#include <nomad/rpc.h>
 
-#include <rpc/rpc.h>
+#define MAP_ERRNO(errno)			\
+	case errno: return NERR_##errno
 
-/*
- * RPC error codes
- *
- * Note: When adding new error codes, don't forget to update errno_to_nerr
- * in error.c!
- */
-#define NERR_UNKNOWN_ERROR     -1
-#define NERR_SUCCESS           0
-#define NERR_ENOENT            2
-#define NERR_EEXIST            17
+int errno_to_nerr(int e)
+{
+	switch (e) {
+		MAP_ERRNO(EEXIST);
+		MAP_ERRNO(ENOENT);
+		case 0:
+			return NERR_SUCCESS;
+	}
 
-extern int errno_to_nerr(int e);
-
-extern void xdrfd_create(XDR *xdr, int fd, enum xdr_op op);
-
-#endif
+	return NERR_UNKNOWN_ERROR;
+}
