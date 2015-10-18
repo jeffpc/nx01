@@ -35,3 +35,15 @@ int objstore_vol_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
 
 	return vol->def->obj_ops->getattr(vol, hndl, attr);
 }
+
+int objstore_vol_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
+                        const char *name, struct nobjhndl *child)
+{
+	if (!vol || !dir || !name || !child)
+		return EINVAL;
+
+	if (!vol->def->obj_ops || !vol->def->obj_ops->lookup)
+		return ENOTSUP;
+
+	return vol->def->obj_ops->lookup(vol, dir, name, child);
+}
