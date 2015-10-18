@@ -22,6 +22,7 @@
 
 add_executable(nomad-client
 	main.c
+	cmd_nop.c
 )
 
 target_link_libraries(nomad-client
