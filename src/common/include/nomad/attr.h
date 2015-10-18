@@ -67,6 +67,6 @@ struct nattr {
 	/* XXX: group */
 };
 
-bool_t xdr_nattr(XDR *xdrs, struct nattr *attr);
+extern bool_t xdr_nattr(XDR *xdrs, struct nattr *attr);
 
 #endif
