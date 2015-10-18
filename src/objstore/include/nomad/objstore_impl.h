@@ -38,8 +38,7 @@ struct obj_ops {
 	int (*open)();		/* open an object */
 	int (*close)();		/* close an object */
 
-	/* created/cloned objects must be committed/aborted */
-	int (*create)();	/* create a new temp object */
+	/* cloned objects must be committed/aborted */
 	int (*clone)();		/*
 				 * create a new temp obj as a copy of
 				 * existing obj
@@ -55,6 +54,9 @@ struct obj_ops {
 
 	int (*lookup)(struct objstore_vol *vol, const struct nobjhndl *dir,
 	              const char *name, struct nobjhndl *child);
+	int (*create)(struct objstore_vol *vol, const struct nobjhndl *dir,
+	              const char *name, uint16_t mode,
+	              struct nobjhndl *child);
 };
 
 struct objstore_vol_def {
@@ -75,5 +77,7 @@ extern int vol_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
                        struct nattr *attr);
 extern int vol_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
                       const char *name, struct nobjhndl *child);
+extern int vol_create(struct objstore_vol *vol, const struct nobjhndl *dir,
+                      const char *name, uint16_t mode, struct nobjhndl *child);
 
 #endif
