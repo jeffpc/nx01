@@ -1,6 +1,4 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
- * Copyright (c) 2015 Holly Sipek
  * Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,53 +20,23 @@
  * SOFTWARE.
  */
 
-%#include <nomad/types.h>
+#include <nomad/types.h>
 
-struct rpc_header_req {
-	uint16_t	opcode;
-};
-
-struct rpc_header_res {
-	uint32_t	err;
-};
-
-struct rpc_login_req {
-	string		conn<>;
-	string		vg<>;
-};
-
-struct rpc_login_res {
-	struct nobjhndl	root;
-};
-
-struct rpc_stat_req {
-	struct nobjhndl	obj;
-};
-
-struct rpc_stat_res {
-	struct nattr	attributes;
-};
-
-struct rpc_lookup_req {
-	struct nobjhndl	parent;
-	string		path<>;
-};
-
-struct rpc_lookup_res {
-	struct nobjhndl	child;
-};
-
-struct rpc_create_req {
-	struct nobjhndl	parent;
-	string		path<>;
-	uint16_t	mode; /* see NATTR_* in common/include/nomad/atrr.h */
-};
-
-struct rpc_create_res {
-	struct nobjhndl	obj;
-};
-
-struct rpc_remove_req {
-	struct nobjhndl	parent;
-	string		path<>;
-};
+bool_t xdr_nattr(XDR *xdrs, struct nattr *attr)
+{
+	if (!xdr_uint16_t(xdrs, &attr->mode))
+		return FALSE;
+	if (!xdr_uint32_t(xdrs, &attr->nlink))
+		return FALSE;
+	if (!xdr_uint64_t(xdrs, &attr->size))
+		return FALSE;
+	if (!xdr_uint64_t(xdrs, &attr->atime))
+		return FALSE;
+	if (!xdr_uint64_t(xdrs, &attr->btime))
+		return FALSE;
+	if (!xdr_uint64_t(xdrs, &attr->ctime))
+		return FALSE;
+	if (!xdr_uint64_t(xdrs, &attr->mtime))
+		return FALSE;
+	return TRUE;
+}
