@@ -23,6 +23,7 @@
 add_library(nomad_objstore SHARED
 	objstore.c
 	vg.c
+	vol.c
 )
 
 target_link_libraries(nomad_objstore

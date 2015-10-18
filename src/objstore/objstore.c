@@ -121,17 +121,6 @@ struct objstore_vol *objstore_vol_load(struct objstore *vg, struct nuuid *uuid,
 	return ERR_PTR(ENOTSUP);
 }
 
-int objstore_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
-{
-	if (!hndl)
-		return EINVAL;
-
-	if (!store || !store->def->vol_ops || !store->def->vol_ops->getroot)
-		return EINVAL;
-
-	return store->def->vol_ops->getroot(store, hndl);
-}
-
 int objstore_obj_getattr(struct objstore_vol *store, const struct nobjhndl *hndl,
 			 struct nattr *attr)
 {

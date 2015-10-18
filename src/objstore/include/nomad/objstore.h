@@ -71,7 +71,7 @@ extern struct objstore_vol *objstore_vol_load(struct objstore *vg,
 					      const char *path);
 
 /* volume operations */
-extern int objstore_getroot(struct objstore_vol *store, struct nobjhndl *hndl);
+extern int objstore_getroot(struct objstore *vg, struct nobjhndl *hndl);
 
 /* object operations */
 extern int objstore_obj_getattr(struct objstore_vol *store,
