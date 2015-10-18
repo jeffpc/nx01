@@ -28,27 +28,30 @@
 
 #include "cmds.h"
 
-#define CMD(op, what, hndlr)				\
+#define CMD(op, what, hndlr, login)			\
 	{						\
 		.name = #op,				\
 		.opcode = (op),				\
 		.handler = (hndlr),			\
+		.requires_login = (login),		\
 	}
 
-#define CMD_ARG(op, what, hndlr)			\
+#define CMD_ARG(op, what, hndlr, login)			\
 	{						\
 		.name = #op,				\
 		.opcode = (op),				\
 		.handler = (hndlr),			\
+		.requires_login = (login),		\
 		.reqoff = offsetof(union cmd, what.req),\
 		.req = (void *) xdr_rpc_##what##_req,	\
 	}
 
-#define CMD_ARG_RET(op, what, hndlr)			\
+#define CMD_ARG_RET(op, what, hndlr, login)		\
 	{						\
 		.name = #op,				\
 		.opcode = (op),				\
 		.handler = (hndlr),			\
+		.requires_login = (login),		\
 		.reqoff = offsetof(union cmd, what.req),\
 		.resoff = offsetof(union cmd, what.res),\
 		.req = (void *) xdr_rpc_##what##_req,	\
@@ -59,6 +62,7 @@ static const struct cmdtbl {
 	const char *name;
 	uint16_t opcode;
 	int (*handler)(struct fsconn *, union cmd *);
+	bool_t requires_login;
 	size_t reqoff;
 	size_t resoff;
 
@@ -69,12 +73,12 @@ static const struct cmdtbl {
 	bool_t (*req)(XDR *, void *);
 	bool_t (*res)(XDR *, void *);
 } cmdtbl[] = {
-	CMD_ARG_RET(NRPC_CREATE,        create,        cmd_create),
-	CMD_ARG_RET(NRPC_LOGIN,         login,         cmd_login),
-	CMD_ARG_RET(NRPC_LOOKUP,        lookup,        cmd_lookup),
-	CMD        (NRPC_NOP,           nop,           cmd_nop),
-	CMD_ARG    (NRPC_REMOVE,        remove,        cmd_remove),
-	CMD_ARG_RET(NRPC_STAT,          stat,          cmd_stat),
+	CMD_ARG_RET(NRPC_CREATE,        create,        cmd_create,      true),
+	CMD_ARG_RET(NRPC_LOGIN,         login,         cmd_login,       false),
+	CMD_ARG_RET(NRPC_LOOKUP,        lookup,        cmd_lookup,      true),
+	CMD        (NRPC_NOP,           nop,           cmd_nop,         false),
+	CMD_ARG    (NRPC_REMOVE,        remove,        cmd_remove,      true),
+	CMD_ARG_RET(NRPC_STAT,          stat,          cmd_stat,        true),
 };
 
 static bool send_response(XDR *xdr, int fd, int err)
@@ -117,6 +121,7 @@ bool process_connection(struct fsconn *conn)
 	union cmd cmd;
 	bool ok = false;
 	size_t i;
+	int ret;
 	XDR xdr;
 
 	memset(&hdr, 0, sizeof(struct rpc_header_req));
@@ -128,6 +133,8 @@ bool process_connection(struct fsconn *conn)
 		goto out;
 
 	printf("got opcode %u\n", hdr.opcode);
+
+	ret = ENOTSUP;
 
 	for (i = 0; i < ARRAY_LEN(cmdtbl); i++) {
 		const struct cmdtbl *def = &cmdtbl[i];
@@ -150,6 +157,13 @@ bool process_connection(struct fsconn *conn)
 			}
 		}
 
+		/* if login is required, make sure it happened */
+		if (def->requires_login && !conn->vg) {
+			ret = EPROTO;
+			printf("must do LOGIN before this operation\n");
+			break;
+		}
+
 		/* invoke the handler */
 		ret = def->handler(conn, &cmd);
 
@@ -163,7 +177,7 @@ bool process_connection(struct fsconn *conn)
 		goto out;
 	}
 
-	send_response(&xdr, conn->fd, ENOTSUP);
+	send_response(&xdr, conn->fd, ret);
 
 out:
 	xdr_destroy(&xdr);
