@@ -416,6 +416,11 @@ bool_t xdr_nvclock(XDR *xdrs, struct nvclock *clock)
 {
 	int i;
 
+	if (xdrs->x_op == XDR_FREE) {
+		nvclock_free(clock);
+		return TRUE;
+	}
+
 	for (i = 0; i < NVCLOCK_NUM_NODES; i++) {
 		if (!xdr_uint64_t(xdrs, &clock->ent[i].node))
 			return FALSE;
