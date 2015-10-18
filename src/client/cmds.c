@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -128,7 +129,7 @@ static bool send_returns(XDR *xdr, const struct cmdtbl *def, void *cmd)
 	return true;
 }
 
-bool process_connection(int fd)
+bool process_connection(struct fsconn *conn)
 {
 	struct rpc_header_req hdr;
 	union cmd cmd;
@@ -139,7 +140,7 @@ bool process_connection(int fd)
 	memset(&hdr, 0, sizeof(struct rpc_header_req));
 	memset(&cmd, 0, sizeof(union cmd));
 
-	xdrfd_create(&xdr, fd, XDR_DECODE);
+	xdrfd_create(&xdr, conn->fd, XDR_DECODE);
 
 	if (!xdr_rpc_header_req(&xdr, &hdr))
 		goto out;
@@ -171,7 +172,7 @@ bool process_connection(int fd)
 		ret = def->handler(&cmd);
 
 		/* send back the response header */
-		ok = send_response(&xdr, fd, ret);
+		ok = send_response(&xdr, conn->fd, ret);
 
 		/* send back the response payload */
 		if (ok && def->res)
@@ -180,7 +181,7 @@ bool process_connection(int fd)
 		goto out;
 	}
 
-	send_response(&xdr, fd, ENOTSUP);
+	send_response(&xdr, conn->fd, ENOTSUP);
 
 out:
 	xdr_destroy(&xdr);

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +36,13 @@
 
 static void connection_acceptor(int fd, void *arg)
 {
+	struct fsconn conn;
+
+	conn.fd = fd;
+	conn.vg = NULL;
 	printf("%s: fd = %d, arg = %p\n", __func__, fd, arg);
 
-	while (process_connection(fd))
+	while (process_connection(&conn))
 		;
 }
 
