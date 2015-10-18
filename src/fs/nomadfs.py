@@ -23,6 +23,8 @@
 
 import errno
 import fuse
+import socket
+import nomadsocket
 
 fuse.fuse_python_api = (0, 2)
 
@@ -30,6 +32,11 @@ fuse.fuse_python_api = (0, 2)
 class Nomad(fuse.Fuse):
     def __init__(self, *args, **kw):
         fuse.Fuse.__init__(self, *args, **kw)
+        # TODO: take hostname and port as arguments
+        # TODO: where to close these? fsdestroy?
+        self.sock = socket.create_connection(("localhost", 2323))
+        self.conn = nomadsocket.NomadSocket(self.sock)
+        self.conn.nop()
 
     def getattr(self, path):
         return -errno.ENOSYS
