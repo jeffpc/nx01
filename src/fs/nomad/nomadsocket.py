@@ -13,7 +13,7 @@ REMOVE = 5
 # TODO: move this somewhere else
 attributes = namedtuple("attributes", [
     "mode",
-    "nlink",  # TODO: what is this?
+    "num_hardlinks",
     "size",
     "access_time",
     "birth_time",
@@ -61,12 +61,12 @@ class NomadSocket(object):
         self._recv_header()
         return attributes(
             mode=self.conn.recv_u32(),
-            nlink=self.conn.recv_u32(),
+            num_hardlinks=self.conn.recv_u32(),
             size=self.conn.recv_u64(),
-            atime=self._recv_timestamp(),
-            btime=self._recv_timestamp(),
-            ctime=self._recv_timestamp(),
-            mtime=self._recv_timestamp(),
+            access_time=self._recv_timestamp(),
+            birth_time=self._recv_timestamp(),
+            creation_time=self._recv_timestamp(),
+            modification_time=self._recv_timestamp(),
         )
 
     def lookup(self, parent_handle, name):
@@ -121,6 +121,6 @@ class NomadSocket(object):
 
     def _recv_timestamp(self):
         # Timestamps are returned in nanoseconds.
-        return datetime.datetime.fromtimestamp(self.conn.recv_u64() / 10 ** 9,
+        return datetime.datetime.fromtimestamp(self.conn.recv_u64() / 10.0 ** 9,
                                                UTC())
 
