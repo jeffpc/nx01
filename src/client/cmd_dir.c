@@ -44,5 +44,7 @@ int cmd_lookup(struct fsconn *conn, union cmd *cmd)
 
 int cmd_remove(struct fsconn *conn, union cmd *cmd)
 {
-	return ENOTSUP;
+	struct rpc_remove_req *req = &cmd->remove.req;
+
+	return objstore_remove(conn->vg, &req->parent, req->path);
 }
