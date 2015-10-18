@@ -27,5 +27,8 @@
 
 int cmd_stat(struct fsconn *conn, union cmd *cmd)
 {
-	return ENOTSUP;
+	struct rpc_stat_req *req = &cmd->stat.req;
+	struct rpc_stat_res *res = &cmd->stat.res;
+
+	return objstore_getattr(conn->vg, &req->handle, &res->attr);
 }
