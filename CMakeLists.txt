@@ -1,5 +1,6 @@
 #
 # Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +32,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-inline-small-functions")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-inline-functions-called-once")
 
 set(CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/build")
+set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/build")
 
 include(cmake/config.cmake)
 include(cmake/rpcgen.cmake)
