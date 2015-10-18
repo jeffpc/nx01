@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 		goto err;
 	}
 
-	vg = objstore_vg_create("myfiles");
+	vg = objstore_vg_create("myfiles", OS_VG_SIMPLE);
 	fprintf(stderr, "vg = %p\n", vg);
 
 	if (IS_ERR(vg)) {

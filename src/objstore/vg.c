@@ -39,16 +39,20 @@ int objstore_vg_init(void)
 	list_create(&vgs, sizeof(struct objstore),
 		    offsetof(struct objstore, node));
 
-	filecache = objstore_vg_create("file$");
+	filecache = objstore_vg_create("file$", OS_VG_SIMPLE);
 	if (IS_ERR(filecache))
 		return PTR_ERR(filecache);
 
 	return 0;
 }
 
-struct objstore *objstore_vg_create(const char *name)
+struct objstore *objstore_vg_create(const char *name,
+				    enum objstore_vg_type type)
 {
 	struct objstore *vg;
+
+	if (type != OS_VG_SIMPLE)
+		return ERR_PTR(EINVAL);
 
 	vg = malloc(sizeof(struct objstore));
 	if (!vg)
