@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +25,17 @@
 
 #include "cmds.h"
 
-int cmd_create(union cmd *cmd)
+int cmd_create(struct fsconn *conn, union cmd *cmd)
 {
 	return ENOTSUP;
 }
 
-int cmd_lookup(union cmd *cmd)
+int cmd_lookup(struct fsconn *conn, union cmd *cmd)
 {
 	return ENOTSUP;
 }
 
-int cmd_remove(union cmd *cmd)
+int cmd_remove(struct fsconn *conn, union cmd *cmd)
 {
 	return ENOTSUP;
 }

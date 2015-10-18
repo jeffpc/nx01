@@ -68,11 +68,11 @@ struct fsconn {
 extern bool process_connection(struct fsconn *conn);
 
 /* RPC handlers */
-extern int cmd_create(union cmd *cmd);
-extern int cmd_login(union cmd *cmd);
-extern int cmd_lookup(union cmd *cmd);
-extern int cmd_nop(union cmd *cmd);
-extern int cmd_remove(union cmd *cmd);
-extern int cmd_stat(union cmd *cmd);
+extern int cmd_create(struct fsconn *conn, union cmd *cmd);
+extern int cmd_login(struct fsconn *conn, union cmd *cmd);
+extern int cmd_lookup(struct fsconn *conn, union cmd *cmd);
+extern int cmd_nop(struct fsconn *conn, union cmd *cmd);
+extern int cmd_remove(struct fsconn *conn, union cmd *cmd);
+extern int cmd_stat(struct fsconn *conn, union cmd *cmd);
 
 #endif
