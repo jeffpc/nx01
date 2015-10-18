@@ -88,5 +88,7 @@ extern int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
 extern int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
                            const char *name, uint16_t mode,
                            struct nobjhndl *child);
+extern int objstore_remove(struct objstore *vg, const struct nobjhndl *dir,
+                           const char *name);
 
 #endif
