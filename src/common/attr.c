@@ -20,12 +20,10 @@
  * SOFTWARE.
  */
 
-#include <nomad/attr.h>
+#include <nomad/types.h>
 
 bool_t xdr_nattr(XDR *xdrs, struct nattr *attr)
 {
-	if (!xdr_uint16_t(xdrs, &attr->_reserved))
-		return FALSE;
 	if (!xdr_uint16_t(xdrs, &attr->mode))
 		return FALSE;
 	if (!xdr_uint32_t(xdrs, &attr->nlink))
