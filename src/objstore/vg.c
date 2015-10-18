@@ -30,7 +30,7 @@
 static pthread_mutex_t vgs_lock;
 static list_t vgs;
 
-int objstore_vg_init(void)
+int vg_init(void)
 {
 	struct objstore *filecache;
 
@@ -76,7 +76,7 @@ struct objstore *objstore_vg_create(const char *name,
 	return vg;
 }
 
-void objstore_vg_add_vol(struct objstore *vg, struct objstore_vol *vol)
+void vg_add_vol(struct objstore *vg, struct objstore_vol *vol)
 {
 	mxlock(&vg->lock);
 	list_insert_tail(&vg->vols, vol);
@@ -110,7 +110,7 @@ int objstore_getroot(struct objstore *vg, struct nobjhndl *hndl)
 	mxlock(&vg->lock);
 	vol = list_head(&vg->vols);
 	if (vol)
-		ret = objstore_vol_getroot(vol, hndl);
+		ret = vol_getroot(vol, hndl);
 	else
 		ret = ENXIO;
 	mxunlock(&vg->lock);
@@ -133,7 +133,7 @@ int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
 	mxlock(&vg->lock);
 	vol = list_head(&vg->vols);
 	if (vol)
-		ret = objstore_vol_getattr(vol, hndl, attr);
+		ret = vol_getattr(vol, hndl, attr);
 	else
 		ret = ENXIO;
 	mxunlock(&vg->lock);
@@ -158,7 +158,7 @@ int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
 	mxlock(&vg->lock);
 	vol = list_head(&vg->vols);
 	if (vol)
-		ret = objstore_vol_lookup(vol, dir, name, child);
+		ret = vol_lookup(vol, dir, name, child);
 	else
 		ret = ENXIO;
 	mxunlock(&vg->lock);

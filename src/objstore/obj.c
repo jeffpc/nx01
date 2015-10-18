@@ -24,8 +24,8 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-int objstore_vol_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
-			 struct nattr *attr)
+int vol_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
+                struct nattr *attr)
 {
 	if (!vol || !hndl || !hndl->clock || !attr)
 		return EINVAL;
@@ -36,8 +36,8 @@ int objstore_vol_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
 	return vol->def->obj_ops->getattr(vol, hndl, attr);
 }
 
-int objstore_vol_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
-                        const char *name, struct nobjhndl *child)
+int vol_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
+               const char *name, struct nobjhndl *child)
 {
 	if (!vol || !dir || !name || !child)
 		return EINVAL;
