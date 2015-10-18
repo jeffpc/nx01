@@ -24,6 +24,11 @@
 
 #include "cmds.h"
 
+int cmd_create(union cmd *cmd)
+{
+	return ENOTSUP;
+}
+
 int cmd_lookup(union cmd *cmd)
 {
 	return ENOTSUP;

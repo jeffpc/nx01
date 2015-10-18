@@ -26,6 +26,12 @@
 #include <nomad/rpc_fs.h>
 
 union cmd {
+	/* create */
+	struct {
+		struct rpc_create_req req;
+		struct rpc_create_res res;
+	} create;
+
 	/* login */
 	struct {
 		struct rpc_login_req req;
@@ -50,6 +56,7 @@ union cmd {
 extern bool process_connection(int fd);
 
 /* RPC handlers */
+extern int cmd_create(union cmd *cmd);
 extern int cmd_login(union cmd *cmd);
 extern int cmd_lookup(union cmd *cmd);
 extern int cmd_nop(union cmd *cmd);
