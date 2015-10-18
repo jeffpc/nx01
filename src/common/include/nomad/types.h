@@ -41,6 +41,8 @@
 #define MAX(a, b)	(((a) > (b)) ? (a) : (b))
 #endif
 
+#define ARRAY_LEN(a)	(sizeof(a) / sizeof(a[0]))
+
 /* object id */
 struct noid {
 	uint32_t ds;		/* dataset id */
