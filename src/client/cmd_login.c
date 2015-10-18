@@ -21,10 +21,22 @@
  */
 
 #include <nomad/error.h>
+#include <nomad/types.h>
+#include <nomad/objstore.h>
 
 #include "cmds.h"
 
 int cmd_login(union cmd *cmd)
 {
-	return ENOTSUP;
+	struct rpc_login_req *req = &cmd->login.req;
+	struct rpc_login_res *res = &cmd->login.res;
+	struct objstore *vg;
+
+	printf("LOGIN: conn = '%s', vg = '%s'\n", req->conn, req->vg);
+
+	vg = objstore_vg_lookup(req->vg);
+	if (!vg)
+		return ENOENT;
+
+	return objstore_getroot(vg, &res->root);
 }
