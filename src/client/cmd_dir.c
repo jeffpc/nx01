@@ -27,7 +27,11 @@
 
 int cmd_create(struct fsconn *conn, union cmd *cmd)
 {
-	return ENOTSUP;
+	struct rpc_create_req *req = &cmd->create.req;
+	struct rpc_create_res *res = &cmd->create.res;
+
+	return objstore_create(conn->vg, &req->parent, req->path, req->mode,
+			       &res->handle);
 }
 
 int cmd_lookup(struct fsconn *conn, union cmd *cmd)
