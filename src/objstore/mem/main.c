@@ -26,6 +26,7 @@
 
 #include <nomad/error.h>
 #include <nomad/time.h>
+#include <nomad/rand.h>
 #include <nomad/atomic.h>
 #include <nomad/objstore_impl.h>
 
@@ -123,7 +124,7 @@ static int mem_vol_create(struct objstore_vol *store)
 		return PTR_ERR(obj);
 	}
 
-	ms->ds = 0x1234; /* TODO: this should be generated randomly */
+	ms->ds = rand32();
 
 	noid_set(&obj->oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
 
