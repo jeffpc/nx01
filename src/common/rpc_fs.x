@@ -24,6 +24,7 @@
 
 %#include <nomad/types.h>
 
+%/***** RPC header *****/
 struct rpc_header_req {
 	uint16_t	opcode;
 };
@@ -32,6 +33,7 @@ struct rpc_header_res {
 	uint32_t	err;
 };
 
+%/***** LOGIN *****/
 struct rpc_login_req {
 	string		conn<>;
 	string		vg<>;
@@ -41,6 +43,7 @@ struct rpc_login_res {
 	struct nobjhndl	root;
 };
 
+%/***** STAT *****/
 struct rpc_stat_req {
 	struct nobjhndl	obj;
 };
@@ -49,6 +52,7 @@ struct rpc_stat_res {
 	struct nattr	attributes;
 };
 
+%/***** LOOKUP *****/
 struct rpc_lookup_req {
 	struct nobjhndl	parent;
 	string		path<>;
@@ -58,6 +62,7 @@ struct rpc_lookup_res {
 	struct nobjhndl	child;
 };
 
+%/***** CREATE *****/
 struct rpc_create_req {
 	struct nobjhndl	parent;
 	string		path<>;
@@ -68,6 +73,7 @@ struct rpc_create_res {
 	struct nobjhndl	obj;
 };
 
+%/***** REMOVE *****/
 struct rpc_remove_req {
 	struct nobjhndl	parent;
 	string		path<>;
