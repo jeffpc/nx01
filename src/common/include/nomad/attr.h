@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +25,7 @@
 #define __NOMAD_ATTR_H
 
 #include <stdint.h>
+#include <rpc/rpc.h>
 
 /* object attributes */
 
@@ -64,5 +66,7 @@ struct nattr {
 	/* XXX: owner */
 	/* XXX: group */
 };
+
+bool_t xdr_nattr(XDR *xdrs, struct nattr *attr);
 
 #endif

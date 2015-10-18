@@ -32,6 +32,7 @@ add_library(nomad_common SHARED
 	uuid.c
 	vclock.c
 	xdrfd.c
+	attr.c
 
 	rpc_fs_xdr.c
 )
