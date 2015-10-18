@@ -52,6 +52,9 @@ struct obj_ops {
 	int (*setattr)();	/* set attributes of an object */
 	ssize_t (*read)();	/* read portion of an object */
 	ssize_t (*write)();	/* write portion of an object */
+
+	int (*lookup)(struct objstore_vol *vol, const struct nobjhndl *dir,
+		      const char *name, struct nobjhndl *child);
 };
 
 struct objstore_vol_def {
@@ -70,5 +73,8 @@ extern int objstore_vol_getroot(struct objstore_vol *vol, struct nobjhndl *hndl)
 /* wrappers for object ops */
 extern int objstore_vol_getattr(struct objstore_vol *vol,
 				const struct nobjhndl *hndl, struct nattr *attr);
+extern int objstore_vol_lookup(struct objstore_vol *vol,
+			       const struct nobjhndl *dir, const char *name,
+			       struct nobjhndl *child);
 
 #endif

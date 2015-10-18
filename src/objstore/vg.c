@@ -140,3 +140,28 @@ int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
 
 	return ret;
 }
+
+int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
+		    const char *name, struct nobjhndl *child)
+{
+	struct objstore_vol *vol;
+	int ret;
+
+	printf("%s(%p, %p, '%s', %p)\n", __func__, vg, dir, name, child);
+
+	if (!vg || !dir || !name || !child)
+		return EINVAL;
+
+	/*
+	 * TODO: we're assuming OS_VG_SIMPLE
+	 */
+	mxlock(&vg->lock);
+	vol = list_head(&vg->vols);
+	if (vol)
+		ret = objstore_vol_lookup(vol, dir, name, child);
+	else
+		ret = ENXIO;
+	mxunlock(&vg->lock);
+
+	return ret;
+}
