@@ -45,11 +45,11 @@ struct rpc_login_res {
 
 %/***** STAT *****/
 struct rpc_stat_req {
-	struct nobjhndl	obj;
+	struct nobjhndl	handle;
 };
 
 struct rpc_stat_res {
-	struct nattr	attributes;
+	struct nattr	attr;
 };
 
 %/***** LOOKUP *****/
@@ -70,7 +70,7 @@ struct rpc_create_req {
 };
 
 struct rpc_create_res {
-	struct nobjhndl	obj;
+	struct nobjhndl	handle;
 };
 
 %/***** REMOVE *****/
