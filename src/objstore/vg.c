@@ -117,3 +117,26 @@ int objstore_getroot(struct objstore *vg, struct nobjhndl *hndl)
 
 	return ret;
 }
+
+int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
+		     struct nattr *attr)
+{
+	struct objstore_vol *vol;
+	int ret;
+
+	if (!vg || !hndl || !attr)
+		return EINVAL;
+
+	/*
+	 * TODO: we're assuming OS_VG_SIMPLE
+	 */
+	mxlock(&vg->lock);
+	vol = list_head(&vg->vols);
+	if (vol)
+		ret = objstore_vol_getattr(vol, hndl, attr);
+	else
+		ret = ENXIO;
+	mxunlock(&vg->lock);
+
+	return ret;
+}

@@ -81,8 +81,7 @@ extern struct objstore_vol *objstore_vol_load(struct objstore *vg,
 extern int objstore_getroot(struct objstore *vg, struct nobjhndl *hndl);
 
 /* object operations */
-extern int objstore_obj_getattr(struct objstore_vol *store,
-				const struct nobjhndl *hndl,
-				struct nattr *attr);
+extern int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
+			    struct nattr *attr);
 
 #endif

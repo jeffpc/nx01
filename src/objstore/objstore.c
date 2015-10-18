@@ -120,15 +120,3 @@ struct objstore_vol *objstore_vol_load(struct objstore *vg, struct nuuid *uuid,
 {
 	return ERR_PTR(ENOTSUP);
 }
-
-int objstore_obj_getattr(struct objstore_vol *store, const struct nobjhndl *hndl,
-			 struct nattr *attr)
-{
-	if (!hndl || !hndl->clock)
-		return EINVAL;
-
-	if (!store || !store->def->obj_ops || !store->def->obj_ops->getattr)
-		return EINVAL;
-
-	return store->def->obj_ops->getattr(store, hndl, attr);
-}

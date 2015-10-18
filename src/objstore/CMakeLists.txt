@@ -21,6 +21,7 @@
 #
 
 add_library(nomad_objstore SHARED
+	obj.c
 	objstore.c
 	vg.c
 	vol.c
