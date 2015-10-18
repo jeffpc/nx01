@@ -60,6 +60,7 @@ static const struct cmdtbl {
 	bool_t (*res)(XDR *, void *);
 } cmdtbl[] = {
 	CMD_ARG_RET(NRPC_LOGIN,         login,         cmd_login),
+	CMD_ARG_RET(NRPC_LOOKUP,        lookup,        cmd_lookup),
 	CMD        (NRPC_NOP,           nop,           cmd_nop),
 	CMD_ARG_RET(NRPC_STAT,          stat,          cmd_stat),
 };
