@@ -32,7 +32,10 @@ int cmd_create(struct fsconn *conn, union cmd *cmd)
 
 int cmd_lookup(struct fsconn *conn, union cmd *cmd)
 {
-	return ENOTSUP;
+	struct rpc_lookup_req *req = &cmd->lookup.req;
+	struct rpc_lookup_res *res = &cmd->lookup.res;
+
+	return objstore_lookup(conn->vg, &req->parent, req->path, &res->child);
 }
 
 int cmd_remove(struct fsconn *conn, union cmd *cmd)
