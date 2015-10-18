@@ -35,6 +35,8 @@
 #define NERR_SUCCESS           0
 #define NERR_ENOENT            2
 #define NERR_EEXIST            17
+#define NERR_EPROTO            71
+#define NERR_EALREADY          149
 
 extern int errno_to_nerr(int e);
 

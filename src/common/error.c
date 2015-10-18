@@ -29,8 +29,10 @@
 int errno_to_nerr(int e)
 {
 	switch (e) {
+		MAP_ERRNO(EALREADY);
 		MAP_ERRNO(EEXIST);
 		MAP_ERRNO(ENOENT);
+		MAP_ERRNO(EPROTO);
 		case 0:
 			return NERR_SUCCESS;
 	}
