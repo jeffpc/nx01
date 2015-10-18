@@ -58,7 +58,7 @@
 static const struct cmdtbl {
 	const char *name;
 	uint16_t opcode;
-	int (*handler)(union cmd *);
+	int (*handler)(struct fsconn *, union cmd *);
 	size_t reqoff;
 	size_t resoff;
 
@@ -169,7 +169,7 @@ bool process_connection(struct fsconn *conn)
 		}
 
 		/* invoke the handler */
-		ret = def->handler(&cmd);
+		ret = def->handler(conn, &cmd);
 
 		/* send back the response header */
 		ok = send_response(&xdr, conn->fd, ret);

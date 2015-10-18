@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +27,7 @@
 
 #include "cmds.h"
 
-int cmd_login(union cmd *cmd)
+int cmd_login(struct fsconn *conn, union cmd *cmd)
 {
 	struct rpc_login_req *req = &cmd->login.req;
 	struct rpc_login_res *res = &cmd->login.res;
@@ -34,9 +35,16 @@ int cmd_login(union cmd *cmd)
 
 	printf("LOGIN: conn = '%s', vg = '%s'\n", req->conn, req->vg);
 
+	if (conn->vg) {
+		printf("LOGIN: error: this connection already logged in.\n");
+		return EALREADY;
+	}
+
 	vg = objstore_vg_lookup(req->vg);
 	if (!vg)
 		return ENOENT;
+
+	conn->vg = vg;
 
 	return objstore_getroot(vg, &res->root);
 }
