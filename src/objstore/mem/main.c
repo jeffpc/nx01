@@ -28,6 +28,7 @@
 #include <nomad/time.h>
 #include <nomad/rand.h>
 #include <nomad/atomic.h>
+#include <nomad/mutex.h>
 #include <nomad/objstore_impl.h>
 
 /* each <oid,ver> */
@@ -51,6 +52,8 @@ struct memstore {
 
 	uint32_t ds; /* our dataset id */
 	atomic64_t next_oid_uniq; /* the next unique part of noid */
+
+	pthread_mutex_t lock;
 };
 
 static int cmp(const void *va, const void *vb)
@@ -124,6 +127,8 @@ static int mem_vol_create(struct objstore_vol *store)
 		return PTR_ERR(obj);
 	}
 
+	mxinit(&ms->lock);
+
 	ms->ds = rand32();
 
 	noid_set(&obj->oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
@@ -145,8 +150,10 @@ static int mem_vol_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
 
 	ms = store->private;
 
+	mxlock(&ms->lock);
 	hndl->oid = ms->root->oid;
 	hndl->clock = nvclock_dup(ms->root->ver);
+	mxunlock(&ms->lock);
 
 	if (!hndl->clock)
 		return ENOMEM;
@@ -160,6 +167,7 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 	struct memstore *ms;
 	struct memobj *obj;
 	struct memobj key;
+	int ret;
 
 	if (!vol || !hndl || !attr)
 		return EINVAL;
@@ -169,13 +177,19 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 	key.oid = hndl->oid;
 	key.ver = hndl->clock;
 
+	mxlock(&ms->lock);
+
 	obj = avl_find(&ms->objs, &key, NULL);
-	if (!obj)
-		return ENOENT;
+	if (!obj) {
+		ret = ENOENT;
+	} else {
+		ret = 0;
+		*attr = obj->attrs;
+	}
 
-	*attr = obj->attrs;
+	mxunlock(&ms->lock);
 
-	return 0;
+	return ret;
 }
 
 static const struct vol_ops vol_ops = {
