@@ -154,12 +154,37 @@ static int mem_vol_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
 	return 0;
 }
 
+static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
+			   struct nattr *attr)
+{
+	struct memstore *ms;
+	struct memobj *obj;
+	struct memobj key;
+
+	if (!vol || !hndl || !attr)
+		return EINVAL;
+
+	ms = vol->private;
+
+	key.oid = hndl->oid;
+	key.ver = hndl->clock;
+
+	obj = avl_find(&ms->objs, &key, NULL);
+	if (!obj)
+		return ENOENT;
+
+	*attr = obj->attrs;
+
+	return 0;
+}
+
 static const struct vol_ops vol_ops = {
 	.create = mem_vol_create,
 	.getroot = mem_vol_getroot,
 };
 
 static const struct obj_ops obj_ops = {
+	.getattr = mem_obj_getattr,
 };
 
 const struct objstore_vol_def objvol = {
