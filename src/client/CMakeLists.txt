@@ -27,6 +27,7 @@ add_executable(nomad-client
 	# assorted RPC handlers
 	cmd_login.c
 	cmd_nop.c
+	cmd_obj.c
 )
 
 target_link_libraries(nomad-client

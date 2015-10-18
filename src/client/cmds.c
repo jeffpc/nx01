@@ -61,6 +61,7 @@ static const struct cmdtbl {
 } cmdtbl[] = {
 	CMD_ARG_RET(NRPC_LOGIN,         login,         cmd_login),
 	CMD        (NRPC_NOP,           nop,           cmd_nop),
+	CMD_ARG_RET(NRPC_STAT,          stat,          cmd_stat),
 };
 
 #define MAP_ERRNO(errno)		\

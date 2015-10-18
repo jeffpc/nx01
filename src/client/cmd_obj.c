@@ -20,32 +20,11 @@
  * SOFTWARE.
  */
 
-#ifndef __NOMAD_CLIENT_CMDS_H
-#define __NOMAD_CLIENT_CMDS_H
+#include <nomad/error.h>
 
-#include <nomad/rpc_fs.h>
+#include "cmds.h"
 
-union cmd {
-	/* login */
-	struct {
-		struct rpc_login_req req;
-		struct rpc_login_res res;
-	} login;
-
-	/* nop - no req & no res */
-
-	/* stat */
-	struct {
-		struct rpc_stat_req req;
-		struct rpc_stat_res res;
-	} stat;
-};
-
-extern bool process_connection(int fd);
-
-/* RPC handlers */
-extern int cmd_login(union cmd *cmd);
-extern int cmd_nop(union cmd *cmd);
-extern int cmd_stat(union cmd *cmd);
-
-#endif
+int cmd_stat(union cmd *cmd)
+{
+	return ENOTSUP;
+}
