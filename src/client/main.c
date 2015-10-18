@@ -30,6 +30,8 @@
 #include <nomad/connsvc.h>
 #include <nomad/rpc_fs.h>
 
+#include "cmds.h"
+
 #define CLIENT_DAEMON_PORT	2323
 
 #define MAP_ERRNO(errno)		\
@@ -67,6 +69,7 @@ static bool process_command(int fd)
 {
 	struct rpc_header_req cmd;
 	bool ok = false;
+	int ret;
 	XDR xdr;
 
 	xdrfd_create(&xdr, fd, XDR_DECODE);
@@ -78,7 +81,8 @@ static bool process_command(int fd)
 
 	switch (cmd.opcode) {
 		case NRPC_NOP:
-			ok = true;
+			ret = cmd_nop();
+			ok = send_response(&xdr, fd, ret);
 			break;
 		default:
 			send_response(&xdr, fd, ENOTSUP);
