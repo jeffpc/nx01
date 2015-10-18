@@ -37,6 +37,10 @@ NOP (0x0000)
 
 This is a simple no-operation.
 
+Limitations
+-----------
+None.
+
 
 LOGIN (0x0001)
 ==============
@@ -54,6 +58,11 @@ Outputs
 -------
 * obj handle of root
 
+Limitations
+-----------
+At most one successful LOGIN is allowed per connection.  All LOGIN attempts
+after a successful LOGIN will fail with `EALREADY`.
+
 
 STAT (0x0002)
 =============
@@ -67,6 +76,10 @@ Inputs
 Outputs
 -------
 * attributes
+
+Limitations
+-----------
+Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 
 
 LOOKUP (0x0003)
@@ -99,6 +112,10 @@ too.  The using replacing a file (e.g., foo) with a new one will cause the
 directory version to get incremented.  Since the directory didn't get
 replaced (it got modified only), it's oid will stay the same.
 
+Limitations
+-----------
+Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
+
 
 CREATE (0x0004)
 ===============
@@ -118,6 +135,10 @@ Outputs
 -------
 * new file/dir/etc.'s obj handle
 
+Limitations
+-----------
+Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
+
 
 REMOVE (0x0005)
 ===============
@@ -133,6 +154,10 @@ Inputs
 
 THOUGHT: Should this RPC also take an obj handle of the object we want to
 remove?
+
+Limitations
+-----------
+Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 
 
 Other RPCs that may end up useful
