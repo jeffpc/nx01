@@ -49,6 +49,7 @@ install(FILES	include/nomad/atomic.h
 		include/nomad/attr.h
 		include/nomad/config.h
 		include/nomad/error.h
+		include/nomad/iter.h
 		include/nomad/malloc.h
 		include/nomad/mutex.h
 		include/nomad/rand.h
