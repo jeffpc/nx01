@@ -33,8 +33,26 @@
  */
 #define NERR_UNKNOWN_ERROR     -1
 #define NERR_SUCCESS           0
+#define NERR_EPERM             1
 #define NERR_ENOENT            2
+#define NERR_ESRCH             3
+#define NERR_EINTR             4
+#define NERR_EIO               5
+#define NERR_ENXIO             6
+#define NERR_E2BIG             7
+#define NERR_EBADF             9
+#define NERR_EAGAIN            11
+#define NERR_ENOMEM            12
+#define NERR_EACCES            13
+#define NERR_EFAULT            14
+#define NERR_EBUSY             16
 #define NERR_EEXIST            17
+#define NERR_EXDEV             18
+#define NERR_ENODEV            19
+#define NERR_ENOTDIR           20
+#define NERR_EISDIR            21
+#define NERR_EINVAL            22
+#define NERR_ENOSPC            28
 #define NERR_EPROTO            71
 #define NERR_EALREADY          149
 
