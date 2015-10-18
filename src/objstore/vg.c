@@ -95,3 +95,25 @@ struct objstore *objstore_vg_lookup(const char *name)
 
 	return vg;
 }
+
+int objstore_getroot(struct objstore *vg, struct nobjhndl *hndl)
+{
+	struct objstore_vol *vol;
+	int ret;
+
+	if (!vg || !hndl)
+		return EINVAL;
+
+	/*
+	 * TODO: we're assuming OS_VG_SIMPLE
+	 */
+	mxlock(&vg->lock);
+	vol = list_head(&vg->vols);
+	if (vol)
+		ret = objstore_vol_getroot(vol, hndl);
+	else
+		ret = ENXIO;
+	mxunlock(&vg->lock);
+
+	return ret;
+}

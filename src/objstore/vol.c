@@ -24,27 +24,13 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-int objstore_getroot(struct objstore *vg, struct nobjhndl *hndl)
+int objstore_vol_getroot(struct objstore_vol *vol, struct nobjhndl *hndl)
 {
-	struct objstore_vol *vol;
-	int ret;
-
-	if (!vg || !hndl)
+	if (!vol || !hndl)
 		return EINVAL;
 
-	mxlock(&vg->lock);
+	if (!vol->def->vol_ops || !vol->def->vol_ops->getroot)
+		return ENOTSUP;
 
-	/*
-	 * FIXME: we only inspect the first volume
-	 */
-	vol = list_head(&vg->vols);
-
-	if (vol && vol->def->vol_ops && vol->def->vol_ops->getroot)
-		ret = vol->def->vol_ops->getroot(vol, hndl);
-	else
-		ret = ENOTSUP;
-
-	mxunlock(&vg->lock);
-
-	return ret;
+	return vol->def->vol_ops->getroot(vol, hndl);
 }

@@ -64,4 +64,7 @@ struct objstore_vol_def {
 extern int objstore_vg_init(void);
 extern void objstore_vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
 
+/* wrappers for volume ops */
+extern int objstore_vol_getroot(struct objstore_vol *vol, struct nobjhndl *hndl);
+
 #endif
