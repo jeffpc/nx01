@@ -203,6 +203,7 @@ static void wrap_taskq_callback(void *arg)
 
 	cb->state->func(cb->fd, cb->state->private);
 
+	close(cb->fd);
 	free(cb);
 }
 

@@ -101,8 +101,6 @@ static void process_connection(int fd, void *arg)
 
 	while (process_command(fd))
 		;
-
-	close(fd);
 }
 
 int main(int argc, char **argv)
