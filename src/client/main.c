@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 		goto err_vg;
 	}
 
-	ret = connsvc(NULL, CLIENT_DAEMON_PORT, connection_acceptor, vg);
+	ret = connsvc(NULL, CLIENT_DAEMON_PORT, connection_acceptor, NULL);
 
 	fprintf(stderr, "connsvc() = %d (%s)\n", ret, strerror(ret));
 
