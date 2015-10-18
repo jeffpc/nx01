@@ -412,21 +412,54 @@ int nvclock_cmp_total(const struct nvclock *c1, const struct nvclock *c2)
 	return 0xbad; /* pacify gcc */
 }
 
-bool_t xdr_nvclock(XDR *xdrs, struct nvclock *clock)
+bool_t xdr_nvclock(XDR *xdrs, struct nvclock **arg)
 {
+	bool shouldfree = false;
+	struct nvclock dummy;
+	struct nvclock *clock;
 	int i;
+
+	clock = *arg;
 
 	if (xdrs->x_op == XDR_FREE) {
 		nvclock_free(clock);
 		return TRUE;
 	}
 
+	/*
+	 * If we don't have clock...
+	 */
+	if (!clock && (xdrs->x_op == XDR_ENCODE)) {
+		/*
+		 * ...send one filled with zeros.
+		 */
+		memset(&dummy, 0, sizeof(struct nvclock));
+		clock = &dummy;
+	} else if (!clock && (xdrs->x_op == XDR_DECODE)) {
+		/*
+		 * ...recieve into a newly allocated one.
+		 */
+		clock = nvclock_alloc();
+		if (!clock)
+			return FALSE;
+		*arg = clock;
+		shouldfree = true;
+	}
+
 	for (i = 0; i < NVCLOCK_NUM_NODES; i++) {
 		if (!xdr_uint64_t(xdrs, &clock->ent[i].node))
-			return FALSE;
+			goto err;
 		if (!xdr_uint64_t(xdrs, &clock->ent[i].seq))
-			return FALSE;
+			goto err;
 	}
 
 	return TRUE;
+
+err:
+	if (shouldfree) {
+		nvclock_free(clock);
+		*arg = NULL;
+	}
+
+	return FALSE;
 }

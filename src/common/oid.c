@@ -57,7 +57,7 @@ bool_t xdr_nobjhndl(XDR *xdrs, struct nobjhndl *hndl)
 {
 	if (!xdr_noid(xdrs, &hndl->oid))
 		return FALSE;
-	if (!xdr_nvclock(xdrs, hndl->clock))
+	if (!xdr_nvclock(xdrs, &hndl->clock))
 		return FALSE;
 	return TRUE;
 }
