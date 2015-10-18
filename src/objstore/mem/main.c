@@ -121,16 +121,17 @@ static int mem_vol_create(struct objstore_vol *store)
 	avl_create(&ms->objs, cmp, sizeof(struct memobj),
 		   offsetof(struct memobj, node));
 
+	mxinit(&ms->lock);
+
+	ms->ds = rand32();
+
 	obj = newobj(NATTR_DIR | 0777);
 	if (IS_ERR(obj)) {
 		free(ms);
 		return PTR_ERR(obj);
 	}
 
-	mxinit(&ms->lock);
-
-	ms->ds = rand32();
-
+	obj->attrs.nlink = 1;
 	noid_set(&obj->oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
 
 	ms->root = obj;
