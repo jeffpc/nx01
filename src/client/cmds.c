@@ -76,34 +76,16 @@ static const struct cmdtbl {
 	CMD_ARG_RET(NRPC_STAT,          stat,          cmd_stat),
 };
 
-#define MAP_ERRNO(errno)		\
-	case errno:			\
-		cmd.err = NERR_##errno;	\
-		break
-
 static bool send_response(XDR *xdr, int fd, int err)
 {
 	struct rpc_header_res cmd;
-	int ret;
-
-	switch (err) {
-		MAP_ERRNO(ENOENT);
-		MAP_ERRNO(EEXIST);
-		case 0:
-			cmd.err = NERR_SUCCESS;
-			break;
-		default:
-			fprintf(stderr, "%s cannot map errno %d (%s) to NERR_*\n",
-				__func__, err, strerror(err));
-			cmd.err = NERR_UNKNOWN_ERROR;
-			break;
-	}
 
 	xdr_destroy(xdr);
 	xdrfd_create(xdr, fd, XDR_ENCODE);
 
-	ret = xdr_rpc_header_res(xdr, &cmd);
-	if (!ret)
+	cmd.err = errno_to_nerr(err);
+
+	if (!xdr_rpc_header_res(xdr, &cmd))
 		return false; /* failed to send */
 
 	if (cmd.err != NERR_SUCCESS)
