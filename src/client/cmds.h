@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +25,7 @@
 #define __NOMAD_CLIENT_CMDS_H
 
 #include <nomad/rpc_fs.h>
+#include <nomad/objstore.h>
 
 union cmd {
 	/* create */
@@ -58,7 +60,12 @@ union cmd {
 	} stat;
 };
 
-extern bool process_connection(int fd);
+struct fsconn {
+	int fd;
+	struct objstore *vg;
+};
+
+extern bool process_connection(struct fsconn *conn);
 
 /* RPC handlers */
 extern int cmd_create(union cmd *cmd);
