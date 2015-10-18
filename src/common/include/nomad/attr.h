@@ -45,14 +45,14 @@
 #define NATTR_SGID	0x0400 /* set-gid bit */
 #define NATTR_SUID	0x0800 /* set-uid bit */
 
-#define NATTR_ISREG(mode)	(((mode) & 0x NATTR_TMASK) == NATTR_REG)
-#define NATTR_ISDIR(mode)	(((mode) & 0x NATTR_TMASK) == NATTR_DIR)
-#define NATTR_ISFIFO(mode)	(((mode) & 0x NATTR_TMASK) == NATTR_FIFO)
-#define NATTR_ISCHR(mode)	(((mode) & 0x NATTR_TMASK) == NATTR_CHR)
-#define NATTR_ISBLK(mode)	(((mode) & 0x NATTR_TMASK) == NATTR_BLK)
-#define NATTR_ISLNK(mode)	(((mode) & 0x NATTR_TMASK) == NATTR_LNK)
-#define NATTR_ISSOCK(mode)	(((mode) & 0x NATTR_TMASK) == NATTR_SOCK)
-#define NATTR_ISDOOR(mode)	(((mode) & 0x NATTR_TMASK) == NATTR_DOOR)
+#define NATTR_ISREG(mode)	(((mode) & NATTR_TMASK) == NATTR_REG)
+#define NATTR_ISDIR(mode)	(((mode) & NATTR_TMASK) == NATTR_DIR)
+#define NATTR_ISFIFO(mode)	(((mode) & NATTR_TMASK) == NATTR_FIFO)
+#define NATTR_ISCHR(mode)	(((mode) & NATTR_TMASK) == NATTR_CHR)
+#define NATTR_ISBLK(mode)	(((mode) & NATTR_TMASK) == NATTR_BLK)
+#define NATTR_ISLNK(mode)	(((mode) & NATTR_TMASK) == NATTR_LNK)
+#define NATTR_ISSOCK(mode)	(((mode) & NATTR_TMASK) == NATTR_SOCK)
+#define NATTR_ISDOOR(mode)	(((mode) & NATTR_TMASK) == NATTR_DOOR)
 
 struct nattr {
 	uint16_t _reserved;
