@@ -25,6 +25,7 @@ add_executable(nomad-client
 	cmds.c
 
 	# assorted RPC handlers
+	cmd_login.c
 	cmd_nop.c
 )
 

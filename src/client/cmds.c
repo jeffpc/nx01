@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+#include <stddef.h>
+
 #include <nomad/error.h>
 #include <nomad/rpc_fs.h>
 
@@ -30,6 +32,17 @@
 		.name = #op,				\
 		.opcode = (op),				\
 		.handler = (hndlr),			\
+	}
+
+#define CMD_ARG_RET(op, what, hndlr)			\
+	{						\
+		.name = #op,				\
+		.opcode = (op),				\
+		.handler = (hndlr),			\
+		.reqoff = offsetof(union cmd, what.req),\
+		.resoff = offsetof(union cmd, what.res),\
+		.req = (void *) xdr_rpc_##what##_req,	\
+		.res = (void *) xdr_rpc_##what##_res,	\
 	}
 
 static const struct cmdtbl {
@@ -46,6 +59,7 @@ static const struct cmdtbl {
 	bool_t (*req)(XDR *, void *);
 	bool_t (*res)(XDR *, void *);
 } cmdtbl[] = {
+	CMD_ARG_RET(NRPC_LOGIN,         login,         cmd_login),
 	CMD        (NRPC_NOP,           nop,           cmd_nop),
 };
 
