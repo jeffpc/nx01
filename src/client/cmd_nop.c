@@ -22,7 +22,7 @@
 
 #include "cmds.h"
 
-int cmd_nop(void)
+int cmd_nop(union cmd *cmd)
 {
 	return 0;
 }

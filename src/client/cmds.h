@@ -23,6 +23,15 @@
 #ifndef __NOMAD_CLIENT_CMDS_H
 #define __NOMAD_CLIENT_CMDS_H
 
-int cmd_nop(void);
+#include <nomad/rpc_fs.h>
+
+union cmd {
+	/* nop - no req & no res */
+};
+
+extern bool process_connection(int fd);
+
+/* RPC handlers */
+extern int cmd_nop(union cmd *cmd);
 
 #endif

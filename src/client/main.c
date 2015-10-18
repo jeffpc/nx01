@@ -28,78 +28,16 @@
 #include <nomad/types.h>
 #include <nomad/objstore.h>
 #include <nomad/connsvc.h>
-#include <nomad/rpc_fs.h>
 
 #include "cmds.h"
 
 #define CLIENT_DAEMON_PORT	2323
 
-#define MAP_ERRNO(errno)		\
-	case errno:			\
-		cmd.err = NERR_##errno;	\
-		break
-
-static bool send_response(XDR *xdr, int fd, int err)
-{
-	struct rpc_header_res cmd;
-	int ret;
-
-	switch (err) {
-		MAP_ERRNO(ENOENT);
-		MAP_ERRNO(EEXIST);
-		case 0:
-			cmd.err = NERR_SUCCESS;
-			break;
-		default:
-			fprintf(stderr, "%s cannot map errno %d (%s) to NERR_*\n",
-				__func__, err, strerror(err));
-			cmd.err = NERR_UNKNOWN_ERROR;
-			break;
-	}
-
-	xdr_destroy(xdr);
-	xdrfd_create(xdr, fd, XDR_ENCODE);
-
-	ret = xdr_rpc_header_res(xdr, &cmd);
-
-	return ret ? true : false;
-}
-
-static bool process_command(int fd)
-{
-	struct rpc_header_req cmd;
-	bool ok = false;
-	int ret;
-	XDR xdr;
-
-	xdrfd_create(&xdr, fd, XDR_DECODE);
-
-	if (!xdr_rpc_header_req(&xdr, &cmd))
-		goto err;
-
-	printf("got opcode %u\n", cmd.opcode);
-
-	switch (cmd.opcode) {
-		case NRPC_NOP:
-			ret = cmd_nop();
-			ok = send_response(&xdr, fd, ret);
-			break;
-		default:
-			send_response(&xdr, fd, ENOTSUP);
-			break;
-	}
-
-err:
-	xdr_destroy(&xdr);
-
-	return ok;
-}
-
-static void process_connection(int fd, void *arg)
+static void connection_acceptor(int fd, void *arg)
 {
 	printf("%s: fd = %d, arg = %p\n", __func__, fd, arg);
 
-	while (process_command(fd))
+	while (process_connection(fd))
 		;
 }
 
@@ -146,7 +84,7 @@ int main(int argc, char **argv)
 		goto err_vg;
 	}
 
-	ret = connsvc(NULL, CLIENT_DAEMON_PORT, process_connection, vg);
+	ret = connsvc(NULL, CLIENT_DAEMON_PORT, connection_acceptor, vg);
 
 	fprintf(stderr, "connsvc() = %d (%s)\n", ret, strerror(ret));
 
