@@ -33,3 +33,8 @@ int cmd_lookup(union cmd *cmd)
 {
 	return ENOTSUP;
 }
+
+int cmd_remove(union cmd *cmd)
+{
+	return ENOTSUP;
+}

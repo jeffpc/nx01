@@ -34,6 +34,15 @@
 		.handler = (hndlr),			\
 	}
 
+#define CMD_ARG(op, what, hndlr)			\
+	{						\
+		.name = #op,				\
+		.opcode = (op),				\
+		.handler = (hndlr),			\
+		.reqoff = offsetof(union cmd, what.req),\
+		.req = (void *) xdr_rpc_##what##_req,	\
+	}
+
 #define CMD_ARG_RET(op, what, hndlr)			\
 	{						\
 		.name = #op,				\
@@ -63,6 +72,7 @@ static const struct cmdtbl {
 	CMD_ARG_RET(NRPC_LOGIN,         login,         cmd_login),
 	CMD_ARG_RET(NRPC_LOOKUP,        lookup,        cmd_lookup),
 	CMD        (NRPC_NOP,           nop,           cmd_nop),
+	CMD_ARG    (NRPC_REMOVE,        remove,        cmd_remove),
 	CMD_ARG_RET(NRPC_STAT,          stat,          cmd_stat),
 };
 

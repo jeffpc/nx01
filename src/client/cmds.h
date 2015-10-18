@@ -46,6 +46,11 @@ union cmd {
 
 	/* nop - no req & no res */
 
+	/* remove */
+	struct {
+		struct rpc_remove_req req;
+	} remove;
+
 	/* stat */
 	struct {
 		struct rpc_stat_req req;
@@ -60,6 +65,7 @@ extern int cmd_create(union cmd *cmd);
 extern int cmd_login(union cmd *cmd);
 extern int cmd_lookup(union cmd *cmd);
 extern int cmd_nop(union cmd *cmd);
+extern int cmd_remove(union cmd *cmd);
 extern int cmd_stat(union cmd *cmd);
 
 #endif
