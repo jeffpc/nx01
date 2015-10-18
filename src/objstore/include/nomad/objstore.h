@@ -60,6 +60,7 @@ extern int objstore_init(void);
 
 /* volume group management */
 extern struct objstore *objstore_vg_create(const char *name);
+extern struct objstore *objstore_vg_lookup(const char *name);
 
 /* volume management */
 extern struct objstore_vol *objstore_vol_create(struct objstore *vg,
