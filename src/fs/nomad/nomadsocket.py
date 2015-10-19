@@ -1,6 +1,7 @@
 from collections import namedtuple
 import datetime
 import nomad.xdrsock
+import os
 
 # TODO: use constantsgen
 NOP = 0
@@ -43,10 +44,19 @@ class NomadSocket(object):
         self.conn = nomad.xdrsock.XDRSock(sock)
 
     def nop(self):
+        """
+        no-op; intended as a ping.
+        """
         self._send_header(NOP)
         self._recv_header()
 
     def login(self, conn_name, vg_name):
+        """
+
+        :param conn_name:
+        :param vg_name:
+        :return: root node handle
+        """
         self._send_header(LOGIN)
         self.conn.send_string(conn_name)
         self.conn.send_string(vg_name)
@@ -55,6 +65,11 @@ class NomadSocket(object):
         return self._recv_handle()
 
     def stat(self, handle):
+        """
+
+        :param handle:
+        :return: attributes
+        """
         self._send_header(STAT)
         self._send_handle(handle)
 
@@ -100,6 +115,9 @@ class NomadSocket(object):
     def _recv_header(self):
         value = self.conn.recv_u32()
         # TODO: raise on nonzero instead? errors map?
+
+        if value:
+            print("Failed: {} ({})".format(value, os.strerror(value)))
         assert value == 0
         return value
 

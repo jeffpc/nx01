@@ -36,12 +36,26 @@ class Nomad(fuse.Fuse):
         # TODO: where to close these? fsdestroy?
         self.sock = socket.create_connection(("localhost", 2323))
         self.conn = nomadsocket.NomadSocket(self.sock)
-        self.conn.nop()
+        self.root_node = self.conn.login("A", "myfiles")
+        root_attr = self.conn.stat(self.root_node)
+        print(root_attr)
 
     def getattr(self, path):
+        handle = self.conn.lookup(self.root_node, path)
+        return self.conn.stat(handle)
+
+    def readdir(self, path, offset, *fh):
         return -errno.ENOSYS
 
-    def getdir(self, path):
+    def unlink(self, path):
+        return self.conn.remove(self.root_node, path)
+
+    # TODO: args
+    def read(self):
+        return -errno.ENOSYS
+
+    # TODO: args
+    def write(self):
         return -errno.ENOSYS
 
 
