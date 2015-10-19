@@ -54,6 +54,7 @@ install(FILES	include/nomad/atomic.h
 		include/nomad/malloc.h
 		include/nomad/mutex.h
 		include/nomad/rand.h
+		include/nomad/refcnt.h
 		include/nomad/time.h
 		include/nomad/types.h
 		include/nomad/vclock.h
