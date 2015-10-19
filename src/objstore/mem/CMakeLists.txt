@@ -32,4 +32,4 @@ target_link_libraries(nomad_objstore_mem
 )
 
 install(TARGETS nomad_objstore_mem DESTINATION lib
-	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+	PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)

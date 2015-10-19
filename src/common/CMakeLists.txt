@@ -45,7 +45,7 @@ target_link_libraries(nomad_common
 )
 
 install(TARGETS nomad_common DESTINATION lib
-	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+	PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 install(FILES	include/nomad/atomic.h
 		include/nomad/attr.h
 		include/nomad/config.h

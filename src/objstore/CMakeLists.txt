@@ -34,7 +34,7 @@ target_link_libraries(nomad_objstore
 )
 
 install(TARGETS nomad_objstore DESTINATION lib
-	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+	PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 install(FILES	include/nomad/objstore.h
 		include/nomad/objstore_impl.h
 	DESTINATION include/nomad
