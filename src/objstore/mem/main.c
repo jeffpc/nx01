@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,11 +40,33 @@ struct memobj {
 
 	/* value */
 	struct nattr attrs;
-	void *blob;
+	void *blob; /* used if the memobj is a file */
+
+	avl_tree_t dentries; /* used if the memobj is a director */
 
 	/* misc */
 	avl_node_t node;
 };
+
+struct mem_dentry {
+	const char *name;
+	struct nobjhndl hndl;
+	avl_node_t node;
+};
+
+static int dentry_cmp(const void *a, const void *b)
+{
+	const struct mem_dentry *na = a;
+	const struct mem_dentry *nb = b;
+	int ret;
+
+	ret = strcmp(na->name, nb->name);
+	if (ret > 0)
+		return 1;
+	else if (ret < 0)
+		return -1;
+	return 0;
+}
 
 /* the whole store */
 struct memstore {
@@ -88,6 +111,11 @@ static struct memobj *newobj(uint16_t mode)
 	if (ret)
 		goto err_vector;
 
+	if (NATTR_ISDIR(mode))
+		avl_create(&obj->dentries, dentry_cmp, sizeof(struct mem_dentry),
+		           offsetof(struct mem_dentry, node));
+
+	obj->blob = NULL;
 	obj->attrs._reserved = 0;
 	obj->attrs.mode = mode;
 	obj->attrs.nlink = 0;
@@ -162,12 +190,22 @@ static int mem_vol_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
 	return 0;
 }
 
+static struct memobj * __mem_obj_lookup(struct memstore *store,
+                                        const struct nobjhndl *hndl)
+{
+	struct memobj key;
+
+	key.oid = hndl->oid;
+	key.ver = hndl->clock;
+
+	return avl_find(&store->objs, &key, NULL);
+}
+
 static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
 			   struct nattr *attr)
 {
 	struct memstore *ms;
 	struct memobj *obj;
-	struct memobj key;
 	int ret;
 
 	if (!vol || !hndl || !attr)
@@ -175,12 +213,10 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 
 	ms = vol->private;
 
-	key.oid = hndl->oid;
-	key.ver = hndl->clock;
-
 	mxlock(&ms->lock);
+	obj = __mem_obj_lookup(ms, hndl);
+	mxunlock(&ms->lock);
 
-	obj = avl_find(&ms->objs, &key, NULL);
 	if (!obj) {
 		ret = ENOENT;
 	} else {
@@ -188,9 +224,42 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 		*attr = obj->attrs;
 	}
 
+	return ret;
+}
+
+static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
+                          const char *name, struct nobjhndl *child)
+{
+	const struct mem_dentry key = {
+		.name = name,
+	};
+	struct memstore *ms;
+	struct mem_dentry *dentry;
+	struct memobj *dirobj;
+
+	if (!vol || !dir || !name || !child)
+		return EINVAL;
+
+	ms = vol->private;
+
+	mxlock(&ms->lock);
+	dirobj = __mem_obj_lookup(ms, dir);
 	mxunlock(&ms->lock);
 
-	return ret;
+	if (!dirobj)
+		return ENOENT;
+
+	/* These objects will eventually need their own locks, too. */
+	dentry = avl_find(&dirobj->dentries, &key, NULL);
+	if (!dentry)
+		return ENOENT;
+
+	child->oid = dentry->hndl.oid;
+	child->clock = nvclock_dup(dentry->hndl.clock);
+	if (!child->clock)
+		return ENOMEM;
+
+	return 0;
 }
 
 static const struct vol_ops vol_ops = {
@@ -200,6 +269,7 @@ static const struct vol_ops vol_ops = {
 
 static const struct obj_ops obj_ops = {
 	.getattr = mem_obj_getattr,
+	.lookup  = mem_obj_lookup,
 };
 
 const struct objstore_vol_def objvol = {
