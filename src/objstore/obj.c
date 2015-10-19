@@ -47,3 +47,15 @@ int vol_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 
 	return vol->def->obj_ops->lookup(vol, dir, name, child);
 }
+
+int vol_create(struct objstore_vol *vol, const struct nobjhndl *dir,
+               const char *name, uint16_t mode, struct nobjhndl *child)
+{
+	if (!vol || !dir || !name || !child)
+		return EINVAL;
+
+	if (!vol->def->obj_ops || !vol->def->obj_ops->create)
+		return ENOTSUP;
+
+	return vol->def->obj_ops->create(vol, dir, name, mode, child);
+}

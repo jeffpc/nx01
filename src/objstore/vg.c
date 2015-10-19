@@ -165,3 +165,30 @@ int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
 
 	return ret;
 }
+
+int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
+                    const char *name, uint16_t mode,
+                    struct nobjhndl *child)
+{
+	struct objstore_vol *vol;
+	int ret;
+
+	printf("%s(%p, %p, '%s', %#o, %p)\n", __func__, vg, dir, name, mode,
+	       child);
+
+	if (!vg || !dir || !name || !child)
+		return EINVAL;
+
+	/*
+	 * TODO: we're assuming OS_VG_SIMPLE
+	 */
+	mxlock(&vg->lock);
+	vol = list_head(&vg->vols);
+	if (vol)
+		ret = vol_create(vol, dir, name, mode, child);
+	else
+		ret = ENXIO;
+	mxunlock(&vg->lock);
+
+	return ret;
+}
