@@ -192,3 +192,28 @@ int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
 
 	return ret;
 }
+
+int objstore_remove(struct objstore *vg, const struct nobjhndl *dir,
+                    const char *name)
+{
+	struct objstore_vol *vol;
+	int ret;
+
+	printf("%s(%p, %p, '%s')\n", __func__, vg, dir, name);
+
+	if (!vg || !dir || !name)
+		return EINVAL;
+
+	/*
+	 * TODO: we're assuming OS_VG_SIMPLE
+	 */
+	mxlock(&vg->lock);
+	vol = list_head(&vg->vols);
+	if (vol)
+		ret = vol_remove(vol, dir, name);
+	else
+		ret = ENXIO;
+	mxunlock(&vg->lock);
+
+	return ret;
+}

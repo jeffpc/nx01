@@ -57,6 +57,8 @@ struct obj_ops {
 	int (*create)(struct objstore_vol *vol, const struct nobjhndl *dir,
 	              const char *name, uint16_t mode,
 	              struct nobjhndl *child);
+	int (*remove)(struct objstore_vol *vol, const struct nobjhndl *dir,
+	              const char *name);
 };
 
 struct objstore_vol_def {
@@ -79,5 +81,7 @@ extern int vol_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
                       const char *name, struct nobjhndl *child);
 extern int vol_create(struct objstore_vol *vol, const struct nobjhndl *dir,
                       const char *name, uint16_t mode, struct nobjhndl *child);
+extern int vol_remove(struct objstore_vol *vol, const struct nobjhndl *dir,
+                      const char *name);
 
 #endif
