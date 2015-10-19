@@ -64,17 +64,16 @@ struct objstore_vol_def {
 };
 
 /* internal volume group management helpers */
-extern int objstore_vg_init(void);
-extern void objstore_vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
+extern int vg_init(void);
+extern void vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
 
 /* wrappers for volume ops */
-extern int objstore_vol_getroot(struct objstore_vol *vol, struct nobjhndl *hndl);
+extern int vol_getroot(struct objstore_vol *vol, struct nobjhndl *hndl);
 
 /* wrappers for object ops */
-extern int objstore_vol_getattr(struct objstore_vol *vol,
-				const struct nobjhndl *hndl, struct nattr *attr);
-extern int objstore_vol_lookup(struct objstore_vol *vol,
-                               const struct nobjhndl *dir, const char *name,
-                               struct nobjhndl *child);
+extern int vol_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
+                       struct nattr *attr);
+extern int vol_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
+                      const char *name, struct nobjhndl *child);
 
 #endif

@@ -24,7 +24,7 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-int objstore_vol_getroot(struct objstore_vol *vol, struct nobjhndl *hndl)
+int vol_getroot(struct objstore_vol *vol, struct nobjhndl *hndl)
 {
 	if (!vol || !hndl)
 		return EINVAL;

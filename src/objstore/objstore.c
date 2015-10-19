@@ -64,7 +64,7 @@ int objstore_init(void)
 {
 	int ret;
 
-	ret = objstore_vg_init();
+	ret = vg_init();
 	if (ret)
 		return ret;
 
@@ -102,7 +102,7 @@ struct objstore_vol *objstore_vol_create(struct objstore *vg, const char *path,
 	if (ret)
 		goto err_path;
 
-	objstore_vg_add_vol(vg, s);
+	vg_add_vol(vg, s);
 
 	return s;
 
