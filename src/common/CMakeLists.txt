@@ -48,7 +48,6 @@ install(TARGETS nomad_common DESTINATION lib
 	PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 install(FILES	include/nomad/atomic.h
 		include/nomad/attr.h
-		include/nomad/config.h
 		include/nomad/error.h
 		include/nomad/iter.h
 		include/nomad/malloc.h
@@ -58,6 +57,7 @@ install(FILES	include/nomad/atomic.h
 		include/nomad/time.h
 		include/nomad/types.h
 		include/nomad/vclock.h
+		${CMAKE_CURRENT_BINARY_DIR}/include/nomad/config.h
 	DESTINATION include/nomad
 	PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
 
