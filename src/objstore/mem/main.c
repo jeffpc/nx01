@@ -49,7 +49,7 @@ struct memobj {
 
 struct mem_dentry {
 	const char *name;
-	struct nobjhndl hndl;
+	struct nobjhndl *handle;
 	avl_node_t node;
 };
 
@@ -253,8 +253,8 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	if (!dentry)
 		return ENOENT;
 
-	child->oid = dentry->hndl.oid;
-	child->clock = nvclock_dup(dentry->hndl.clock);
+	child->oid = dentry->handle->oid;
+	child->clock = nvclock_dup(dentry->handle->clock);
 	if (!child->clock)
 		return ENOMEM;
 
