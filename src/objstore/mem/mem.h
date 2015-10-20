@@ -64,6 +64,7 @@ struct memstore {
 extern const struct obj_ops obj_ops;
 
 extern struct memobj *newobj(uint16_t mode);
+extern void freeobj(struct memobj *obj);
 extern struct memobj *findobj(struct memstore *store,
                               const struct nobjhndl *hndl);
 

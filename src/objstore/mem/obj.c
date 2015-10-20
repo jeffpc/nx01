@@ -87,6 +87,15 @@ err:
 	return ERR_PTR(ret);
 }
 
+void freeobj(struct memobj *obj)
+{
+	if (!obj)
+		return;
+
+	nvclock_free(obj->handle.clock);
+	free(obj);
+}
+
 struct memobj *findobj(struct memstore *store, const struct nobjhndl *hndl)
 {
 	struct memobj key;
