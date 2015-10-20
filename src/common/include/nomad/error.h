@@ -27,6 +27,18 @@
 #include <errno.h>
 #include <string.h>
 
+enum errlevel {
+	CE_DEBUG,
+	CE_INFO,
+	CE_WARN,
+	CE_ERROR,
+	CE_CRIT,
+	CE_PANIC,
+};
+
+extern void cmn_err(enum errlevel level, const char *fmt, ...);
+extern void panic(const char *fmt, ...);
+
 #define MAX_ERRNO	1023
 
 static inline int PTR_ERR(void *ptr)
