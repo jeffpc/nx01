@@ -147,7 +147,8 @@ int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
 	struct objstore_vol *vol;
 	int ret;
 
-	printf("%s(%p, %p, '%s', %p)\n", __func__, vg, dir, name, child);
+	cmn_err(CE_DEBUG, "%s(%p, %p, '%s', %p)", __func__, vg, dir, name,
+		child);
 
 	if (!vg || !dir || !name || !child)
 		return EINVAL;
@@ -173,8 +174,8 @@ int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
 	struct objstore_vol *vol;
 	int ret;
 
-	printf("%s(%p, %p, '%s', %#o, %p)\n", __func__, vg, dir, name, mode,
-	       child);
+	cmn_err(CE_DEBUG, "%s(%p, %p, '%s', %#o, %p)", __func__, vg, dir,
+		name, mode, child);
 
 	if (!vg || !dir || !name || !child)
 		return EINVAL;
@@ -199,7 +200,7 @@ int objstore_remove(struct objstore *vg, const struct nobjhndl *dir,
 	struct objstore_vol *vol;
 	int ret;
 
-	printf("%s(%p, %p, '%s')\n", __func__, vg, dir, name);
+	cmn_err(CE_DEBUG, "%s(%p, %p, '%s')", __func__, vg, dir, name);
 
 	if (!vg || !dir || !name)
 		return EINVAL;

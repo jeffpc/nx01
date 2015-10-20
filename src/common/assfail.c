@@ -30,6 +30,8 @@
 #ifndef HAVE_ASSFAIL
 void assfail(const char *assertion, const char *file, int line)
 {
+	cmn_err(CE_CRIT, "Assertion failed: %s", line);
+
 	__assert(assertion, file, line);
 }
 #endif
@@ -42,6 +44,8 @@ void assfail3(const char *assertion, uintmax_t lhs, const char *op,
 
 	snprintf(msg, sizeof(msg), "%s (%#"PRIx64" %s %#"PRIx64")",
 		 assertion, lhs, op, rhs);
+
+	cmn_err(CE_CRIT, "Assertion failed: %s", msg);
 
 	__assert(msg, file, line);
 }

@@ -41,7 +41,7 @@
  * of what the server is listening for, the same exact steps are needed to
  * start listening on a socket and accept connections.  The difference from
  * the rest of the common library is the fact that this code is not shy
- * about printing errors to standard error.
+ * about printing errors.
  */
 
 #define MAX_SOCK_FDS		8
@@ -69,7 +69,7 @@ static atomic_t server_shutdown;
 
 static void sigterm_handler(int signum, siginfo_t *info, void *unused)
 {
-	fprintf(stderr, "SIGTERM received\n");
+	cmn_err(CE_INFO, "SIGTERM received");
 
 	atomic_set(&server_shutdown, 1);
 }
@@ -86,7 +86,7 @@ static void handle_signals(void)
 
 	ret = sigaction(SIGPIPE, &action, NULL);
 	if (ret)
-		fprintf(stderr, "Failed to ignore SIGPIPE: %s\n",
+		cmn_err(CE_INFO, "Failed to ignore SIGPIPE: %s",
 			strerror(errno));
 
 	action.sa_sigaction = sigterm_handler;
@@ -94,7 +94,7 @@ static void handle_signals(void)
 
 	ret = sigaction(SIGTERM, &action, NULL);
 	if (ret)
-		fprintf(stderr, "Failed to set SIGTERM handler: %s\n",
+		cmn_err(CE_INFO, "Failed to set SIGTERM handler: %s",
 			strerror(errno));
 }
 
@@ -166,7 +166,7 @@ static int start_listening(struct state *state, const char *host,
 				addr = &ipv6->sin6_addr;
 				break;
 			default:
-				fprintf(stderr, "Unsupparted address family: %d\n",
+				cmn_err(CE_INFO, "Unsupparted address family: %d",
 					p->ai_family);
 				addr = NULL;
 				break;
@@ -181,7 +181,7 @@ static int start_listening(struct state *state, const char *host,
 		if (ret && ret != EAFNOSUPPORT)
 			return ret;
 		else if (!ret)
-			fprintf(stderr, "Bound to: %s %s\n", str, strport);
+			cmn_err(CE_INFO, "Bound to: %s %s", str, strport);
 	}
 
 	freeaddrinfo(res);
@@ -232,7 +232,8 @@ static void accept_conns(struct state *state)
 			break;
 
 		if ((ret < 0) && (errno != EINTR))
-			fprintf(stderr, "Error on select: %s\n", strerror(errno));
+			cmn_err(CE_ERROR, "Error on select: %s",
+				strerror(errno));
 
 		for (i = 0; (i < state->nfds) && (ret > 0); i++) {
 			struct cb *cb;
@@ -243,14 +244,14 @@ static void accept_conns(struct state *state)
 			len = sizeof(addr);
 			fd = accept(state->fds[i], (struct sockaddr *) &addr, &len);
 			if (fd == -1) {
-				fprintf(stderr, "Failed to accept from fd %d: %s\n",
+				cmn_err(CE_INFO, "Failed to accept from fd %d: %s",
 					state->fds[i], strerror(errno));
 				continue;
 			}
 
 			cb = malloc(sizeof(struct cb));
 			if (!cb) {
-				fprintf(stderr, "Failed to allocate cb data\n");
+				cmn_err(CE_INFO, "Failed to allocate cb data");
 				continue;
 			}
 
@@ -259,7 +260,7 @@ static void accept_conns(struct state *state)
 
 			if (!taskq_dispatch(state->taskq, wrap_taskq_callback,
 					    cb, 0)) {
-				fprintf(stderr, "Failed to dispatch conn\n");
+				cmn_err(CE_ERROR, "Failed to dispatch conn");
 				free(cb);
 				close(fd);
 			}

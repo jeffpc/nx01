@@ -39,17 +39,11 @@ uint32_t rand32(void)
 	int fd;
 
 	fd = open("/dev/random", O_RDONLY);
-	if (fd == -1) {
-		fprintf(stderr, "Failed to get random number: %s",
-		        strerror(errno));
-		ASSERT(0);
-	}
+	if (fd == -1)
+		panic("Failed to get random number: %s", strerror(errno));
 
-	if (read(fd, &ret, sizeof(ret)) != sizeof(ret)) {
-		fprintf(stderr, "Failed to get random number: %s",
-		        strerror(errno));
-		ASSERT(0);
-	}
+	if (read(fd, &ret, sizeof(ret)) != sizeof(ret))
+		panic("Failed to get random number: %s", strerror(errno));
 
 	close(fd);
 

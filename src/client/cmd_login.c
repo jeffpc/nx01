@@ -33,10 +33,11 @@ int cmd_login(struct fsconn *conn, union cmd *cmd)
 	struct rpc_login_res *res = &cmd->login.res;
 	struct objstore *vg;
 
-	printf("LOGIN: conn = '%s', vg = '%s'\n", req->conn, req->vg);
+	cmn_err(CE_DEBUG, "LOGIN: conn = '%s', vg = '%s'", req->conn, req->vg);
 
 	if (conn->vg) {
-		printf("LOGIN: error: this connection already logged in.\n");
+		cmn_err(CE_INFO, "LOGIN: error: this connection "
+			"already logged in.");
 		return EALREADY;
 	}
 

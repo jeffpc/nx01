@@ -40,7 +40,7 @@ static void connection_acceptor(int fd, void *arg)
 
 	conn.fd = fd;
 	conn.vg = NULL;
-	printf("%s: fd = %d, arg = %p\n", __func__, fd, arg);
+	cmn_err(CE_DEBUG, "%s: fd = %d, arg = %p", __func__, fd, arg);
 
 	while (process_connection(&conn))
 		;
@@ -62,36 +62,36 @@ int main(int argc, char **argv)
 
 	ret = objstore_init();
 	if (ret) {
-		fprintf(stderr, "objstore_init() = %d (%s)\n", ret,
+		cmn_err(CE_CRIT, "objstore_init() = %d (%s)", ret,
 			strerror(ret));
 
 		if (ret == ENOENT)
-			fprintf(stderr, "Did you set LD_LIBRARY_PATH?\n");
+			cmn_err(CE_CRIT, "Did you set LD_LIBRARY_PATH?");
 
 		goto err;
 	}
 
 	vg = objstore_vg_create("myfiles", OS_VG_SIMPLE);
-	fprintf(stderr, "vg = %p\n", vg);
+	cmn_err(CE_DEBUG, "vg = %p", vg);
 
 	if (IS_ERR(vg)) {
 		ret = PTR_ERR(vg);
-		fprintf(stderr, "error: %s\n", strerror(ret));
+		cmn_err(CE_CRIT, "error: %s", strerror(ret));
 		goto err_init;
 	}
 
 	vol = objstore_vol_create(vg, "fauxpath", OS_MODE_STORE);
-	fprintf(stderr, "vol = %p\n", vol);
+	cmn_err(CE_DEBUG, "vol = %p", vol);
 
 	if (IS_ERR(vol)) {
 		ret = PTR_ERR(vol);
-		fprintf(stderr, "error: %s\n", strerror(ret));
+		cmn_err(CE_CRIT, "error: %s", strerror(ret));
 		goto err_vg;
 	}
 
 	ret = connsvc(NULL, CLIENT_DAEMON_PORT, connection_acceptor, NULL);
 
-	fprintf(stderr, "connsvc() = %d (%s)\n", ret, strerror(ret));
+	cmn_err(CE_DEBUG, "connsvc() = %d (%s)", ret, strerror(ret));
 
 	/* XXX: undo objstore_vol_create() */
 

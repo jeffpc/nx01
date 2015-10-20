@@ -132,7 +132,7 @@ bool process_connection(struct fsconn *conn)
 	if (!xdr_rpc_header_req(&xdr, &hdr))
 		goto out;
 
-	printf("got opcode %u\n", hdr.opcode);
+	cmn_err(CE_DEBUG, "got opcode %u", hdr.opcode);
 
 	ret = ENOTSUP;
 
@@ -146,13 +146,13 @@ bool process_connection(struct fsconn *conn)
 		/*
 		 * we found the command handler
 		 */
-		printf("opcode decoded as: %s\n", def->name);
+		cmn_err(CE_DEBUG, "opcode decoded as: %s", def->name);
 
 		/* fetch arguments */
 		if (def->req) {
 			ok = fetch_args(&xdr, def, &cmd);
 			if (!ok) {
-				printf("failed to fetch args\n");
+				cmn_err(CE_ERROR, "failed to fetch args");
 				goto out;
 			}
 		}
@@ -160,7 +160,7 @@ bool process_connection(struct fsconn *conn)
 		/* if login is required, make sure it happened */
 		if (def->requires_login && !conn->vg) {
 			ret = EPROTO;
-			printf("must do LOGIN before this operation\n");
+			cmn_err(CE_ERROR, "must do LOGIN before this operation");
 			break;
 		}
 
