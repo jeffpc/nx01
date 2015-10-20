@@ -212,6 +212,9 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	if (!dirobj)
 		return ENOENT;
 
+	if (!NATTR_ISDIR(dirobj->attrs.mode))
+		return ENOTDIR;
+
 	/* These objects will eventually need their own locks, too. */
 	dentry = avl_find(&dirobj->dentries, &key, NULL);
 	if (!dentry)
