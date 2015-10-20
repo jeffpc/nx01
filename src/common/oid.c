@@ -54,18 +54,20 @@ bool_t xdr_noid(XDR *xdrs, struct noid *oid)
 	return TRUE;
 }
 
-int nobjhndl_cpy(struct nobjhndl *dst, const struct nobjhndl *src)
+int nobjhndl_cpy(struct nobjhndl *dst, const struct noid *oid,
+		 const struct nvclock *clock)
 {
-	if (!dst || !src)
+	if (!dst || !oid)
 		return EINVAL;
 
-	dst->oid = src->oid;
-	dst->clock = src->clock;
+	dst->oid = *oid;
 
-	if (!src->clock)
+	if (!clock) {
+		dst->clock = NULL;
 		return 0;
+	}
 
-	dst->clock = nvclock_dup(src->clock);
+	dst->clock = nvclock_dup(clock);
 	return dst->clock ? 0 : ENOMEM;
 }
 
