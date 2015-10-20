@@ -68,6 +68,7 @@ extern void noid_set(struct noid *n1, uint32_t ds, uint64_t uniq);
 extern int noid_cmp(const struct noid *n1, const struct noid *n2);
 extern bool_t xdr_noid(XDR *xdrs, struct noid *oid);
 
+extern int nobjhndl_cpy(struct nobjhndl *dst, const struct nobjhndl *src);
 extern bool_t xdr_nobjhndl(XDR *xdrs, struct nobjhndl *hndl);
 
 extern void nuuid_clear(struct nuuid *uuid);

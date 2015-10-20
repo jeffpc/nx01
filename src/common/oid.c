@@ -21,6 +21,7 @@
  */
 
 #include <nomad/types.h>
+#include <nomad/error.h>
 
 int noid_cmp(const struct noid *n1, const struct noid *n2)
 {
@@ -51,6 +52,21 @@ bool_t xdr_noid(XDR *xdrs, struct noid *oid)
 	if (!xdr_uint64_t(xdrs, &oid->uniq))
 		return FALSE;
 	return TRUE;
+}
+
+int nobjhndl_cpy(struct nobjhndl *dst, const struct nobjhndl *src)
+{
+	if (!dst || !src)
+		return EINVAL;
+
+	dst->oid = src->oid;
+	dst->clock = src->clock;
+
+	if (!src->clock)
+		return 0;
+
+	dst->clock = nvclock_dup(src->clock);
+	return dst->clock ? 0 : ENOMEM;
 }
 
 bool_t xdr_nobjhndl(XDR *xdrs, struct nobjhndl *hndl)
