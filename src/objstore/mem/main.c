@@ -21,37 +21,15 @@
  * SOFTWARE.
  */
 
-#include <sys/avl.h>
 #include <stdlib.h>
 #include <stddef.h>
 
 #include <nomad/error.h>
 #include <nomad/time.h>
 #include <nomad/rand.h>
-#include <nomad/atomic.h>
-#include <nomad/mutex.h>
 #include <nomad/objstore_impl.h>
 
-/* each <oid,ver> */
-struct memobj {
-	/* key */
-	struct nobjhndl handle;
-
-	/* value */
-	struct nattr attrs;
-	void *blob; /* used if the memobj is a file */
-
-	avl_tree_t dentries; /* used if the memobj is a director */
-
-	/* misc */
-	avl_node_t node;
-};
-
-struct mem_dentry {
-	const char *name;
-	struct nobjhndl *handle;
-	avl_node_t node;
-};
+#include "mem.h"
 
 static int dentry_cmp(const void *a, const void *b)
 {
@@ -66,17 +44,6 @@ static int dentry_cmp(const void *a, const void *b)
 		return -1;
 	return 0;
 }
-
-/* the whole store */
-struct memstore {
-	avl_tree_t objs;
-	struct memobj *root;
-
-	uint32_t ds; /* our dataset id */
-	atomic64_t next_oid_uniq; /* the next unique part of noid */
-
-	pthread_mutex_t lock;
-};
 
 static int cmp(const void *va, const void *vb)
 {
