@@ -64,9 +64,8 @@ struct memobj *newobj(uint16_t mode)
 	if (ret)
 		goto err_vector;
 
-	if (NATTR_ISDIR(mode))
-		avl_create(&obj->dentries, dentry_cmp, sizeof(struct mem_dentry),
-		           offsetof(struct mem_dentry, node));
+	avl_create(&obj->dentries, dentry_cmp, sizeof(struct mem_dentry),
+	           offsetof(struct mem_dentry, node));
 
 	obj->blob = NULL;
 	obj->attrs._reserved = 0;
@@ -94,6 +93,7 @@ void freeobj(struct memobj *obj)
 	if (!obj)
 		return;
 
+	avl_destroy(&obj->dentries);
 	nvclock_free(obj->handle.clock);
 	free(obj);
 }
