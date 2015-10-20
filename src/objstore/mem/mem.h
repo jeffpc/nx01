@@ -44,6 +44,7 @@ struct memobj {
 	/* misc */
 	avl_node_t node;
 	atomic_t refcnt;
+	pthread_mutex_t lock;
 };
 
 struct mem_dentry {

@@ -55,6 +55,7 @@ struct memobj *newobj(uint16_t mode)
 		goto err;
 
 	atomic_set(&obj->refcnt, 1);
+	mxinit(&obj->lock);
 
 	obj->handle.clock = nvclock_alloc();
 	if (!obj->handle.clock)
@@ -93,6 +94,7 @@ void freeobj(struct memobj *obj)
 	if (!obj)
 		return;
 
+	mxdestroy(&obj->lock);
 	avl_destroy(&obj->dentries);
 	nvclock_free(obj->handle.clock);
 	free(obj);
@@ -128,7 +130,9 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 		ret = ENOENT;
 	} else {
 		ret = 0;
+		mxlock(&obj->lock);
 		*attr = obj->attrs;
+		mxunlock(&obj->lock);
 		memobj_putref(obj);
 	}
 
@@ -144,6 +148,7 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	struct memstore *ms;
 	struct mem_dentry *dentry;
 	struct memobj *dirobj;
+	int ret;
 
 	if (!vol || !dir || !name || !child)
 		return EINVAL;
@@ -156,6 +161,8 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 
 	if (!dirobj)
 		return ENOENT;
+
+	mxlock(&dirobj->lock);
 
 	if (!NATTR_ISDIR(dirobj->attrs.mode)) {
 		ret = ENOTDIR;
@@ -171,6 +178,7 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	ret = nobjhndl_cpy(child, dentry->handle);
 
 err_unlock:
+	mxunlock(&dirobj->lock);
 
 	memobj_putref(dirobj);
 
