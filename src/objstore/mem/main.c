@@ -25,27 +25,12 @@
 #include <stddef.h>
 
 #include <nomad/error.h>
-#include <nomad/time.h>
 #include <nomad/rand.h>
 #include <nomad/objstore_impl.h>
 
 #include "mem.h"
 
-static int dentry_cmp(const void *a, const void *b)
-{
-	const struct mem_dentry *na = a;
-	const struct mem_dentry *nb = b;
-	int ret;
-
-	ret = strcmp(na->name, nb->name);
-	if (ret > 0)
-		return 1;
-	else if (ret < 0)
-		return -1;
-	return 0;
-}
-
-static int cmp(const void *va, const void *vb)
+static int objcmp(const void *va, const void *vb)
 {
 	const struct memobj *a = va;
 	const struct memobj *b = vb;
@@ -58,50 +43,6 @@ static int cmp(const void *va, const void *vb)
 	return nvclock_cmp_total(a->handle.clock, b->handle.clock);
 }
 
-static struct memobj *newobj(uint16_t mode)
-{
-	struct memobj *obj;
-	int ret;
-
-	ret = ENOMEM;
-
-	obj = malloc(sizeof(struct memobj));
-	if (!obj)
-		goto err;
-
-	obj->handle.clock = nvclock_alloc();
-	if (!obj->handle.clock)
-		goto err;
-
-	ret = nvclock_set(obj->handle.clock, 1);
-	if (ret)
-		goto err_vector;
-
-	if (NATTR_ISDIR(mode))
-		avl_create(&obj->dentries, dentry_cmp, sizeof(struct mem_dentry),
-		           offsetof(struct mem_dentry, node));
-
-	obj->blob = NULL;
-	obj->attrs._reserved = 0;
-	obj->attrs.mode = mode;
-	obj->attrs.nlink = 0;
-	obj->attrs.size = 0;
-	obj->attrs.atime = gettime();
-	obj->attrs.btime = obj->attrs.atime;
-	obj->attrs.ctime = obj->attrs.atime;
-	obj->attrs.mtime = obj->attrs.atime;
-
-	return obj;
-
-err_vector:
-	nvclock_free(obj->handle.clock);
-
-err:
-	free(obj);
-
-	return ERR_PTR(ret);
-}
-
 static int mem_vol_create(struct objstore_vol *store)
 {
 	struct memstore *ms;
@@ -112,7 +53,7 @@ static int mem_vol_create(struct objstore_vol *store)
 		return ENOMEM;
 
 	atomic_set(&ms->next_oid_uniq, 1);
-	avl_create(&ms->objs, cmp, sizeof(struct memobj),
+	avl_create(&ms->objs, objcmp, sizeof(struct memobj),
 		   offsetof(struct memobj, node));
 
 	mxinit(&ms->lock);
@@ -153,84 +94,9 @@ static int mem_vol_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
 	return ret;
 }
 
-static struct memobj * __mem_obj_lookup(struct memstore *store,
-                                        const struct nobjhndl *hndl)
-{
-	struct memobj key;
-
-	key.handle.oid = hndl->oid;
-	key.handle.clock = hndl->clock;
-
-	return avl_find(&store->objs, &key, NULL);
-}
-
-static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
-			   struct nattr *attr)
-{
-	struct memstore *ms;
-	struct memobj *obj;
-	int ret;
-
-	if (!vol || !hndl || !attr)
-		return EINVAL;
-
-	ms = vol->private;
-
-	mxlock(&ms->lock);
-	obj = __mem_obj_lookup(ms, hndl);
-	mxunlock(&ms->lock);
-
-	if (!obj) {
-		ret = ENOENT;
-	} else {
-		ret = 0;
-		*attr = obj->attrs;
-	}
-
-	return ret;
-}
-
-static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
-                          const char *name, struct nobjhndl *child)
-{
-	const struct mem_dentry key = {
-		.name = name,
-	};
-	struct memstore *ms;
-	struct mem_dentry *dentry;
-	struct memobj *dirobj;
-
-	if (!vol || !dir || !name || !child)
-		return EINVAL;
-
-	ms = vol->private;
-
-	mxlock(&ms->lock);
-	dirobj = __mem_obj_lookup(ms, dir);
-	mxunlock(&ms->lock);
-
-	if (!dirobj)
-		return ENOENT;
-
-	if (!NATTR_ISDIR(dirobj->attrs.mode))
-		return ENOTDIR;
-
-	/* These objects will eventually need their own locks, too. */
-	dentry = avl_find(&dirobj->dentries, &key, NULL);
-	if (!dentry)
-		return ENOENT;
-
-	return nobjhndl_cpy(child, dentry->handle);
-}
-
 static const struct vol_ops vol_ops = {
 	.create = mem_vol_create,
 	.getroot = mem_vol_getroot,
-};
-
-static const struct obj_ops obj_ops = {
-	.getattr = mem_obj_getattr,
-	.lookup  = mem_obj_lookup,
 };
 
 const struct objstore_vol_def objvol = {

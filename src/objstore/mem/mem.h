@@ -25,6 +25,7 @@
 
 #include <sys/avl.h>
 
+#include <nomad/types.h>
 #include <nomad/mutex.h>
 #include <nomad/atomic.h>
 
@@ -59,5 +60,11 @@ struct memstore {
 
 	pthread_mutex_t lock;
 };
+
+extern const struct obj_ops obj_ops;
+
+extern struct memobj *newobj(uint16_t mode);
+extern struct memobj *findobj(struct memstore *store,
+                              const struct nobjhndl *hndl);
 
 #endif

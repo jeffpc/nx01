@@ -22,6 +22,7 @@
 
 add_library(nomad_objstore_mem MODULE
 	main.c
+	obj.c
 )
 
 target_link_libraries(nomad_objstore_mem
