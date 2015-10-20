@@ -69,8 +69,8 @@ static int mem_vol_create(struct objstore_vol *store)
 	obj->attrs.nlink = 1;
 	noid_set(&obj->handle.oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
 
-	ms->root = obj;
-	avl_add(&ms->objs, obj);
+	avl_add(&ms->objs, memobj_getref(obj));
+	ms->root = obj; /* hand off our reference */
 
 	store->private = ms;
 

@@ -105,7 +105,7 @@ struct memobj *findobj(struct memstore *store, const struct nobjhndl *hndl)
 	key.handle.oid = hndl->oid;
 	key.handle.clock = hndl->clock;
 
-	return avl_find(&store->objs, &key, NULL);
+	return memobj_getref(avl_find(&store->objs, &key, NULL));
 }
 
 static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
@@ -129,6 +129,7 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 	} else {
 		ret = 0;
 		*attr = obj->attrs;
+		memobj_putref(obj);
 	}
 
 	return ret;
@@ -156,15 +157,24 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	if (!dirobj)
 		return ENOENT;
 
-	if (!NATTR_ISDIR(dirobj->attrs.mode))
-		return ENOTDIR;
+	if (!NATTR_ISDIR(dirobj->attrs.mode)) {
+		ret = ENOTDIR;
+		goto err_unlock;
+	}
 
-	/* These objects will eventually need their own locks, too. */
 	dentry = avl_find(&dirobj->dentries, &key, NULL);
-	if (!dentry)
-		return ENOENT;
+	if (!dentry) {
+		ret = ENOENT;
+		goto err_unlock;
+	}
 
-	return nobjhndl_cpy(child, dentry->handle);
+	ret = nobjhndl_cpy(child, dentry->handle);
+
+err_unlock:
+
+	memobj_putref(dirobj);
+
+	return ret;
 }
 
 const struct obj_ops obj_ops = {
