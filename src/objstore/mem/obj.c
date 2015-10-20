@@ -185,7 +185,91 @@ err_unlock:
 	return ret;
 }
 
+static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
+			  const char *name, uint16_t mode,
+			  struct nobjhndl *child)
+{
+	const struct mem_dentry key = {
+		.name = name,
+	};
+	struct memstore *ms;
+	struct mem_dentry *dentry;
+	struct memobj *dirobj;
+	struct memobj *obj;
+	int ret;
+
+	if (!vol || !dir || !name || !child)
+		return EINVAL;
+
+	ms = vol->private;
+
+	mxlock(&ms->lock);
+	dirobj = findobj(ms, dir);
+	mxunlock(&ms->lock);
+
+	if (!dirobj)
+		return ENOENT;
+
+	mxlock(&dirobj->lock);
+
+	if (!NATTR_ISDIR(dirobj->attrs.mode)) {
+		ret = ENOTDIR;
+		goto err_unlock;
+	}
+
+	dentry = avl_find(&dirobj->dentries, &key, NULL);
+	if (dentry) {
+		ret = EEXIST;
+		goto err_unlock;
+	}
+
+	obj = newobj(mode);
+	if (IS_ERR(obj)) {
+		ret = PTR_ERR(obj);
+		goto err_unlock;
+	}
+
+	obj->attrs.nlink = 1;
+	noid_set(&obj->handle.oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
+
+	dentry = malloc(sizeof(struct mem_dentry));
+	if (!dentry) {
+		ret = ENOMEM;
+		goto err_putchild;
+	}
+
+	dentry->name = strdup(name);
+	if (!dentry->name) {
+		ret = ENOMEM;
+		free(dentry);
+		goto err_putchild;
+	}
+
+	/* add object to the global list */
+	mxlock(&ms->lock);
+	avl_add(&ms->objs, memobj_getref(obj));
+	mxunlock(&ms->lock);
+
+	/* add a dentry */
+	dentry->handle = &obj->handle;
+	avl_add(&dirobj->dentries, dentry);
+
+	/* set return handle */
+	ret = nobjhndl_cpy(child, &obj->handle);
+
+err_putchild:
+	memobj_putref(obj);
+
+err_unlock:
+	mxunlock(&dirobj->lock);
+
+	memobj_putref(dirobj);
+
+	return ret;
+}
+
 const struct obj_ops obj_ops = {
 	.getattr = mem_obj_getattr,
 	.lookup  = mem_obj_lookup,
+	.create  = mem_obj_create,
 };
