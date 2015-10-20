@@ -35,8 +35,7 @@
 /* each <oid,ver> */
 struct memobj {
 	/* key */
-	struct noid oid;
-	struct nvclock *ver;
+	struct nobjhndl handle;
 
 	/* value */
 	struct nattr attrs;
@@ -85,11 +84,11 @@ static int cmp(const void *va, const void *vb)
 	const struct memobj *b = vb;
 	int ret;
 
-	ret = noid_cmp(&a->oid, &b->oid);
+	ret = noid_cmp(&a->handle.oid, &b->handle.oid);
 	if (ret)
 		return ret;
 
-	return nvclock_cmp_total(a->ver, b->ver);
+	return nvclock_cmp_total(a->handle.clock, b->handle.clock);
 }
 
 static struct memobj *newobj(uint16_t mode)
@@ -103,11 +102,11 @@ static struct memobj *newobj(uint16_t mode)
 	if (!obj)
 		goto err;
 
-	obj->ver = nvclock_alloc();
-	if (!obj->ver)
+	obj->handle.clock = nvclock_alloc();
+	if (!obj->handle.clock)
 		goto err;
 
-	ret = nvclock_set(obj->ver, 1);
+	ret = nvclock_set(obj->handle.clock, 1);
 	if (ret)
 		goto err_vector;
 
@@ -128,7 +127,7 @@ static struct memobj *newobj(uint16_t mode)
 	return obj;
 
 err_vector:
-	nvclock_free(obj->ver);
+	nvclock_free(obj->handle.clock);
 
 err:
 	free(obj);
@@ -160,7 +159,7 @@ static int mem_vol_create(struct objstore_vol *store)
 	}
 
 	obj->attrs.nlink = 1;
-	noid_set(&obj->oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
+	noid_set(&obj->handle.oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
 
 	ms->root = obj;
 	avl_add(&ms->objs, obj);
@@ -180,8 +179,8 @@ static int mem_vol_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
 	ms = store->private;
 
 	mxlock(&ms->lock);
-	hndl->oid = ms->root->oid;
-	hndl->clock = nvclock_dup(ms->root->ver);
+	hndl->oid = ms->root->handle.oid;
+	hndl->clock = nvclock_dup(ms->root->handle.clock);
 	mxunlock(&ms->lock);
 
 	if (!hndl->clock)
@@ -195,8 +194,8 @@ static struct memobj * __mem_obj_lookup(struct memstore *store,
 {
 	struct memobj key;
 
-	key.oid = hndl->oid;
-	key.ver = hndl->clock;
+	key.handle.oid = hndl->oid;
+	key.handle.clock = hndl->clock;
 
 	return avl_find(&store->objs, &key, NULL);
 }
