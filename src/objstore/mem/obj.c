@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +30,18 @@
 
 #include "mem.h"
 
+static int ver_cmp(const void *va, const void *vb)
+{
+	const struct memobjver *a = va;
+	const struct memobjver *b = vb;
+
+	return nvclock_cmp_total(a->clock, b->clock);
+}
+
 static int dentry_cmp(const void *a, const void *b)
 {
-	const struct mem_dentry *na = a;
-	const struct mem_dentry *nb = b;
+	const struct memdentry *na = a;
+	const struct memdentry *nb = b;
 	int ret;
 
 	ret = strcmp(na->name, nb->name);
@@ -43,8 +52,52 @@ static int dentry_cmp(const void *a, const void *b)
 	return 0;
 }
 
-struct memobj *newobj(uint16_t mode)
+static struct memobjver *newobjver(uint16_t mode)
 {
+	struct memobjver *ver;
+	int ret;
+
+	ver = malloc(sizeof(struct memobjver));
+	if (!ver) {
+		ret = ENOMEM;
+		goto err;
+	}
+
+	ver->clock = nvclock_alloc();
+	if (!ver->clock) {
+		ret = ENOMEM;
+		goto err_free;
+	}
+
+	ret = nvclock_set(ver->clock, 1);
+	if (ret)
+		goto err_free;
+
+	avl_create(&ver->dentries, dentry_cmp, sizeof(struct memdentry),
+	           offsetof(struct memdentry, node));
+
+	ver->blob = NULL;
+	ver->attrs._reserved = 0;
+	ver->attrs.mode = mode;
+	ver->attrs.nlink = 0;
+	ver->attrs.size = 0;
+	ver->attrs.atime = gettime();
+	ver->attrs.btime = ver->attrs.atime;
+	ver->attrs.ctime = ver->attrs.atime;
+	ver->attrs.mtime = ver->attrs.atime;
+
+	return ver;
+
+err_free:
+	free(ver);
+
+err:
+	return ERR_PTR(ret);
+}
+
+struct memobj *newobj(struct memstore *ms, uint16_t mode)
+{
+	struct memobjver *ver;
 	struct memobj *obj;
 	int ret;
 
@@ -54,34 +107,25 @@ struct memobj *newobj(uint16_t mode)
 	if (!obj)
 		goto err;
 
+	ver = newobjver(mode);
+	if (IS_ERR(ver)) {
+		ret = PTR_ERR(ver);
+		goto err;
+	}
+
 	atomic_set(&obj->refcnt, 1);
 	mxinit(&obj->lock);
 
-	obj->handle.clock = nvclock_alloc();
-	if (!obj->handle.clock)
-		goto err;
+	avl_create(&obj->versions, ver_cmp, sizeof(struct memobjver),
+		   offsetof(struct memobjver, node));
 
-	ret = nvclock_set(obj->handle.clock, 1);
-	if (ret)
-		goto err_vector;
+	noid_set(&obj->oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
 
-	avl_create(&obj->dentries, dentry_cmp, sizeof(struct mem_dentry),
-	           offsetof(struct mem_dentry, node));
-
-	obj->blob = NULL;
-	obj->attrs._reserved = 0;
-	obj->attrs.mode = mode;
-	obj->attrs.nlink = 0;
-	obj->attrs.size = 0;
-	obj->attrs.atime = gettime();
-	obj->attrs.btime = obj->attrs.atime;
-	obj->attrs.ctime = obj->attrs.atime;
-	obj->attrs.mtime = obj->attrs.atime;
+	avl_add(&obj->versions, ver);
+	obj->def = ver;
+	ver->obj = obj;
 
 	return obj;
-
-err_vector:
-	nvclock_free(obj->handle.clock);
 
 err:
 	free(obj);
@@ -89,23 +133,38 @@ err:
 	return ERR_PTR(ret);
 }
 
+static void freeobjver(struct memobjver *ver)
+{
+	if (!ver)
+		return;
+
+	avl_destroy(&ver->dentries);
+	nvclock_free(ver->clock);
+	free(ver);
+}
+
 void freeobj(struct memobj *obj)
 {
+	struct memobjver *ver;
+	void *cookie;
+
 	if (!obj)
 		return;
 
+	cookie = NULL;
+	while ((ver = avl_destroy_nodes(&obj->versions, &cookie)))
+		freeobjver(ver);
+
+	avl_destroy(&obj->versions);
 	mxdestroy(&obj->lock);
-	avl_destroy(&obj->dentries);
-	nvclock_free(obj->handle.clock);
 	free(obj);
 }
 
-struct memobj *findobj(struct memstore *store, const struct nobjhndl *hndl)
+struct memobj *findobj(struct memstore *store, const struct noid *oid)
 {
-	struct memobj key;
-
-	key.handle.oid = hndl->oid;
-	key.handle.clock = hndl->clock;
+	struct memobj key = {
+		.oid = *oid,
+	};
 
 	return memobj_getref(avl_find(&store->objs, &key, NULL));
 }
@@ -123,7 +182,7 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 	ms = vol->private;
 
 	mxlock(&ms->lock);
-	obj = findobj(ms, hndl);
+	obj = findobj(ms, &hndl->oid);
 	mxunlock(&ms->lock);
 
 	if (!obj) {
@@ -131,7 +190,7 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 	} else {
 		ret = 0;
 		mxlock(&obj->lock);
-		*attr = obj->attrs;
+		*attr = obj->def->attrs; /* TODO: you the req. version */
 		mxunlock(&obj->lock);
 		memobj_putref(obj);
 	}
@@ -142,11 +201,11 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
                           const char *name, struct nobjhndl *child)
 {
-	const struct mem_dentry key = {
+	const struct memdentry key = {
 		.name = name,
 	};
 	struct memstore *ms;
-	struct mem_dentry *dentry;
+	struct memdentry *dentry;
 	struct memobj *dirobj;
 	int ret;
 
@@ -156,7 +215,7 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	ms = vol->private;
 
 	mxlock(&ms->lock);
-	dirobj = findobj(ms, dir);
+	dirobj = findobj(ms, &dir->oid);
 	mxunlock(&ms->lock);
 
 	if (!dirobj)
@@ -164,18 +223,25 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 
 	mxlock(&dirobj->lock);
 
-	if (!NATTR_ISDIR(dirobj->attrs.mode)) {
+	/*
+	 * TODO: use the requested version instead of the default
+	 */
+
+	if (!NATTR_ISDIR(dirobj->def->attrs.mode)) {
 		ret = ENOTDIR;
 		goto err_unlock;
 	}
 
-	dentry = avl_find(&dirobj->dentries, &key, NULL);
+	dentry = avl_find(&dirobj->def->dentries, &key, NULL);
 	if (!dentry) {
 		ret = ENOENT;
 		goto err_unlock;
 	}
 
-	ret = nobjhndl_cpy(child, dentry->handle);
+	mxlock(&dentry->ver->obj->lock);
+	ret = nobjhndl_cpy(child, &dentry->ver->obj->oid,
+			   dentry->ver->clock);
+	mxunlock(&dentry->ver->obj->lock);
 
 err_unlock:
 	mxunlock(&dirobj->lock);
@@ -189,11 +255,11 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 			  const char *name, uint16_t mode,
 			  struct nobjhndl *child)
 {
-	const struct mem_dentry key = {
+	const struct memdentry key = {
 		.name = name,
 	};
 	struct memstore *ms;
-	struct mem_dentry *dentry;
+	struct memdentry *dentry;
 	struct memobj *dirobj;
 	struct memobj *obj;
 	int ret;
@@ -204,7 +270,7 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 	ms = vol->private;
 
 	mxlock(&ms->lock);
-	dirobj = findobj(ms, dir);
+	dirobj = findobj(ms, &dir->oid);
 	mxunlock(&ms->lock);
 
 	if (!dirobj)
@@ -212,27 +278,30 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 
 	mxlock(&dirobj->lock);
 
-	if (!NATTR_ISDIR(dirobj->attrs.mode)) {
+	/*
+	 * TODO: use the requested version instead of the default
+	 */
+
+	if (!NATTR_ISDIR(dirobj->def->attrs.mode)) {
 		ret = ENOTDIR;
 		goto err_unlock;
 	}
 
-	dentry = avl_find(&dirobj->dentries, &key, NULL);
+	dentry = avl_find(&dirobj->def->dentries, &key, NULL);
 	if (dentry) {
 		ret = EEXIST;
 		goto err_unlock;
 	}
 
-	obj = newobj(mode);
+	obj = newobj(ms, mode);
 	if (IS_ERR(obj)) {
 		ret = PTR_ERR(obj);
 		goto err_unlock;
 	}
 
-	obj->attrs.nlink = 1;
-	noid_set(&obj->handle.oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
+	obj->def->attrs.nlink = 1;
 
-	dentry = malloc(sizeof(struct mem_dentry));
+	dentry = malloc(sizeof(struct memdentry));
 	if (!dentry) {
 		ret = ENOMEM;
 		goto err_putchild;
@@ -245,17 +314,31 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 		goto err_putchild;
 	}
 
+	/* lock the new object */
+	mxlock(&obj->lock);
+
+	/* prepare the dentry */
+	dentry->ver = obj->def; /* hand off our reference */
+
+	/* add the dentry to the parent */
+	avl_add(&dirobj->def->dentries, dentry);
+
 	/* add object to the global list */
 	mxlock(&ms->lock);
 	avl_add(&ms->objs, memobj_getref(obj));
 	mxunlock(&ms->lock);
 
-	/* add a dentry */
-	dentry->handle = &obj->handle;
-	avl_add(&dirobj->dentries, dentry);
-
 	/* set return handle */
-	ret = nobjhndl_cpy(child, &obj->handle);
+	ret = nobjhndl_cpy(child, &obj->oid, obj->def->clock);
+
+	/*
+	 * We changed the dir, so we need to up the version.
+	 *
+	 * TODO: do we need to tweak the dentries AVL tree?
+	 */
+	nvclock_inc(dirobj->def->clock);
+
+	mxunlock(&obj->lock);
 
 err_putchild:
 	memobj_putref(obj);

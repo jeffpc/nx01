@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +31,60 @@
 #include <nomad/atomic.h>
 #include <nomad/refcnt.h>
 
-/* each <oid,ver> */
-struct memobj {
+/*
+ * There is a handful of structures that keep track of everything.  At the
+ * highest level, there is `struct memstore'.  It keeps track of the
+ * volume's state.  Most importantly, it keeps track of all objects this
+ * volume knows about on the `obj' AVL tree.  Each object is represented by
+ * a `struct memobj'.
+ *
+ * Each object has a unique ID - the object ID (`struct noid').  This
+ * uniquely identifies it not just within the volume, but also within the
+ * volume group (thanks to the dataset ID within it).  There can be more
+ * than one version of an object.  If there is more than one version of an
+ * object, they should be divergent (nvclock_cmp() would return NVC_DIV)
+ * since given non-divergent versions we would simply take the newer one
+ * (NVC_GT) and discard the older (NVC_LT).  `struct memobj' keeps track of
+ * all the versions of that object via the `versions' AVL tree.  Each
+ * version of an object is represented by a `struct memobjver'.
+ *
+ * Each version has a vector clock.  Unlike the object ID, the clock may
+ * change over time as the object is modified.  The only modifications
+ * allowed are:
+ *
+ *  (1) nvclock_inc() due to a local modification
+ *  (2) nvclock_set_node() due to a merge of two versions
+ *
+ * Aside from the vector clock, `struct memobjver' contains the "values"
+ * associated with the object - i.e., the file attributes, the file blob (in
+ * case of a file), the dentries (in case of a directory).
+ */
+
+struct memobj;
+
+/* each version */
+struct memobjver {
 	/* key */
-	struct nobjhndl handle;
+	struct nvclock *clock;
 
 	/* value */
 	struct nattr attrs;
 	void *blob; /* used if the memobj is a file */
-
 	avl_tree_t dentries; /* used if the memobj is a director */
+
+	/* misc */
+	struct memobj *obj;
+	avl_node_t node;
+};
+
+/* each oid */
+struct memobj {
+	/* key */
+	struct noid oid;
+
+	/* value */
+	avl_tree_t versions;   /* all versions */
+	struct memobjver *def; /* default version */
 
 	/* misc */
 	avl_node_t node;
@@ -47,9 +92,15 @@ struct memobj {
 	pthread_mutex_t lock;
 };
 
-struct mem_dentry {
+/* <name> -> <specific version of an obj> */
+struct memdentry {
+	/* key */
 	const char *name;
-	struct nobjhndl *handle;
+
+	/* value */
+	struct memobjver *ver;
+
+	/* misc */
 	avl_node_t node;
 };
 
@@ -66,10 +117,9 @@ struct memstore {
 
 extern const struct obj_ops obj_ops;
 
-extern struct memobj *newobj(uint16_t mode);
+extern struct memobj *newobj(struct memstore *ms, uint16_t mode);
 extern void freeobj(struct memobj *obj);
-extern struct memobj *findobj(struct memstore *store,
-                              const struct nobjhndl *hndl);
+extern struct memobj *findobj(struct memstore *store, const struct noid *oid);
 
 REFCNT_INLINE_FXNS(struct memobj, memobj, refcnt, freeobj);
 

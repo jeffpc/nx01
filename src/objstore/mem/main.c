@@ -34,13 +34,8 @@ static int objcmp(const void *va, const void *vb)
 {
 	const struct memobj *a = va;
 	const struct memobj *b = vb;
-	int ret;
 
-	ret = noid_cmp(&a->handle.oid, &b->handle.oid);
-	if (ret)
-		return ret;
-
-	return nvclock_cmp_total(a->handle.clock, b->handle.clock);
+	return noid_cmp(&a->oid, &b->oid);
 }
 
 static int mem_vol_create(struct objstore_vol *store)
@@ -60,14 +55,13 @@ static int mem_vol_create(struct objstore_vol *store)
 
 	ms->ds = rand32();
 
-	obj = newobj(NATTR_DIR | 0777);
+	obj = newobj(ms, NATTR_DIR | 0777);
 	if (IS_ERR(obj)) {
 		free(ms);
 		return PTR_ERR(obj);
 	}
 
-	obj->attrs.nlink = 1;
-	noid_set(&obj->handle.oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
+	obj->def->attrs.nlink = 1;
 
 	avl_add(&ms->objs, memobj_getref(obj));
 	ms->root = obj; /* hand off our reference */
@@ -88,7 +82,7 @@ static int mem_vol_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
 	ms = store->private;
 
 	mxlock(&ms->lock);
-	ret = nobjhndl_cpy(hndl, &ms->root->handle);
+	ret = nobjhndl_cpy(hndl, &ms->root->oid, ms->root->def->clock);
 	mxunlock(&ms->lock);
 
 	return ret;
