@@ -28,6 +28,7 @@
 #include <nomad/types.h>
 #include <nomad/mutex.h>
 #include <nomad/atomic.h>
+#include <nomad/refcnt.h>
 
 /* each <oid,ver> */
 struct memobj {
@@ -42,6 +43,7 @@ struct memobj {
 
 	/* misc */
 	avl_node_t node;
+	atomic_t refcnt;
 };
 
 struct mem_dentry {
@@ -67,5 +69,7 @@ extern struct memobj *newobj(uint16_t mode);
 extern void freeobj(struct memobj *obj);
 extern struct memobj *findobj(struct memstore *store,
                               const struct nobjhndl *hndl);
+
+REFCNT_INLINE_FXNS(struct memobj, memobj, refcnt, freeobj);
 
 #endif

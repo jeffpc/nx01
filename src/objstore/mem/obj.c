@@ -54,6 +54,8 @@ struct memobj *newobj(uint16_t mode)
 	if (!obj)
 		goto err;
 
+	atomic_set(&obj->refcnt, 1);
+
 	obj->handle.clock = nvclock_alloc();
 	if (!obj->handle.clock)
 		goto err;
