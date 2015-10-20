@@ -172,6 +172,7 @@ static int mem_vol_create(struct objstore_vol *store)
 static int mem_vol_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
 {
 	struct memstore *ms;
+	int ret;
 
 	if (!store || !store->private || !hndl)
 		return EINVAL;
@@ -179,14 +180,10 @@ static int mem_vol_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
 	ms = store->private;
 
 	mxlock(&ms->lock);
-	hndl->oid = ms->root->handle.oid;
-	hndl->clock = nvclock_dup(ms->root->handle.clock);
+	ret = nobjhndl_cpy(hndl, &ms->root->handle);
 	mxunlock(&ms->lock);
 
-	if (!hndl->clock)
-		return ENOMEM;
-
-	return 0;
+	return ret;
 }
 
 static struct memobj * __mem_obj_lookup(struct memstore *store,
@@ -253,12 +250,7 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	if (!dentry)
 		return ENOENT;
 
-	child->oid = dentry->handle->oid;
-	child->clock = nvclock_dup(dentry->handle->clock);
-	if (!child->clock)
-		return ENOMEM;
-
-	return 0;
+	return nobjhndl_cpy(child, dentry->handle);
 }
 
 static const struct vol_ops vol_ops = {
