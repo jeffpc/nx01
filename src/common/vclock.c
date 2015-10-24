@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <umem.h>
 
 #include <nomad/types.h>
 #include <nomad/error.h>
@@ -47,9 +48,26 @@
  * (2) entries may not be used contiguously.
  */
 
+static umem_cache_t *vclock_cache;
+
+int nvclock_init_subsys(void)
+{
+	vclock_cache = umem_cache_create("vclock", sizeof(struct nvclock),
+					 0, NULL, NULL, NULL, NULL, NULL, 0);
+
+	return vclock_cache ? 0 : ENOMEM;
+}
+
 struct nvclock *nvclock_alloc(void)
 {
-	return zalloc(sizeof(struct nvclock));
+	struct nvclock *clock;
+
+	clock = umem_cache_alloc(vclock_cache, 0);
+
+	if (clock)
+		memset(clock, 0, sizeof(struct nvclock));
+
+	return clock;
 }
 
 struct nvclock *nvclock_dup(const struct nvclock *clock)
@@ -67,7 +85,7 @@ struct nvclock *nvclock_dup(const struct nvclock *clock)
 
 void nvclock_free(struct nvclock *clock)
 {
-	free(clock);
+	umem_cache_free(vclock_cache, clock);
 }
 
 static struct nvclockent *__get_ent(struct nvclock *clock, uint64_t node,

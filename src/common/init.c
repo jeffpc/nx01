@@ -24,5 +24,5 @@
 
 int common_init(void)
 {
-	return 0;
+	return nvclock_init_subsys();
 }

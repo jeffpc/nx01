@@ -25,4 +25,6 @@
 
 extern int common_init(void);
 
+extern int nvclock_init_subsys(void);
+
 #endif
