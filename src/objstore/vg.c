@@ -21,11 +21,14 @@
  */
 
 #include <stddef.h>
+#include <umem.h>
 
 #include <nomad/error.h>
 #include <nomad/iter.h>
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
+
+static umem_cache_t *vg_cache;
 
 static pthread_mutex_t vgs_lock;
 static list_t vgs;
@@ -34,14 +37,21 @@ int vg_init(void)
 {
 	struct objstore *filecache;
 
+	vg_cache = umem_cache_create("vg", sizeof(struct objstore),
+				     0, NULL, NULL, NULL, NULL, NULL, 0);
+	if (!vg_cache)
+		return ENOMEM;
+
 	mxinit(&vgs_lock);
 
 	list_create(&vgs, sizeof(struct objstore),
 		    offsetof(struct objstore, node));
 
 	filecache = objstore_vg_create("file$", OS_VG_SIMPLE);
-	if (IS_ERR(filecache))
+	if (IS_ERR(filecache)) {
+		umem_cache_destroy(vg_cache);
 		return PTR_ERR(filecache);
+	}
 
 	return 0;
 }
@@ -54,13 +64,13 @@ struct objstore *objstore_vg_create(const char *name,
 	if (type != OS_VG_SIMPLE)
 		return ERR_PTR(EINVAL);
 
-	vg = malloc(sizeof(struct objstore));
+	vg = umem_cache_alloc(vg_cache, 0);
 	if (!vg)
 		return ERR_PTR(ENOMEM);
 
 	vg->name = strdup(name);
 	if (!vg->name) {
-		free(vg);
+		umem_cache_free(vg_cache, vg);
 		return ERR_PTR(ENOMEM);
 	}
 
