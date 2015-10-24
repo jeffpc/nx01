@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <umem.h>
 
 #include <nomad/error.h>
 #include <nomad/objstore.h>
@@ -40,6 +41,8 @@ struct backend {
  */
 static struct backend mem_backend;
 static struct backend *backend;
+
+static umem_cache_t *vol_cache;
 
 static int load_backend(struct backend *backend, const char *name)
 {
@@ -64,17 +67,27 @@ int objstore_init(void)
 {
 	int ret;
 
+	vol_cache = umem_cache_create("vol", sizeof(struct objstore_vol),
+				      0, NULL, NULL, NULL, NULL, NULL, 0);
+	if (!vol_cache)
+		return ENOMEM;
+
 	ret = vg_init();
 	if (ret)
-		return ret;
+		goto err;
 
 	ret = load_backend(&mem_backend, "mem");
 	if (ret)
-		return ret;
+		goto err;
 
 	backend = &mem_backend;
 
 	return 0;
+
+err:
+	umem_cache_destroy(vol_cache);
+
+	return ret;
 }
 
 struct objstore_vol *objstore_vol_create(struct objstore *vg, const char *path,
@@ -86,7 +99,7 @@ struct objstore_vol *objstore_vol_create(struct objstore *vg, const char *path,
 	if (!backend->def->vol_ops->create)
 		return ERR_PTR(ENOTSUP);
 
-	s = malloc(sizeof(struct objstore_vol));
+	s = umem_cache_alloc(vol_cache, 0);
 	if (!s)
 		return ERR_PTR(ENOMEM);
 
@@ -110,7 +123,7 @@ err_path:
 	free((char *) s->path);
 
 err:
-	free(s);
+	umem_cache_free(vol_cache, s);
 
 	return ERR_PTR(ret);
 }
