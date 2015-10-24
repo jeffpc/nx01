@@ -29,6 +29,7 @@
 #include <nomad/types.h>
 #include <nomad/objstore.h>
 #include <nomad/connsvc.h>
+#include <nomad/init.h>
 
 #include "cmds.h"
 
@@ -51,6 +52,13 @@ int main(int argc, char **argv)
 	struct objstore *vg;
 	struct objstore_vol *vol;
 	int ret;
+
+	ret = common_init();
+	if (ret) {
+		cmn_err(CE_CRIT, "common_init() = %d (%s)", ret,
+			strerror(ret));
+		goto err;
+	}
 
 	/*
 	 * TODO:

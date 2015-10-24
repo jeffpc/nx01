@@ -28,6 +28,7 @@ add_library(nomad_common SHARED
 	attr.c
 	connsvc.c
 	error.c
+	init.c
 	mutex.c
 	node.c
 	oid.c
@@ -49,6 +50,7 @@ install(TARGETS nomad_common DESTINATION lib
 install(FILES	include/nomad/atomic.h
 		include/nomad/attr.h
 		include/nomad/error.h
+		include/nomad/init.h
 		include/nomad/iter.h
 		include/nomad/malloc.h
 		include/nomad/mutex.h
