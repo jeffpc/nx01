@@ -29,11 +29,12 @@
 #include <unistd.h>
 #include <sys/select.h>
 
+#include <suntaskq.h>
+
 #include <nomad/error.h>
 #include <nomad/types.h>
 #include <nomad/atomic.h>
 #include <nomad/connsvc.h>
-#include <nomad/taskq.h>
 
 /*
  * This part of the common library is a bit different.  It is mean to
