@@ -144,6 +144,9 @@ Given a directory (obj handle) and a path component (string), remove the
 path component from the directory.  Removing a non-existent path component
 fails with `ENOENT`.
 
+The directory handle's vector clock handling is identical to that of the
+STAT RPC.
+
 Inputs
 ------
 * directory/parent obj handle
