@@ -33,24 +33,19 @@ enum objstore_mode {
 	OS_MODE_STORE,
 };
 
-enum objstore_vg_type {
-	OS_VG_SIMPLE,
-	/* TODO: OS_VG_MIRROR, */
-	/* TODO: OS_VG_STRIPE, */
-};
+struct objstore_vol;
 
 struct objstore {
 	list_node_t node;
 
 	pthread_mutex_t lock;
 	const char *name;
-	list_t vols;		/* list of volumes */
+	struct objstore_vol *vol;
 };
 
 struct objstore_vol_def;
 
 struct objstore_vol {
-	list_node_t vg_list;
 	struct objstore *vg;
 
 	const struct objstore_vol_def *def;
@@ -65,8 +60,7 @@ struct objstore_vol {
 extern int objstore_init(void);
 
 /* volume group management */
-extern struct objstore *objstore_vg_create(const char *name,
-					   enum objstore_vg_type type);
+extern struct objstore *objstore_vg_create(const char *name);
 extern struct objstore *objstore_vg_lookup(const char *name);
 
 /* volume management */

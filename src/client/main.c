@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 		goto err;
 	}
 
-	vg = objstore_vg_create("myfiles", OS_VG_SIMPLE);
+	vg = objstore_vg_create("myfiles");
 	cmn_err(CE_DEBUG, "vg = %p", vg);
 
 	if (IS_ERR(vg)) {

@@ -48,7 +48,7 @@ int vg_init(void)
 	list_create(&vgs, sizeof(struct objstore),
 		    offsetof(struct objstore, node));
 
-	filecache = objstore_vg_create("file$", OS_VG_SIMPLE);
+	filecache = objstore_vg_create("file$");
 	if (IS_ERR(filecache)) {
 		umem_cache_destroy(vg_cache);
 		return PTR_ERR(filecache);
@@ -57,13 +57,9 @@ int vg_init(void)
 	return 0;
 }
 
-struct objstore *objstore_vg_create(const char *name,
-				    enum objstore_vg_type type)
+struct objstore *objstore_vg_create(const char *name)
 {
 	struct objstore *vg;
-
-	if (type != OS_VG_SIMPLE)
-		return ERR_PTR(-EINVAL);
 
 	vg = umem_cache_alloc(vg_cache, 0);
 	if (!vg)
@@ -75,8 +71,7 @@ struct objstore *objstore_vg_create(const char *name,
 		return ERR_PTR(-ENOMEM);
 	}
 
-	list_create(&vg->vols, sizeof(struct objstore_vol),
-		    offsetof(struct objstore_vol, vg_list));
+	vg->vol = NULL;
 
 	mxinit(&vg->lock);
 
@@ -90,7 +85,8 @@ struct objstore *objstore_vg_create(const char *name,
 void vg_add_vol(struct objstore *vg, struct objstore_vol *vol)
 {
 	mxlock(&vg->lock);
-	list_insert_tail(&vg->vols, vol);
+	ASSERT3P(vg->vol, ==, NULL);
+	vg->vol = vol;
 	mxunlock(&vg->lock);
 }
 
@@ -109,19 +105,14 @@ struct objstore *objstore_vg_lookup(const char *name)
 
 int objstore_getroot(struct objstore *vg, struct nobjhndl *hndl)
 {
-	struct objstore_vol *vol;
 	int ret;
 
 	if (!vg || !hndl)
 		return -EINVAL;
 
-	/*
-	 * TODO: we're assuming OS_VG_SIMPLE
-	 */
 	mxlock(&vg->lock);
-	vol = list_head(&vg->vols);
-	if (vol)
-		ret = vol_getroot(vol, hndl);
+	if (vg->vol)
+		ret = vol_getroot(vg->vol, hndl);
 	else
 		ret = -ENXIO;
 	mxunlock(&vg->lock);
@@ -132,19 +123,14 @@ int objstore_getroot(struct objstore *vg, struct nobjhndl *hndl)
 int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
 		     struct nattr *attr)
 {
-	struct objstore_vol *vol;
 	int ret;
 
 	if (!vg || !hndl || !attr)
 		return -EINVAL;
 
-	/*
-	 * TODO: we're assuming OS_VG_SIMPLE
-	 */
 	mxlock(&vg->lock);
-	vol = list_head(&vg->vols);
-	if (vol)
-		ret = vol_getattr(vol, hndl, attr);
+	if (vg->vol)
+		ret = vol_getattr(vg->vol, hndl, attr);
 	else
 		ret = -ENXIO;
 	mxunlock(&vg->lock);
@@ -155,7 +141,6 @@ int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
 int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
 		    const char *name, struct nobjhndl *child)
 {
-	struct objstore_vol *vol;
 	int ret;
 
 	cmn_err(CE_DEBUG, "%s(%p, %p, '%s', %p)", __func__, vg, dir, name,
@@ -164,13 +149,9 @@ int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
 	if (!vg || !dir || !name || !child)
 		return -EINVAL;
 
-	/*
-	 * TODO: we're assuming OS_VG_SIMPLE
-	 */
 	mxlock(&vg->lock);
-	vol = list_head(&vg->vols);
-	if (vol)
-		ret = vol_lookup(vol, dir, name, child);
+	if (vg->vol)
+		ret = vol_lookup(vg->vol, dir, name, child);
 	else
 		ret = -ENXIO;
 	mxunlock(&vg->lock);
@@ -182,7 +163,6 @@ int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
                     const char *name, uint16_t mode,
                     struct nobjhndl *child)
 {
-	struct objstore_vol *vol;
 	int ret;
 
 	cmn_err(CE_DEBUG, "%s(%p, %p, '%s', %#o, %p)", __func__, vg, dir,
@@ -191,13 +171,9 @@ int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
 	if (!vg || !dir || !name || !child)
 		return -EINVAL;
 
-	/*
-	 * TODO: we're assuming OS_VG_SIMPLE
-	 */
 	mxlock(&vg->lock);
-	vol = list_head(&vg->vols);
-	if (vol)
-		ret = vol_create(vol, dir, name, mode, child);
+	if (vg->vol)
+		ret = vol_create(vg->vol, dir, name, mode, child);
 	else
 		ret = -ENXIO;
 	mxunlock(&vg->lock);
@@ -208,7 +184,6 @@ int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
 int objstore_remove(struct objstore *vg, const struct nobjhndl *dir,
                     const char *name)
 {
-	struct objstore_vol *vol;
 	int ret;
 
 	cmn_err(CE_DEBUG, "%s(%p, %p, '%s')", __func__, vg, dir, name);
@@ -216,13 +191,9 @@ int objstore_remove(struct objstore *vg, const struct nobjhndl *dir,
 	if (!vg || !dir || !name)
 		return -EINVAL;
 
-	/*
-	 * TODO: we're assuming OS_VG_SIMPLE
-	 */
 	mxlock(&vg->lock);
-	vol = list_head(&vg->vols);
-	if (vol)
-		ret = vol_remove(vol, dir, name);
+	if (vg->vol)
+		ret = vol_remove(vg->vol, dir, name);
 	else
 		ret = -ENXIO;
 	mxunlock(&vg->lock);
