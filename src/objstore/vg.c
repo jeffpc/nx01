@@ -103,16 +103,16 @@ struct objstore *objstore_vg_lookup(const char *name)
 	return vg;
 }
 
-int objstore_getroot(struct objstore *vg, struct nobjhndl *hndl)
+int objstore_getroot(struct objstore *vg, struct noid *root)
 {
 	int ret;
 
-	if (!vg || !hndl)
+	if (!vg || !root)
 		return -EINVAL;
 
 	mxlock(&vg->lock);
 	if (vg->vol)
-		ret = vol_getroot(vg->vol, hndl);
+		ret = vol_getroot(vg->vol, root);
 	else
 		ret = -ENXIO;
 	mxunlock(&vg->lock);

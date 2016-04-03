@@ -28,7 +28,7 @@
 struct vol_ops {
 	int (*create)(struct objstore_vol *store);
 	int (*load)(struct objstore_vol *store);
-	int (*getroot)(struct objstore_vol *store, struct nobjhndl *hndl);
+	int (*getroot)(struct objstore_vol *store, struct noid *root);
 };
 
 struct obj_ops {
@@ -72,7 +72,7 @@ extern int vg_init(void);
 extern void vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
 
 /* wrappers for volume ops */
-extern int vol_getroot(struct objstore_vol *vol, struct nobjhndl *hndl);
+extern int vol_getroot(struct objstore_vol *vol, struct noid *root);
 
 /* wrappers for object ops */
 extern int vol_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,

@@ -40,7 +40,7 @@ struct rpc_login_req {
 };
 
 struct rpc_login_res {
-	struct nobjhndl	root;
+	struct noid	root;
 };
 
 %/***** STAT *****/

@@ -25,13 +25,13 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-int vol_getroot(struct objstore_vol *vol, struct nobjhndl *hndl)
+int vol_getroot(struct objstore_vol *vol, struct noid *root)
 {
-	if (!vol || !hndl)
+	if (!vol || !root)
 		return -EINVAL;
 
 	if (!vol->def->vol_ops || !vol->def->vol_ops->getroot)
 		return -ENOTSUP;
 
-	return vol->def->vol_ops->getroot(vol, hndl);
+	return vol->def->vol_ops->getroot(vol, root);
 }

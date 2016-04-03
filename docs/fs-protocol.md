@@ -56,7 +56,7 @@ Inputs
 
 Outputs
 -------
-* obj handle of root
+* oid of root
 
 Limitations
 -----------

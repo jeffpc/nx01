@@ -72,21 +72,20 @@ static int mem_vol_create(struct objstore_vol *store)
 	return 0;
 }
 
-static int mem_vol_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
+static int mem_vol_getroot(struct objstore_vol *store, struct noid *root)
 {
 	struct memstore *ms;
-	int ret;
 
-	if (!store || !store->private || !hndl)
+	if (!store || !store->private || !root)
 		return -EINVAL;
 
 	ms = store->private;
 
 	mxlock(&ms->lock);
-	ret = nobjhndl_cpy(hndl, &ms->root->oid, ms->root->def->clock);
+	*root = ms->root->oid;
 	mxunlock(&ms->lock);
 
-	return ret;
+	return 0;
 }
 
 static const struct vol_ops vol_ops = {
