@@ -53,7 +53,7 @@ static int dentry_cmp(const void *a, const void *b)
 	return 0;
 }
 
-static struct memver *newobjver(uint16_t mode)
+static struct memver *newobjver(uint16_t mode, uint32_t nlink)
 {
 	struct memver *ver;
 	int ret;
@@ -80,7 +80,7 @@ static struct memver *newobjver(uint16_t mode)
 	ver->blob = NULL;
 	ver->attrs._reserved = 0;
 	ver->attrs.mode = mode;
-	ver->attrs.nlink = 0;
+	ver->attrs.nlink = nlink;
 	ver->attrs.size = 0;
 	ver->attrs.atime = gettime();
 	ver->attrs.btime = ver->attrs.atime;
@@ -96,7 +96,7 @@ err:
 	return ERR_PTR(ret);
 }
 
-struct memobj *newobj(struct memstore *ms, uint16_t mode)
+struct memobj *newobj(struct memstore *ms, uint16_t mode, uint32_t nlink)
 {
 	struct memver *ver;
 	struct memobj *obj;
@@ -108,7 +108,7 @@ struct memobj *newobj(struct memstore *ms, uint16_t mode)
 	if (!obj)
 		goto err;
 
-	ver = newobjver(mode);
+	ver = newobjver(mode, nlink);
 	if (IS_ERR(ver)) {
 		ret = PTR_ERR(ver);
 		goto err;
@@ -332,13 +332,11 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 		goto err_unlock;
 	}
 
-	obj = newobj(ms, mode);
 	if (IS_ERR(obj)) {
 		ret = PTR_ERR(obj);
 		goto err_unlock;
 	}
-
-	obj->def->attrs.nlink = 1;
+	obj = newobj(store, mode, 1);
 
 	dentry = malloc(sizeof(struct memdentry));
 	if (!dentry) {

@@ -56,13 +56,11 @@ static int mem_vol_create(struct objstore_vol *store)
 
 	ms->ds = rand32();
 
-	obj = newobj(ms, NATTR_DIR | 0777);
+	obj = newobj(ms, NATTR_DIR | 0777, 1);
 	if (IS_ERR(obj)) {
 		free(ms);
 		return PTR_ERR(obj);
 	}
-
-	obj->def->attrs.nlink = 1;
 
 	avl_add(&ms->objs, memobj_getref(obj));
 	ms->root = obj; /* hand off our reference */

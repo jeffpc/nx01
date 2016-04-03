@@ -117,7 +117,7 @@ struct memstore {
 
 extern const struct obj_ops obj_ops;
 
-extern struct memobj *newobj(struct memstore *ms, uint16_t mode);
+extern struct memobj *newobj(struct memstore *ms, uint16_t mode, uint32_t nlink);
 extern void freeobj(struct memobj *obj);
 extern struct memobj *findobj(struct memstore *store, const struct noid *oid);
 
