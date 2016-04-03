@@ -53,10 +53,10 @@ struct obj_ops {
 	ssize_t (*write)();	/* write portion of an object */
 
 	int (*lookup)(struct objstore_vol *vol, const struct nobjhndl *dir,
-	              const char *name, struct nobjhndl *child);
+	              const char *name, struct noid *child);
 	int (*create)(struct objstore_vol *vol, const struct nobjhndl *dir,
 	              const char *name, uint16_t mode,
-	              struct nobjhndl *child);
+	              struct noid *child);
 	int (*remove)(struct objstore_vol *vol, const struct nobjhndl *dir,
 	              const char *name);
 };
@@ -78,9 +78,9 @@ extern int vol_getroot(struct objstore_vol *vol, struct noid *root);
 extern int vol_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
                        struct nattr *attr);
 extern int vol_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
-                      const char *name, struct nobjhndl *child);
+                      const char *name, struct noid *child);
 extern int vol_create(struct objstore_vol *vol, const struct nobjhndl *dir,
-                      const char *name, uint16_t mode, struct nobjhndl *child);
+                      const char *name, uint16_t mode, struct noid *child);
 extern int vol_remove(struct objstore_vol *vol, const struct nobjhndl *dir,
                       const char *name);
 

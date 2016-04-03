@@ -200,7 +200,7 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 }
 
 static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
-                          const char *name, struct nobjhndl *child)
+                          const char *name, struct noid *child)
 {
 	const struct memdentry key = {
 		.name = name,
@@ -240,9 +240,10 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	}
 
 	mxlock(&dentry->ver->obj->lock);
-	ret = nobjhndl_cpy(child, &dentry->ver->obj->oid,
-			   dentry->ver->clock);
+	*child = dentry->ver->obj->oid;
 	mxunlock(&dentry->ver->obj->lock);
+
+	ret = 0;
 
 err_unlock:
 	mxunlock(&dirobj->lock);
@@ -254,7 +255,7 @@ err_unlock:
 
 static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 			  const char *name, uint16_t mode,
-			  struct nobjhndl *child)
+			  struct noid *child)
 {
 	const struct memdentry key = {
 		.name = name,
@@ -329,8 +330,9 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 	avl_add(&ms->objs, memobj_getref(obj));
 	mxunlock(&ms->lock);
 
-	/* set return handle */
-	ret = nobjhndl_cpy(child, &obj->oid, obj->def->clock);
+	/* set return oid */
+	*child = obj->oid;
+	ret = 0;
 
 	/*
 	 * We changed the dir, so we need to up the version.

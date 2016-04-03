@@ -59,7 +59,7 @@ struct rpc_lookup_req {
 };
 
 struct rpc_lookup_res {
-	struct nobjhndl	child;
+	struct noid	child;
 };
 
 %/***** CREATE *****/
@@ -70,7 +70,7 @@ struct rpc_create_req {
 };
 
 struct rpc_create_res {
-	struct nobjhndl	handle;
+	struct noid	handle;
 };
 
 %/***** REMOVE *****/

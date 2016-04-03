@@ -38,7 +38,7 @@ int vol_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
 }
 
 int vol_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
-               const char *name, struct nobjhndl *child)
+               const char *name, struct noid *child)
 {
 	if (!vol || !dir || !name || !child)
 		return -EINVAL;
@@ -50,7 +50,7 @@ int vol_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 }
 
 int vol_create(struct objstore_vol *vol, const struct nobjhndl *dir,
-               const char *name, uint16_t mode, struct nobjhndl *child)
+               const char *name, uint16_t mode, struct noid *child)
 {
 	if (!vol || !dir || !name || !child)
 		return -EINVAL;

@@ -78,10 +78,10 @@ extern int objstore_getroot(struct objstore *vg, struct noid *root);
 extern int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
 			    struct nattr *attr);
 extern int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
-                           const char *name, struct nobjhndl *child);
+                           const char *name, struct noid *child);
 extern int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
                            const char *name, uint16_t mode,
-                           struct nobjhndl *child);
+                           struct noid *child);
 extern int objstore_remove(struct objstore *vg, const struct nobjhndl *dir,
                            const char *name);
 

@@ -95,22 +95,7 @@ Inputs
 
 Outputs
 -------
-* child obj handle
-
-Is the return value flawed?  What if someone replaces a file?  E.g.,
-
-```
-$ touch foo
-$ rm foo
-$ touch foo
-```
-
-THOUGHT: The second "foo" will have a totally different oid.  Does this mean
-that the directory has to keep track of the previous oids?  Maybe not
-because the directory is an object as well and therefore it is versioned
-too.  The using replacing a file (e.g., foo) with a new one will cause the
-directory version to get incremented.  Since the directory didn't get
-replaced (it got modified only), it's oid will stay the same.
+* child oid
 
 Limitations
 -----------
@@ -133,7 +118,7 @@ Inputs
 
 Outputs
 -------
-* new file/dir/etc.'s obj handle
+* new file/dir/etc.'s oid
 
 Limitations
 -----------

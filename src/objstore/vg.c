@@ -139,7 +139,7 @@ int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
 }
 
 int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
-		    const char *name, struct nobjhndl *child)
+		    const char *name, struct noid *child)
 {
 	int ret;
 
@@ -161,7 +161,7 @@ int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
 
 int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
                     const char *name, uint16_t mode,
-                    struct nobjhndl *child)
+                    struct noid *child)
 {
 	int ret;
 
