@@ -67,7 +67,13 @@ after a successful LOGIN will fail with `EALREADY`.
 STAT (0x0002)
 =============
 
-Get attributes (`struct nattr`) for a specific version of an object.
+Get attributes (`struct nattr`) for of an object.
+
+If the handle specifies a non-null vector clock, only that version of the
+object is considered.  If a null vector clock is specificied and there is
+only one version of the object, the attributes of that version are returned.
+If a null vector clock is specified and there are multiple version of the
+object, the operation fails with `ENOTUNIQ`.
 
 Inputs
 ------

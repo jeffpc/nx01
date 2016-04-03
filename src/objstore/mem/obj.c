@@ -170,33 +170,80 @@ struct memobj *findobj(struct memstore *store, const struct noid *oid)
 	return memobj_getref(avl_find(&store->objs, &key, NULL));
 }
 
+/*
+ * returns a specific version of an object, with the object held & locked
+ */
+struct memver *findver_by_hndl(struct memstore *store,
+			       const struct nobjhndl *hndl)
+{
+	struct memobj *obj;
+	struct memver *ver;
+
+	mxlock(&store->lock);
+	obj = findobj(store, &hndl->oid);
+	mxunlock(&store->lock);
+
+	if (!obj)
+		return ERR_PTR(-ENOENT);
+
+	mxlock(&obj->lock);
+	switch (avl_numnodes(&obj->versions)) {
+		case 0:
+			break;
+		case 1:
+			ver = avl_first(&obj->versions);
+
+			if (nvclock_is_null(hndl->clock) ||
+			    nvclock_cmp(hndl->clock, ver->clock) == NVC_EQ)
+				return ver;
+
+			break;
+		default: {
+			struct memver key = {
+				.clock = hndl->clock,
+			};
+
+			if (nvclock_is_null(hndl->clock)) {
+				mxunlock(&obj->lock);
+				memobj_putref(obj);
+				return ERR_PTR(-ENOTUNIQ);
+			}
+
+			ver = avl_find(&obj->versions, &key, NULL);
+			if (ver)
+				return ver;
+
+			break;
+		}
+	}
+
+	mxunlock(&obj->lock);
+
+	memobj_putref(obj);
+
+	return ERR_PTR(-ENOENT);
+}
+
 static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
 			   struct nattr *attr)
 {
 	struct memstore *ms;
-	struct memobj *obj;
-	int ret;
+	struct memver *ver;
 
 	if (!vol || !hndl || !attr)
 		return -EINVAL;
 
 	ms = vol->private;
 
-	mxlock(&ms->lock);
-	obj = findobj(ms, &hndl->oid);
-	mxunlock(&ms->lock);
+	ver = findver_by_hndl(ms, hndl);
+	if (IS_ERR(ver))
+		return PTR_ERR(ver);
 
-	if (!obj) {
-		ret = -ENOENT;
-	} else {
-		ret = 0;
-		mxlock(&obj->lock);
-		*attr = obj->def->attrs; /* TODO: you the req. version */
-		mxunlock(&obj->lock);
-		memobj_putref(obj);
-	}
+	*attr = ver->attrs;
+	mxunlock(&ver->obj->lock);
+	memobj_putref(ver->obj);
 
-	return ret;
+	return 0;
 }
 
 static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
