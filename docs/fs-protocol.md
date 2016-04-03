@@ -119,6 +119,9 @@ type and access bits) create the new path component returning the handle of
 the newly created file.  Creating an already existing path component fails
 with `EEXIST`.
 
+The directory handle's vector clock handling is identical to that of the
+STAT RPC.
+
 Inputs
 ------
 * directory/parent obj handle

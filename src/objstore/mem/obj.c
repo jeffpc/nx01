@@ -290,6 +290,63 @@ err_unlock:
 	return ret;
 }
 
+/* returns a locked & referenced child object */
+static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
+				   const char *name, uint16_t mode)
+{
+	struct memdentry *dentry;
+	struct memobj *obj;
+	int ret;
+
+	/* allocate the child object */
+	obj = newobj(store, mode, 1);
+	if (IS_ERR(obj))
+		return obj;
+
+	/* allocate the dentry */
+	dentry = malloc(sizeof(struct memdentry));
+	if (!dentry) {
+		ret = -ENOMEM;
+		goto err;
+	}
+
+	/* dup the name for the dentry */
+	dentry->name = strdup(name);
+	if (!dentry->name) {
+		ret = -ENOMEM;
+		free(dentry);
+		goto err;
+	}
+
+	/* lock the object */
+	mxlock(&obj->lock);
+
+	/* prepare the dentry */
+	dentry->obj = memobj_getref(obj);
+
+	/* add the dentry to the parent */
+	avl_add(&dir->dentries, dentry);
+
+	/*
+	 * We changed the dir, so we need to up the version.
+	 *
+	 * TODO: do we need to tweak the dentries AVL tree?
+	 */
+	nvclock_inc(dir->clock);
+
+	/* add object to the global list */
+	mxlock(&store->lock);
+	avl_add(&store->objs, memobj_getref(obj));
+	mxunlock(&store->lock);
+
+	return obj;
+
+err:
+	memobj_putref(obj);
+
+	return ERR_PTR(ret);
+}
+
 static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 			  const char *name, uint16_t mode,
 			  struct noid *child)
@@ -298,9 +355,8 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 		.name = name,
 	};
 	struct memstore *ms;
-	struct memdentry *dentry;
-	struct memobj *dirobj;
-	struct memobj *obj;
+	struct memobj *childobj;
+	struct memver *dirver;
 	int ret;
 
 	if (!vol || !dir || !name || !child)
@@ -308,83 +364,36 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 
 	ms = vol->private;
 
-	mxlock(&ms->lock);
-	dirobj = findobj(ms, &dir->oid);
-	mxunlock(&ms->lock);
+	dirver = findver_by_hndl(ms, dir);
+	if (IS_ERR(dirver))
+		return PTR_ERR(dirver);
 
-	if (!dirobj)
-		return -ENOENT;
-
-	mxlock(&dirobj->lock);
-
-	/*
-	 * TODO: use the requested version instead of the default
-	 */
-
-	if (!NATTR_ISDIR(dirobj->def->attrs.mode)) {
+	if (!NATTR_ISDIR(dirver->attrs.mode)) {
 		ret = -ENOTDIR;
 		goto err_unlock;
 	}
 
-	dentry = avl_find(&dirobj->def->dentries, &key, NULL);
-	if (dentry) {
+	if (avl_find(&dirver->dentries, &key, NULL)) {
 		ret = -EEXIST;
 		goto err_unlock;
 	}
 
-	if (IS_ERR(obj)) {
-		ret = PTR_ERR(obj);
+	childobj = __obj_create(ms, dirver, name, mode);
+	if (IS_ERR(childobj)) {
+		ret = PTR_ERR(childobj);
 		goto err_unlock;
 	}
-	obj = newobj(store, mode, 1);
-
-	dentry = malloc(sizeof(struct memdentry));
-	if (!dentry) {
-		ret = -ENOMEM;
-		goto err_putchild;
-	}
-
-	dentry->name = strdup(name);
-	if (!dentry->name) {
-		ret = -ENOMEM;
-		free(dentry);
-		goto err_putchild;
-	}
-
-	/* lock the new object */
-	mxlock(&obj->lock);
-
-	/* prepare the dentry */
-	dentry->obj = obj; /* hand off our reference */
-
-	/* add the dentry to the parent */
-	avl_add(&dirobj->def->dentries, dentry);
-
-	/* add object to the global list */
-	mxlock(&ms->lock);
-	avl_add(&ms->objs, memobj_getref(obj));
-	mxunlock(&ms->lock);
 
 	/* set return oid */
-	*child = obj->oid;
+	*child = childobj->oid;
 	ret = 0;
 
-	/*
-	 * We changed the dir, so we need to up the version.
-	 *
-	 * TODO: do we need to tweak the dentries AVL tree?
-	 */
-	nvclock_inc(dirobj->def->clock);
-
-	mxunlock(&obj->lock);
-
-err_putchild:
-	memobj_putref(obj);
+	mxunlock(&childobj->lock);
+	memobj_putref(childobj);
 
 err_unlock:
-	mxunlock(&dirobj->lock);
-
-	memobj_putref(dirobj);
+	mxunlock(&dirver->obj->lock);
+	memobj_putref(dirver->obj);
 
 	return ret;
 }
