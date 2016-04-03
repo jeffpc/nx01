@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,11 +25,11 @@
 #define __NOMAD_OBJSTORE_MEM_H
 
 #include <sys/avl.h>
+#include <jeffpc/atomic.h>
+#include <jeffpc/refcnt.h>
 
 #include <nomad/types.h>
 #include <nomad/mutex.h>
-#include <nomad/atomic.h>
-#include <nomad/refcnt.h>
 
 /*
  * There is a handful of structures that keep track of everything.  At the
@@ -88,7 +88,7 @@ struct memobj {
 
 	/* misc */
 	avl_node_t node;
-	atomic_t refcnt;
+	refcnt_t refcnt;
 	pthread_mutex_t lock;
 };
 

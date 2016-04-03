@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,8 +24,9 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-#include <nomad/error.h>
-#include <nomad/rand.h>
+#include <jeffpc/error.h>
+#include <jeffpc/rand.h>
+
 #include <nomad/objstore_impl.h>
 
 #include "mem.h"
@@ -45,7 +46,7 @@ static int mem_vol_create(struct objstore_vol *store)
 
 	ms = malloc(sizeof(struct memstore));
 	if (!ms)
-		return ENOMEM;
+		return -ENOMEM;
 
 	atomic_set(&ms->next_oid_uniq, 1);
 	avl_create(&ms->objs, objcmp, sizeof(struct memobj),
@@ -77,7 +78,7 @@ static int mem_vol_getroot(struct objstore_vol *store, struct nobjhndl *hndl)
 	int ret;
 
 	if (!store || !store->private || !hndl)
-		return EINVAL;
+		return -EINVAL;
 
 	ms = store->private;
 

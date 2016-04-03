@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,10 @@
  * SOFTWARE.
  */
 
+#include <jeffpc/atomic.h>
+#include <jeffpc/error.h>
+
 #include <nomad/types.h>
-#include <nomad/atomic.h>
-#include <nomad/error.h>
 
 static atomic64_t local_node_id;
 
@@ -34,7 +35,7 @@ uint64_t nomad_local_node_id(void)
 int nomad_set_local_node_id(uint64_t newid)
 {
 	if (atomic_cas(&local_node_id, 0, newid))
-		return EBUSY;
+		return -EBUSY;
 
 	return 0;
 }

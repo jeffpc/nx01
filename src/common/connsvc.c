@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,10 @@
 #include <sys/select.h>
 
 #include <suntaskq.h>
+#include <jeffpc/atomic.h>
+#include <jeffpc/error.h>
 
-#include <nomad/error.h>
 #include <nomad/types.h>
-#include <nomad/atomic.h>
 #include <nomad/connsvc.h>
 
 /*
@@ -107,11 +107,11 @@ static int bind_sock(struct state *state, int family, struct sockaddr *addr,
 	int fd;
 
 	if (state->nfds >= MAX_SOCK_FDS)
-		return EMFILE;
+		return -EMFILE;
 
 	fd = socket(family, SOCK_STREAM, 0);
 	if (fd == -1)
-		return errno;
+		return -errno;
 
 	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 	setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &on, sizeof(on));
@@ -127,7 +127,7 @@ static int bind_sock(struct state *state, int family, struct sockaddr *addr,
 	return 0;
 
 err:
-	ret = errno;
+	ret = -errno;
 
 	close(fd);
 
@@ -148,7 +148,7 @@ static int start_listening(struct state *state, const char *host,
 	snprintf(strport, sizeof(strport), "%d", port);
 
 	if (getaddrinfo(host, strport, &hints, &res))
-		return -1; /* XXX: should return errno */
+		return -EINVAL; /* XXX: this should likely be something else */
 
 	for (p = res; p; p = p->ai_next) {
 		struct sockaddr_in *ipv4;
@@ -179,7 +179,7 @@ static int start_listening(struct state *state, const char *host,
 		inet_ntop(p->ai_family, addr, str, sizeof(str));
 
 		ret = bind_sock(state, p->ai_family, p->ai_addr, p->ai_addrlen);
-		if (ret && ret != EAFNOSUPPORT)
+		if (ret && ret != -EAFNOSUPPORT)
 			return ret;
 		else if (!ret)
 			cmn_err(CE_INFO, "Bound to: %s %s", str, strport);
@@ -290,7 +290,7 @@ int connsvc(const char *host, uint16_t port, void (*func)(int fd, void *),
 	state.taskq = taskq_create(name, CONN_BACKLOG, 1, INT_MAX,
 				   TASKQ_DYNAMIC);
 	if (!state.taskq) {
-		ret = ENOMEM;
+		ret = -ENOMEM;
 		goto err;
 	}
 

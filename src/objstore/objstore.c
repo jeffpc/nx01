@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,8 @@
 #include <string.h>
 #include <umem.h>
 
-#include <nomad/error.h>
+#include <jeffpc/error.h>
+
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
@@ -52,12 +53,12 @@ static int load_backend(struct backend *backend, const char *name)
 
 	backend->module = dlopen(path, RTLD_NOW | RTLD_LOCAL);
 	if (!backend->module)
-		return ENOENT;
+		return -ENOENT;
 
 	backend->def = dlsym(backend->module, "objvol");
 	if (!backend->def) {
 		dlclose(backend->module);
-		return ENOENT;
+		return -ENOENT;
 	}
 
 	return 0;
@@ -70,7 +71,7 @@ int objstore_init(void)
 	vol_cache = umem_cache_create("vol", sizeof(struct objstore_vol),
 				      0, NULL, NULL, NULL, NULL, NULL, 0);
 	if (!vol_cache)
-		return ENOMEM;
+		return -ENOMEM;
 
 	ret = vg_init();
 	if (ret)
@@ -97,17 +98,17 @@ struct objstore_vol *objstore_vol_create(struct objstore *vg, const char *path,
 	int ret;
 
 	if (!backend->def->vol_ops->create)
-		return ERR_PTR(ENOTSUP);
+		return ERR_PTR(-ENOTSUP);
 
 	s = umem_cache_alloc(vol_cache, 0);
 	if (!s)
-		return ERR_PTR(ENOMEM);
+		return ERR_PTR(-ENOMEM);
 
 	s->def = backend->def;
 	s->mode = mode;
 	s->path = strdup(path);
 	if (!s->path) {
-		ret = ENOMEM;
+		ret = -ENOMEM;
 		goto err;
 	}
 
@@ -128,8 +129,8 @@ err:
 	return ERR_PTR(ret);
 }
 
-struct objstore_vol *objstore_vol_load(struct objstore *vg, struct nuuid *uuid,
+struct objstore_vol *objstore_vol_load(struct objstore *vg, struct xuuid *uuid,
 				       const char *path)
 {
-	return ERR_PTR(ENOTSUP);
+	return ERR_PTR(-ENOTSUP);
 }

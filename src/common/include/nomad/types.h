@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@
 #include <nomad/vclock.h>
 #include <nomad/malloc.h>
 
+#include <jeffpc/uuid.h>
+
 #ifndef MIN
 #define MIN(a, b)	(((a) < (b)) ? (a) : (b))
 #endif
@@ -56,11 +58,6 @@ struct nobjhndl {
 	struct nvclock *clock;
 };
 
-/* uuid */
-struct nuuid {
-	uint8_t raw[16];
-};
-
 extern int nomad_set_local_node_id(uint64_t newid);
 extern uint64_t nomad_local_node_id(void);
 
@@ -71,9 +68,5 @@ extern bool_t xdr_noid(XDR *xdrs, struct noid *oid);
 extern int nobjhndl_cpy(struct nobjhndl *dst, const struct noid *oid,
 			const struct nvclock *clock);
 extern bool_t xdr_nobjhndl(XDR *xdrs, struct nobjhndl *hndl);
-
-extern void nuuid_clear(struct nuuid *uuid);
-extern int nuuid_compare(const struct nuuid *u1, const struct nuuid *u2);
-extern void nuuid_generate(struct nuuid *uuid);
 
 #endif

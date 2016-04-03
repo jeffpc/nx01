@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <jeffpc/error.h>
+
 #include <nomad/config.h>
-#include <nomad/error.h>
 #include <nomad/mutex.h>
 
 void mxinit(pthread_mutex_t *m)

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 # Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,7 +24,6 @@
 rpcgen(rpc_fs)
 
 add_library(nomad_common SHARED
-	assfail.c
 	attr.c
 	connsvc.c
 	error.c
@@ -32,8 +31,6 @@ add_library(nomad_common SHARED
 	mutex.c
 	node.c
 	oid.c
-	rand.c
-	uuid.c
 	vclock.c
 	xdrfd.c
 
@@ -42,20 +39,16 @@ add_library(nomad_common SHARED
 
 target_link_libraries(nomad_common
 	${BASE_LIBS}
-	uuid
+	jeffpc
 )
 
 install(TARGETS nomad_common DESTINATION lib
 	PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
-install(FILES	include/nomad/atomic.h
-		include/nomad/attr.h
-		include/nomad/error.h
+install(FILES	include/nomad/attr.h
 		include/nomad/init.h
 		include/nomad/iter.h
 		include/nomad/malloc.h
 		include/nomad/mutex.h
-		include/nomad/rand.h
-		include/nomad/refcnt.h
 		include/nomad/time.h
 		include/nomad/types.h
 		include/nomad/vclock.h

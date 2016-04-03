@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,18 @@
  * SOFTWARE.
  */
 
-#include <nomad/error.h>
+#include <jeffpc/error.h>
+
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
 int vol_getroot(struct objstore_vol *vol, struct nobjhndl *hndl)
 {
 	if (!vol || !hndl)
-		return EINVAL;
+		return -EINVAL;
 
 	if (!vol->def->vol_ops || !vol->def->vol_ops->getroot)
-		return ENOTSUP;
+		return -ENOTSUP;
 
 	return vol->def->vol_ops->getroot(vol, hndl);
 }

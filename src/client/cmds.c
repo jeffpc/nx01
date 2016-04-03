@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,7 +23,8 @@
 
 #include <stddef.h>
 
-#include <nomad/error.h>
+#include <jeffpc/error.h>
+
 #include <nomad/rpc_fs.h>
 
 #include "cmds.h"
@@ -134,7 +135,7 @@ bool process_connection(struct fsconn *conn)
 
 	cmn_err(CE_DEBUG, "got opcode %u", hdr.opcode);
 
-	ret = ENOTSUP;
+	ret = -ENOTSUP;
 
 	for (i = 0; i < ARRAY_LEN(cmdtbl); i++) {
 		const struct cmdtbl *def = &cmdtbl[i];
@@ -159,7 +160,7 @@ bool process_connection(struct fsconn *conn)
 
 		/* if login is required, make sure it happened */
 		if (def->requires_login && !conn->vg) {
-			ret = EPROTO;
+			ret = -EPROTO;
 			cmn_err(CE_ERROR, "must do LOGIN before this operation");
 			break;
 		}

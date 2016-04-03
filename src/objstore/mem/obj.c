@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,7 +24,8 @@
 #include <stddef.h>
 #include <umem.h>
 
-#include <nomad/error.h>
+#include <jeffpc/error.h>
+
 #include <nomad/time.h>
 #include <nomad/objstore_impl.h>
 
@@ -59,13 +60,13 @@ static struct memobjver *newobjver(uint16_t mode)
 
 	ver = malloc(sizeof(struct memobjver));
 	if (!ver) {
-		ret = ENOMEM;
+		ret = -ENOMEM;
 		goto err;
 	}
 
 	ver->clock = nvclock_alloc();
 	if (!ver->clock) {
-		ret = ENOMEM;
+		ret = -ENOMEM;
 		goto err_free;
 	}
 
@@ -101,7 +102,7 @@ struct memobj *newobj(struct memstore *ms, uint16_t mode)
 	struct memobj *obj;
 	int ret;
 
-	ret = ENOMEM;
+	ret = -ENOMEM;
 
 	obj = malloc(sizeof(struct memobj));
 	if (!obj)
@@ -177,7 +178,7 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 	int ret;
 
 	if (!vol || !hndl || !attr)
-		return EINVAL;
+		return -EINVAL;
 
 	ms = vol->private;
 
@@ -186,7 +187,7 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 	mxunlock(&ms->lock);
 
 	if (!obj) {
-		ret = ENOENT;
+		ret = -ENOENT;
 	} else {
 		ret = 0;
 		mxlock(&obj->lock);
@@ -210,7 +211,7 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	int ret;
 
 	if (!vol || !dir || !name || !child)
-		return EINVAL;
+		return -EINVAL;
 
 	ms = vol->private;
 
@@ -219,7 +220,7 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	mxunlock(&ms->lock);
 
 	if (!dirobj)
-		return ENOENT;
+		return -ENOENT;
 
 	mxlock(&dirobj->lock);
 
@@ -228,13 +229,13 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	 */
 
 	if (!NATTR_ISDIR(dirobj->def->attrs.mode)) {
-		ret = ENOTDIR;
+		ret = -ENOTDIR;
 		goto err_unlock;
 	}
 
 	dentry = avl_find(&dirobj->def->dentries, &key, NULL);
 	if (!dentry) {
-		ret = ENOENT;
+		ret = -ENOENT;
 		goto err_unlock;
 	}
 
@@ -265,7 +266,7 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 	int ret;
 
 	if (!vol || !dir || !name || !child)
-		return EINVAL;
+		return -EINVAL;
 
 	ms = vol->private;
 
@@ -274,7 +275,7 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 	mxunlock(&ms->lock);
 
 	if (!dirobj)
-		return ENOENT;
+		return -ENOENT;
 
 	mxlock(&dirobj->lock);
 
@@ -283,13 +284,13 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 	 */
 
 	if (!NATTR_ISDIR(dirobj->def->attrs.mode)) {
-		ret = ENOTDIR;
+		ret = -ENOTDIR;
 		goto err_unlock;
 	}
 
 	dentry = avl_find(&dirobj->def->dentries, &key, NULL);
 	if (dentry) {
-		ret = EEXIST;
+		ret = -EEXIST;
 		goto err_unlock;
 	}
 
@@ -303,13 +304,13 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 
 	dentry = malloc(sizeof(struct memdentry));
 	if (!dentry) {
-		ret = ENOMEM;
+		ret = -ENOMEM;
 		goto err_putchild;
 	}
 
 	dentry->name = strdup(name);
 	if (!dentry->name) {
-		ret = ENOMEM;
+		ret = -ENOMEM;
 		free(dentry);
 		goto err_putchild;
 	}

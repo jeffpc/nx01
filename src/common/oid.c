@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,9 @@
  * SOFTWARE.
  */
 
+#include <jeffpc/error.h>
+
 #include <nomad/types.h>
-#include <nomad/error.h>
 
 int noid_cmp(const struct noid *n1, const struct noid *n2)
 {
@@ -58,7 +59,7 @@ int nobjhndl_cpy(struct nobjhndl *dst, const struct noid *oid,
 		 const struct nvclock *clock)
 {
 	if (!dst || !oid)
-		return EINVAL;
+		return -EINVAL;
 
 	dst->oid = *oid;
 
@@ -68,7 +69,7 @@ int nobjhndl_cpy(struct nobjhndl *dst, const struct noid *oid,
 	}
 
 	dst->clock = nvclock_dup(clock);
-	return dst->clock ? 0 : ENOMEM;
+	return dst->clock ? 0 : -ENOMEM;
 }
 
 bool_t xdr_nobjhndl(XDR *xdrs, struct nobjhndl *hndl)

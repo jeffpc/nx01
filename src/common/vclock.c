@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,9 @@
 #include <string.h>
 #include <umem.h>
 
+#include <jeffpc/error.h>
+
 #include <nomad/types.h>
-#include <nomad/error.h>
 
 /*
  * Vector clocks
@@ -55,7 +56,7 @@ int nvclock_init_subsys(void)
 	vclock_cache = umem_cache_create("vclock", sizeof(struct nvclock),
 					 0, NULL, NULL, NULL, NULL, NULL, 0);
 
-	return vclock_cache ? 0 : ENOMEM;
+	return vclock_cache ? 0 : -ENOMEM;
 }
 
 struct nvclock *nvclock_alloc(void)
@@ -94,14 +95,14 @@ static struct nvclockent *__get_ent(struct nvclock *clock, uint64_t node,
 	int i;
 
 	if (!clock || !node)
-		return ERR_PTR(EINVAL);
+		return ERR_PTR(-EINVAL);
 
 	for (i = 0; i < NVCLOCK_NUM_NODES; i++)
 		if (clock->ent[i].node == node)
 			return &clock->ent[i];
 
 	if (!alloc)
-		return ERR_PTR(ENOENT);
+		return ERR_PTR(-ENOENT);
 
 	/*
 	 * We didn't find it; we're supposed to allocate an entry.
@@ -114,7 +115,7 @@ static struct nvclockent *__get_ent(struct nvclock *clock, uint64_t node,
 		}
 	}
 
-	return ERR_PTR(ENOMEM);
+	return ERR_PTR(-ENOMEM);
 }
 
 /*
@@ -142,7 +143,7 @@ int nvclock_remove_node(struct nvclock *clock, uint64_t node)
 	struct nvclockent *ent;
 
 	if (!clock || !node)
-		return EINVAL;
+		return -EINVAL;
 
 	ent = __get_ent(clock, node, false);
 	if (IS_ERR(ent))

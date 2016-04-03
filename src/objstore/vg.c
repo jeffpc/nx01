@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,8 @@
 #include <stddef.h>
 #include <umem.h>
 
-#include <nomad/error.h>
+#include <jeffpc/error.h>
+
 #include <nomad/iter.h>
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
@@ -40,7 +41,7 @@ int vg_init(void)
 	vg_cache = umem_cache_create("vg", sizeof(struct objstore),
 				     0, NULL, NULL, NULL, NULL, NULL, 0);
 	if (!vg_cache)
-		return ENOMEM;
+		return -ENOMEM;
 
 	mxinit(&vgs_lock);
 
@@ -62,16 +63,16 @@ struct objstore *objstore_vg_create(const char *name,
 	struct objstore *vg;
 
 	if (type != OS_VG_SIMPLE)
-		return ERR_PTR(EINVAL);
+		return ERR_PTR(-EINVAL);
 
 	vg = umem_cache_alloc(vg_cache, 0);
 	if (!vg)
-		return ERR_PTR(ENOMEM);
+		return ERR_PTR(-ENOMEM);
 
 	vg->name = strdup(name);
 	if (!vg->name) {
 		umem_cache_free(vg_cache, vg);
-		return ERR_PTR(ENOMEM);
+		return ERR_PTR(-ENOMEM);
 	}
 
 	list_create(&vg->vols, sizeof(struct objstore_vol),
@@ -112,7 +113,7 @@ int objstore_getroot(struct objstore *vg, struct nobjhndl *hndl)
 	int ret;
 
 	if (!vg || !hndl)
-		return EINVAL;
+		return -EINVAL;
 
 	/*
 	 * TODO: we're assuming OS_VG_SIMPLE
@@ -122,7 +123,7 @@ int objstore_getroot(struct objstore *vg, struct nobjhndl *hndl)
 	if (vol)
 		ret = vol_getroot(vol, hndl);
 	else
-		ret = ENXIO;
+		ret = -ENXIO;
 	mxunlock(&vg->lock);
 
 	return ret;
@@ -135,7 +136,7 @@ int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
 	int ret;
 
 	if (!vg || !hndl || !attr)
-		return EINVAL;
+		return -EINVAL;
 
 	/*
 	 * TODO: we're assuming OS_VG_SIMPLE
@@ -145,7 +146,7 @@ int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
 	if (vol)
 		ret = vol_getattr(vol, hndl, attr);
 	else
-		ret = ENXIO;
+		ret = -ENXIO;
 	mxunlock(&vg->lock);
 
 	return ret;
@@ -161,7 +162,7 @@ int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
 		child);
 
 	if (!vg || !dir || !name || !child)
-		return EINVAL;
+		return -EINVAL;
 
 	/*
 	 * TODO: we're assuming OS_VG_SIMPLE
@@ -171,7 +172,7 @@ int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
 	if (vol)
 		ret = vol_lookup(vol, dir, name, child);
 	else
-		ret = ENXIO;
+		ret = -ENXIO;
 	mxunlock(&vg->lock);
 
 	return ret;
@@ -188,7 +189,7 @@ int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
 		name, mode, child);
 
 	if (!vg || !dir || !name || !child)
-		return EINVAL;
+		return -EINVAL;
 
 	/*
 	 * TODO: we're assuming OS_VG_SIMPLE
@@ -198,7 +199,7 @@ int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
 	if (vol)
 		ret = vol_create(vol, dir, name, mode, child);
 	else
-		ret = ENXIO;
+		ret = -ENXIO;
 	mxunlock(&vg->lock);
 
 	return ret;
@@ -213,7 +214,7 @@ int objstore_remove(struct objstore *vg, const struct nobjhndl *dir,
 	cmn_err(CE_DEBUG, "%s(%p, %p, '%s')", __func__, vg, dir, name);
 
 	if (!vg || !dir || !name)
-		return EINVAL;
+		return -EINVAL;
 
 	/*
 	 * TODO: we're assuming OS_VG_SIMPLE
@@ -223,7 +224,7 @@ int objstore_remove(struct objstore *vg, const struct nobjhndl *dir,
 	if (vol)
 		ret = vol_remove(vol, dir, name);
 	else
-		ret = ENXIO;
+		ret = -ENXIO;
 	mxunlock(&vg->lock);
 
 	return ret;

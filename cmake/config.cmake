@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,7 @@
 include(CheckFunctionExists)
 include(CheckCSourceCompiles)
 
-check_function_exists(arc4random HAVE_ARC4RANDOM)
 check_function_exists(pthread_cond_reltimedwait_np HAVE_PTHREAD_COND_RELTIMEDWAIT_NP)
-check_function_exists(assfail HAVE_ASSFAIL)
-check_function_exists(assfail3 HAVE_ASSFAIL3)
 
 include(cmake/config/xdr.cmake)
 

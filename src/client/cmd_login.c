@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,7 +21,8 @@
  * SOFTWARE.
  */
 
-#include <nomad/error.h>
+#include <jeffpc/error.h>
+
 #include <nomad/types.h>
 #include <nomad/objstore.h>
 
@@ -38,12 +39,12 @@ int cmd_login(struct fsconn *conn, union cmd *cmd)
 	if (conn->vg) {
 		cmn_err(CE_INFO, "LOGIN: error: this connection "
 			"already logged in.");
-		return EALREADY;
+		return -EALREADY;
 	}
 
 	vg = objstore_vg_lookup(req->vg);
 	if (!vg)
-		return ENOENT;
+		return -ENOENT;
 
 	conn->vg = vg;
 

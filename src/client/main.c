@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +25,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <nomad/error.h>
+#include <jeffpc/error.h>
+
 #include <nomad/types.h>
 #include <nomad/objstore.h>
 #include <nomad/connsvc.h>
@@ -56,7 +57,7 @@ int main(int argc, char **argv)
 	ret = common_init();
 	if (ret) {
 		cmn_err(CE_CRIT, "common_init() = %d (%s)", ret,
-			strerror(ret));
+			xstrerror(ret));
 		goto err;
 	}
 
@@ -71,7 +72,7 @@ int main(int argc, char **argv)
 	ret = objstore_init();
 	if (ret) {
 		cmn_err(CE_CRIT, "objstore_init() = %d (%s)", ret,
-			strerror(ret));
+			xstrerror(ret));
 
 		if (ret == ENOENT)
 			cmn_err(CE_CRIT, "Did you set LD_LIBRARY_PATH?");
@@ -84,7 +85,7 @@ int main(int argc, char **argv)
 
 	if (IS_ERR(vg)) {
 		ret = PTR_ERR(vg);
-		cmn_err(CE_CRIT, "error: %s", strerror(ret));
+		cmn_err(CE_CRIT, "error: %s", xstrerror(ret));
 		goto err_init;
 	}
 
@@ -93,13 +94,13 @@ int main(int argc, char **argv)
 
 	if (IS_ERR(vol)) {
 		ret = PTR_ERR(vol);
-		cmn_err(CE_CRIT, "error: %s", strerror(ret));
+		cmn_err(CE_CRIT, "error: %s", xstrerror(ret));
 		goto err_vg;
 	}
 
 	ret = connsvc(NULL, CLIENT_DAEMON_PORT, connection_acceptor, NULL);
 
-	cmn_err(CE_DEBUG, "connsvc() = %d (%s)", ret, strerror(ret));
+	cmn_err(CE_DEBUG, "connsvc() = %d (%s)", ret, xstrerror(ret));
 
 	/* XXX: undo objstore_vol_create() */
 
