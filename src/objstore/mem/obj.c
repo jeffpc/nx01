@@ -254,7 +254,7 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	};
 	struct memstore *ms;
 	struct memdentry *dentry;
-	struct memobj *dirobj;
+	struct memver *dirver;
 	int ret;
 
 	if (!vol || !dir || !name || !child)
@@ -262,25 +262,16 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 
 	ms = vol->private;
 
-	mxlock(&ms->lock);
-	dirobj = findobj(ms, &dir->oid);
-	mxunlock(&ms->lock);
+	dirver = findver_by_hndl(ms, dir);
+	if (IS_ERR(dirver))
+		return PTR_ERR(dirver);
 
-	if (!dirobj)
-		return -ENOENT;
-
-	mxlock(&dirobj->lock);
-
-	/*
-	 * TODO: use the requested version instead of the default
-	 */
-
-	if (!NATTR_ISDIR(dirobj->def->attrs.mode)) {
+	if (!NATTR_ISDIR(dirver->attrs.mode)) {
 		ret = -ENOTDIR;
 		goto err_unlock;
 	}
 
-	dentry = avl_find(&dirobj->def->dentries, &key, NULL);
+	dentry = avl_find(&dirver->dentries, &key, NULL);
 	if (!dentry) {
 		ret = -ENOENT;
 		goto err_unlock;
@@ -293,9 +284,8 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	ret = 0;
 
 err_unlock:
-	mxunlock(&dirobj->lock);
-
-	memobj_putref(dirobj);
+	mxunlock(&dirver->obj->lock);
+	memobj_putref(dirver->obj);
 
 	return ret;
 }

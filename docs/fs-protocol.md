@@ -94,6 +94,9 @@ LOOKUP (0x0003)
 Given a directory (handle) and a path component (string), do a lookup of the
 path component in the directory.
 
+The directory handle's vector clock handling is identical to that of the
+STAT RPC.
+
 Inputs
 ------
 * directory/parent obj handle
