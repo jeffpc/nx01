@@ -33,8 +33,8 @@
 
 static int ver_cmp(const void *va, const void *vb)
 {
-	const struct memobjver *a = va;
-	const struct memobjver *b = vb;
+	const struct memver *a = va;
+	const struct memver *b = vb;
 
 	return nvclock_cmp_total(a->clock, b->clock);
 }
@@ -53,12 +53,12 @@ static int dentry_cmp(const void *a, const void *b)
 	return 0;
 }
 
-static struct memobjver *newobjver(uint16_t mode)
+static struct memver *newobjver(uint16_t mode)
 {
-	struct memobjver *ver;
+	struct memver *ver;
 	int ret;
 
-	ver = malloc(sizeof(struct memobjver));
+	ver = malloc(sizeof(struct memver));
 	if (!ver) {
 		ret = -ENOMEM;
 		goto err;
@@ -98,7 +98,7 @@ err:
 
 struct memobj *newobj(struct memstore *ms, uint16_t mode)
 {
-	struct memobjver *ver;
+	struct memver *ver;
 	struct memobj *obj;
 	int ret;
 
@@ -117,8 +117,8 @@ struct memobj *newobj(struct memstore *ms, uint16_t mode)
 	atomic_set(&obj->refcnt, 1);
 	mxinit(&obj->lock);
 
-	avl_create(&obj->versions, ver_cmp, sizeof(struct memobjver),
-		   offsetof(struct memobjver, node));
+	avl_create(&obj->versions, ver_cmp, sizeof(struct memver),
+		   offsetof(struct memver, node));
 
 	noid_set(&obj->oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
 
@@ -134,7 +134,7 @@ err:
 	return ERR_PTR(ret);
 }
 
-static void freeobjver(struct memobjver *ver)
+static void freeobjver(struct memver *ver)
 {
 	if (!ver)
 		return;
@@ -146,7 +146,7 @@ static void freeobjver(struct memobjver *ver)
 
 void freeobj(struct memobj *obj)
 {
-	struct memobjver *ver;
+	struct memver *ver;
 	void *cookie;
 
 	if (!obj)

@@ -46,7 +46,7 @@
  * since given non-divergent versions we would simply take the newer one
  * (NVC_GT) and discard the older (NVC_LT).  `struct memobj' keeps track of
  * all the versions of that object via the `versions' AVL tree.  Each
- * version of an object is represented by a `struct memobjver'.
+ * version of an object is represented by a `struct memver'.
  *
  * Each version has a vector clock.  Unlike the object ID, the clock may
  * change over time as the object is modified.  The only modifications
@@ -55,7 +55,7 @@
  *  (1) nvclock_inc() due to a local modification
  *  (2) nvclock_set_node() due to a merge of two versions
  *
- * Aside from the vector clock, `struct memobjver' contains the "values"
+ * Aside from the vector clock, `struct memver' contains the "values"
  * associated with the object - i.e., the file attributes, the file blob (in
  * case of a file), the dentries (in case of a directory).
  */
@@ -63,7 +63,7 @@
 struct memobj;
 
 /* each version */
-struct memobjver {
+struct memver {
 	/* key */
 	struct nvclock *clock;
 
@@ -84,7 +84,7 @@ struct memobj {
 
 	/* value */
 	avl_tree_t versions;   /* all versions */
-	struct memobjver *def; /* default version */
+	struct memver *def; /* default version */
 
 	/* misc */
 	avl_node_t node;
@@ -98,7 +98,7 @@ struct memdentry {
 	const char *name;
 
 	/* value */
-	struct memobjver *ver;
+	struct memver *ver;
 
 	/* misc */
 	avl_node_t node;
