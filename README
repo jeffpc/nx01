@@ -30,7 +30,7 @@ Internal Dependencies
 -------------+--------+---------+--------+----------+----------+----------
 sunavl       |   -    |    n    |   n    |    n     |    n     |     n
 sunlist      |   n    |    -    |   n    |    n     |    n     |     n
-common       |   n    |    n    |   -    |    y     |    n     |     n 
+common       |   n    |    n    |   -    |    y     |    n     |     y
 fakeumem     |   n    |    n    |   n    |    -     |    n     |     n
 objstore     |   n    |    n    |   n    |    y     |    -     |     n
 suntaskq     |   n    |    n    |   y    |    y     |    n     |     -
