@@ -205,6 +205,23 @@ int nvclock_inc(struct nvclock *clock)
 	return nvclock_inc_node(clock, nomad_local_node_id());
 }
 
+bool nvclock_is_null(const struct nvclock *clock)
+{
+	int i;
+
+	if (!clock)
+		return true;
+
+	for (i = 0; i < NVCLOCK_NUM_NODES; i++) {
+		if (clock->ent[i].node)
+			return false;
+		if (clock->ent[i].seq)
+			return false;
+	}
+
+	return true;
+}
+
 static int vc_cmp(const void *va, const void *vb)
 {
 	const struct nvclockent *a = va;
