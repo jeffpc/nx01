@@ -98,7 +98,7 @@ struct memdentry {
 	const char *name;
 
 	/* value */
-	struct memver *ver;
+	struct memobj *obj;
 
 	/* misc */
 	avl_node_t node;

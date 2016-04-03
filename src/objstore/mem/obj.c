@@ -286,9 +286,9 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 		goto err_unlock;
 	}
 
-	mxlock(&dentry->ver->obj->lock);
-	*child = dentry->ver->obj->oid;
-	mxunlock(&dentry->ver->obj->lock);
+	mxlock(&dentry->obj->lock);
+	*child = dentry->obj->oid;
+	mxunlock(&dentry->obj->lock);
 
 	ret = 0;
 
@@ -367,7 +367,7 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 	mxlock(&obj->lock);
 
 	/* prepare the dentry */
-	dentry->ver = obj->def; /* hand off our reference */
+	dentry->obj = obj; /* hand off our reference */
 
 	/* add the dentry to the parent */
 	avl_add(&dirobj->def->dentries, dentry);
