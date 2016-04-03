@@ -84,7 +84,6 @@ struct memobj {
 
 	/* value */
 	avl_tree_t versions;   /* all versions */
-	struct memver *def; /* default version */
 
 	/* misc */
 	avl_node_t node;

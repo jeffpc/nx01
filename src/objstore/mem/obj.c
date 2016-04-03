@@ -123,7 +123,6 @@ struct memobj *newobj(struct memstore *ms, uint16_t mode, uint32_t nlink)
 	noid_set(&obj->oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
 
 	avl_add(&obj->versions, ver);
-	obj->def = ver;
 	ver->obj = obj;
 
 	return obj;
