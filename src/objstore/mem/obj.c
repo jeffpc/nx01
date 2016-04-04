@@ -53,6 +53,32 @@ static int dentry_cmp(const void *a, const void *b)
 	return 0;
 }
 
+static struct memdentry *newdentry(struct memobj *child, const char *name)
+{
+	struct memdentry *dentry;
+	char *dupname;
+
+	if (!child || !name)
+		return ERR_PTR(-EINVAL);
+
+	dentry = malloc(sizeof(struct memdentry));
+	if (!dentry)
+		return ERR_PTR(-ENOMEM);
+
+	dupname = strdup(name);
+	if (!dupname)
+		goto err;
+
+	dentry->name = dupname;
+	dentry->obj = memobj_getref(child);
+
+	return dentry;
+
+err:
+	free(dentry);
+	return ERR_PTR(-ENOMEM);
+}
+
 static struct memver *newobjver(uint16_t mode)
 {
 	struct memver *ver;
@@ -133,6 +159,16 @@ err:
 	free(obj);
 
 	return ERR_PTR(ret);
+}
+
+static void freedentry(struct memdentry *dentry)
+{
+	if (!dentry)
+		return;
+
+	memobj_putref(dentry->obj);
+	free((void *) dentry->name);
+	free(dentry);
 }
 
 static void freeobjver(struct memver *ver)
@@ -299,7 +335,6 @@ static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 {
 	struct memdentry *dentry;
 	struct memobj *obj;
-	int ret;
 
 	/* allocate the child object */
 	obj = newobj(store, mode);
@@ -307,25 +342,14 @@ static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 		return obj;
 
 	/* allocate the dentry */
-	dentry = malloc(sizeof(struct memdentry));
-	if (!dentry) {
-		ret = -ENOMEM;
-		goto err;
-	}
-
-	/* dup the name for the dentry */
-	dentry->name = strdup(name);
-	if (!dentry->name) {
-		ret = -ENOMEM;
-		free(dentry);
-		goto err;
+	dentry = newdentry(obj, name);
+	if (IS_ERR(dentry)) {
+		memobj_putref(obj);
+		return ERR_CAST(dentry);
 	}
 
 	/* lock the object */
 	mxlock(&obj->lock);
-
-	/* prepare the dentry */
-	dentry->obj = memobj_getref(obj);
 
 	/* add the dentry to the parent */
 	avl_add(&dir->dentries, dentry);
@@ -345,11 +369,6 @@ static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 	mxunlock(&store->lock);
 
 	return obj;
-
-err:
-	memobj_putref(obj);
-
-	return ERR_PTR(ret);
 }
 
 static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
@@ -417,9 +436,7 @@ static int __obj_remove(struct memstore *store, struct memver *dir,
 	avl_remove(&dir->dentries, dentry);
 
 	/* free the dentry */
-	memobj_putref(dentry->obj);
-	free((void *) dentry->name);
-	free(dentry);
+	freedentry(dentry);
 
 	/* if there are no more links to the child obj, free it */
 	if (!--child->nlink) {
