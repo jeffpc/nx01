@@ -53,7 +53,7 @@ static int dentry_cmp(const void *a, const void *b)
 	return 0;
 }
 
-static struct memver *newobjver(uint16_t mode, uint32_t nlink)
+static struct memver *newobjver(uint16_t mode)
 {
 	struct memver *ver;
 	int ret;
@@ -80,7 +80,7 @@ static struct memver *newobjver(uint16_t mode, uint32_t nlink)
 	ver->blob = NULL;
 	ver->attrs._reserved = 0;
 	ver->attrs.mode = mode;
-	ver->attrs.nlink = nlink;
+	ver->attrs.nlink = 0xBAAAAAAD; /* don't use this, use memobj's nlink */
 	ver->attrs.size = 0;
 	ver->attrs.atime = gettime();
 	ver->attrs.btime = ver->attrs.atime;
@@ -96,7 +96,7 @@ err:
 	return ERR_PTR(ret);
 }
 
-struct memobj *newobj(struct memstore *ms, uint16_t mode, uint32_t nlink)
+struct memobj *newobj(struct memstore *ms, uint16_t mode)
 {
 	struct memver *ver;
 	struct memobj *obj;
@@ -108,11 +108,13 @@ struct memobj *newobj(struct memstore *ms, uint16_t mode, uint32_t nlink)
 	if (!obj)
 		goto err;
 
-	ver = newobjver(mode, nlink);
+	ver = newobjver(mode);
 	if (IS_ERR(ver)) {
 		ret = PTR_ERR(ver);
 		goto err;
 	}
+
+	obj->nlink = 0;
 
 	atomic_set(&obj->refcnt, 1);
 	mxinit(&obj->lock);
@@ -239,6 +241,8 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 		return PTR_ERR(ver);
 
 	*attr = ver->attrs;
+	attr->nlink = ver->obj->nlink;
+
 	mxunlock(&ver->obj->lock);
 	memobj_putref(ver->obj);
 
@@ -298,7 +302,7 @@ static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 	int ret;
 
 	/* allocate the child object */
-	obj = newobj(store, mode, 1);
+	obj = newobj(store, mode);
 	if (IS_ERR(obj))
 		return obj;
 
@@ -325,6 +329,8 @@ static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 
 	/* add the dentry to the parent */
 	avl_add(&dir->dentries, dentry);
+
+	obj->nlink++;
 
 	/*
 	 * We changed the dir, so we need to up the version.
@@ -400,15 +406,34 @@ err_unlock:
 static int __obj_remove(struct memstore *store, struct memver *dir,
 			struct memdentry *dentry)
 {
+	struct memobj *child;
+
+	/* get a reference for us */
+	child = memobj_getref(dentry->obj);
+
+	mxlock(&child->lock);
+
 	/* remove the dentry from the directory */
 	avl_remove(&dir->dentries, dentry);
 
-	FIXME("decrement child's nlink");
-	FIXME("conditionally remove child from global list");
-
+	/* free the dentry */
 	memobj_putref(dentry->obj);
 	free((void *) dentry->name);
 	free(dentry);
+
+	/* if there are no more links to the child obj, free it */
+	if (!--child->nlink) {
+		mxlock(&store->lock);
+		avl_remove(&store->objs, child);
+		mxunlock(&store->lock);
+
+		/* put the global list's ref */
+		memobj_putref(child);
+	}
+
+	/* unlock & put our ref */
+	mxunlock(&child->lock);
+	memobj_putref(child);
 
 	/*
 	 * We changed the dir, so we need to up the version.

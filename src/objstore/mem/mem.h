@@ -68,6 +68,11 @@ struct memver {
 	struct nvclock *clock;
 
 	/* value */
+	/*
+	 * Everything in the attrs structure is used for attribute storage
+	 * except for:
+	 *   - nlink: use nlink field in struct memobj
+	 */
 	struct nattr attrs;
 	void *blob; /* used if the memobj is a file */
 	avl_tree_t dentries; /* used if the memobj is a director */
@@ -84,6 +89,7 @@ struct memobj {
 
 	/* value */
 	avl_tree_t versions;   /* all versions */
+	uint32_t nlink;	 /* file link count */
 
 	/* misc */
 	avl_node_t node;
@@ -116,7 +122,7 @@ struct memstore {
 
 extern const struct obj_ops obj_ops;
 
-extern struct memobj *newobj(struct memstore *ms, uint16_t mode, uint32_t nlink);
+extern struct memobj *newobj(struct memstore *ms, uint16_t mode);
 extern void freeobj(struct memobj *obj);
 extern struct memobj *findobj(struct memstore *store, const struct noid *oid);
 
