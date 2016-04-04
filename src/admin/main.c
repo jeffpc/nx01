@@ -37,13 +37,20 @@ static int not_implemented(int argc, char **argv)
 	return 99;
 }
 
+static int cmd_host_id(int argc, char **argv)
+{
+	printf("%#016"PRIx64"\n", nomad_local_node_id());
+
+	return 0;
+}
+
 static struct cmd {
 	const char *name;
 	int (*fxn)(int argc, char **argv);
 } cmdtbl[] = {
 	{ .name = "conn-add",   .fxn = not_implemented, },
 	{ .name = "conn-list",  .fxn = not_implemented, },
-	{ .name = "host-id",    .fxn = not_implemented, },
+	{ .name = "host-id",    .fxn = cmd_host_id, },
 	{ .name = "vg-create",  .fxn = not_implemented, },
 	{ .name = "vg-import",  .fxn = not_implemented, },
 	{ .name = "vg-list",    .fxn = not_implemented, },
