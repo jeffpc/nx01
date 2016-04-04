@@ -397,8 +397,73 @@ err_unlock:
 	return ret;
 }
 
+static int __obj_remove(struct memstore *store, struct memver *dir,
+			struct memdentry *dentry)
+{
+	/* remove the dentry from the directory */
+	avl_remove(&dir->dentries, dentry);
+
+	FIXME("decrement child's nlink");
+	FIXME("conditionally remove child from global list");
+
+	memobj_putref(dentry->obj);
+	free((void *) dentry->name);
+	free(dentry);
+
+	/*
+	 * We changed the dir, so we need to up the version.
+	 *
+	 * TODO: do we need to tweak the dentries AVL tree?
+	 */
+	nvclock_inc(dir->clock);
+
+	return 0;
+}
+
+static int mem_obj_remove(struct objstore_vol *vol, const struct nobjhndl *dir,
+			  const char *name)
+{
+	const struct memdentry key = {
+		.name = name,
+	};
+	struct memdentry *dentry;
+	struct memver *dirver;
+	struct memstore *ms;
+	int ret;
+
+	if (!vol || !dir || !name)
+		return -EINVAL;
+
+	ms = vol->private;
+
+	dirver = findver_by_hndl(ms, dir);
+	if (IS_ERR(dirver))
+		return PTR_ERR(dirver);
+
+	if (!NATTR_ISDIR(dirver->attrs.mode)) {
+		ret = -ENOTDIR;
+		goto err_unlock;
+	}
+
+	dentry = avl_find(&dirver->dentries, &key, NULL);
+	if (!dentry) {
+		ret = -ENOENT;
+		goto err_unlock;
+	}
+
+	/* ok, we got the dentry - remove it */
+	ret = __obj_remove(ms, dirver, dentry);
+
+err_unlock:
+	mxunlock(&dirver->obj->lock);
+	memobj_putref(dirver->obj);
+
+	return ret;
+}
+
 const struct obj_ops obj_ops = {
 	.getattr = mem_obj_getattr,
 	.lookup  = mem_obj_lookup,
 	.create  = mem_obj_create,
+	.remove  = mem_obj_remove,
 };
