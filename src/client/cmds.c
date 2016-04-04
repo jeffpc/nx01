@@ -133,8 +133,6 @@ bool process_connection(struct fsconn *conn)
 	if (!xdr_rpc_header_req(&xdr, &hdr))
 		goto out;
 
-	cmn_err(CE_DEBUG, "got opcode %u", hdr.opcode);
-
 	ret = -ENOTSUP;
 
 	for (i = 0; i < ARRAY_LEN(cmdtbl); i++) {
@@ -177,6 +175,9 @@ bool process_connection(struct fsconn *conn)
 
 		goto out;
 	}
+
+	if (i == ARRAY_LEN(cmdtbl))
+		cmn_err(CE_DEBUG, "unknown opcode: %u", hdr.opcode);
 
 	send_response(&xdr, conn->fd, ret);
 
