@@ -21,11 +21,51 @@
  */
 
 #include <jeffpc/jeffpc.h>
+#include <jeffpc/error.h>
+#include <jeffpc/io.h>
 #include <nomad/init.h>
+#include <nomad/types.h>
+
+#define DEFAULT_CFG_FILENAME	"/etc/nomad.conf"
+#define CFG_ENV_NAME		"NOMAD_CONFIG"
+
+static int load_config(void)
+{
+	struct val *cfg;
+	struct val *tmp;
+	char *fname;
+	char *raw;
+
+	fname = getenv(CFG_ENV_NAME);
+	if (!fname)
+		fname = DEFAULT_CFG_FILENAME;
+
+	raw = read_file(fname);
+	if (IS_ERR(raw))
+		return PTR_ERR(raw);
+
+	cfg = sexpr_parse(raw, strlen(raw));
+	if (!cfg)
+		panic("failed to parse config (%s)", fname);
+
+	/*
+	 * free the whole alist & raw string
+	 */
+	val_putref(cfg);
+	free(raw);
+
+	return 0;
+}
 
 int common_init(void)
 {
+	int ret;
+
 	jeffpc_init(NULL);
+
+	ret = load_config();
+	if (ret)
+		return ret;
 
 	return nvclock_init_subsys();
 }
