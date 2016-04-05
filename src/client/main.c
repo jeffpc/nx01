@@ -61,14 +61,6 @@ int main(int argc, char **argv)
 		goto err;
 	}
 
-	/*
-	 * TODO:
-	 * The local node id should be stored persistently in a config file
-	 * of some sort.  The initial value for the node id should be
-	 * generated randomly.
-	 */
-	nomad_set_local_node_id(0xabba);
-
 	ret = objstore_init();
 	if (ret) {
 		cmn_err(CE_CRIT, "objstore_init() = %d (%s)", ret,

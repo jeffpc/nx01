@@ -23,6 +23,8 @@
 #include <jeffpc/jeffpc.h>
 #include <jeffpc/error.h>
 #include <jeffpc/io.h>
+#include <jeffpc/sexpr.h>
+
 #include <nomad/init.h>
 #include <nomad/types.h>
 
@@ -47,6 +49,20 @@ static int load_config(void)
 	cfg = sexpr_parse(raw, strlen(raw));
 	if (!cfg)
 		panic("failed to parse config (%s)", fname);
+
+	/*
+	 * set the host-id
+	 */
+	tmp = sexpr_alist_lookup_val(cfg, "host-id");
+	if (!tmp)
+		panic("config (%s) is missing host-id", fname);
+
+	if (tmp->type != VT_INT)
+		panic("config (%s) has non-integer host-id", fname);
+
+	VERIFY0(nomad_set_local_node_id(tmp->i));
+
+	val_putref(tmp);
 
 	/*
 	 * free the whole alist & raw string
