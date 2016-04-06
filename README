@@ -23,6 +23,24 @@ This will build and install the binaries and libraries under the specified
 prefix.
 
 
+Running
+=======
+
+First you need to create a config file.  For an example along with a
+description of the syntax refer to examples/nomad.conf.
+
+Either place the config file at /etc/nomad.conf or set the NOMAD_CONFIG
+environment variable to the config file's location.  All nomad executables
+that require a config file check the environment variable, and if not set
+they fall back to the hardcoded /etc/nomad.conf.
+
+For example:
+
+$ export NOMAD_CONFIG=/some/where/nomad.conf
+$ nomadadm host-id
+0xabcdefabcdefabcd
+
+
 Internal Dependencies
 =====================
 
