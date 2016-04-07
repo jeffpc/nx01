@@ -142,7 +142,7 @@ struct memobj *newobj(struct memstore *ms, uint16_t mode)
 
 	obj->nlink = 0;
 
-	atomic_set(&obj->refcnt, 1);
+	refcnt_init(&obj->refcnt, 1);
 	mxinit(&obj->lock);
 
 	avl_create(&obj->versions, ver_cmp, sizeof(struct memver),
