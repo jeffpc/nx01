@@ -34,6 +34,7 @@
 #include <nomad/malloc.h>
 
 #include <jeffpc/uuid.h>
+#include <jeffpc/types.h>
 
 #ifndef MIN
 #define MIN(a, b)	(((a) < (b)) ? (a) : (b))
@@ -42,8 +43,6 @@
 #ifndef MAX
 #define MAX(a, b)	(((a) > (b)) ? (a) : (b))
 #endif
-
-#define ARRAY_LEN(a)	(sizeof(a) / sizeof(a[0]))
 
 /* object id */
 struct noid {
