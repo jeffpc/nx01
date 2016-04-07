@@ -25,50 +25,53 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-int vol_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
-                struct nattr *attr)
+int vol_getattr(struct objstore_vol *vol, const struct noid *oid,
+		const struct nvclock *clock, struct nattr *attr)
 {
-	if (!vol || !hndl || !hndl->clock || !attr)
+	if (!vol || !oid || !clock || !attr)
 		return -EINVAL;
 
 	if (!vol->def->obj_ops || !vol->def->obj_ops->getattr)
 		return -ENOTSUP;
 
-	return vol->def->obj_ops->getattr(vol, hndl, attr);
+	return vol->def->obj_ops->getattr(vol, oid, clock, attr);
 }
 
-int vol_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
-               const char *name, struct noid *child)
+int vol_lookup(struct objstore_vol *vol, const struct noid *dir_oid,
+	       const struct nvclock *dir_clock, const char *name,
+	       struct noid *child)
 {
-	if (!vol || !dir || !name || !child)
+	if (!vol || !dir_oid || !dir_clock || !name || !child)
 		return -EINVAL;
 
 	if (!vol->def->obj_ops || !vol->def->obj_ops->lookup)
 		return -ENOTSUP;
 
-	return vol->def->obj_ops->lookup(vol, dir, name, child);
+	return vol->def->obj_ops->lookup(vol, dir_oid, dir_clock, name, child);
 }
 
-int vol_create(struct objstore_vol *vol, const struct nobjhndl *dir,
-               const char *name, uint16_t mode, struct noid *child)
+int vol_create(struct objstore_vol *vol, const struct noid *dir_oid,
+	       const struct nvclock *dir_clock, const char *name,
+	       uint16_t mode, struct noid *child)
 {
-	if (!vol || !dir || !name || !child)
+	if (!vol || !dir_oid || !dir_clock || !name || !child)
 		return -EINVAL;
 
 	if (!vol->def->obj_ops || !vol->def->obj_ops->create)
 		return -ENOTSUP;
 
-	return vol->def->obj_ops->create(vol, dir, name, mode, child);
+	return vol->def->obj_ops->create(vol, dir_oid, dir_clock, name,
+					 mode, child);
 }
 
-int vol_remove(struct objstore_vol *vol, const struct nobjhndl *dir,
-               const char *name)
+int vol_remove(struct objstore_vol *vol, const struct noid *dir_oid,
+	       const struct nvclock *dir_clock, const char *name)
 {
-	if (!vol || !dir || !name)
+	if (!vol || !dir_oid || !dir_clock || !name)
 		return -EINVAL;
 
 	if (!vol->def->obj_ops || !vol->def->obj_ops->remove)
 		return -ENOTSUP;
 
-	return vol->def->obj_ops->remove(vol, dir, name);
+	return vol->def->obj_ops->remove(vol, dir_oid, dir_clock, name);
 }

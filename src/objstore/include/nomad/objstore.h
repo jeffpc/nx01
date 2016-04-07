@@ -75,14 +75,15 @@ extern struct objstore_vol *objstore_vol_load(struct objstore *vg,
 extern int objstore_getroot(struct objstore *vg, struct noid *root);
 
 /* object operations */
-extern int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
-			    struct nattr *attr);
-extern int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
-                           const char *name, struct noid *child);
-extern int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
-                           const char *name, uint16_t mode,
-                           struct noid *child);
-extern int objstore_remove(struct objstore *vg, const struct nobjhndl *dir,
-                           const char *name);
+extern int objstore_getattr(struct objstore *vg, const struct noid *oid,
+			    const struct nvclock *clock, struct nattr *attr);
+extern int objstore_lookup(struct objstore *vg, const struct noid *dir_oid,
+			   const struct nvclock *dir_clock, const char *name,
+			   struct noid *child);
+extern int objstore_create(struct objstore *vg, const struct noid *doid,
+			   const struct nvclock *dclock, const char *name,
+			   uint16_t mode, struct noid *child);
+extern int objstore_remove(struct objstore *vg, const struct noid *doid,
+			   const struct nvclock *dclock, const char *name);
 
 #endif

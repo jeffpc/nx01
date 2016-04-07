@@ -45,7 +45,8 @@ struct rpc_login_res {
 
 %/***** STAT *****/
 struct rpc_stat_req {
-	struct nobjhndl	handle;
+	struct noid	oid;
+	struct nvclock	clock;
 };
 
 struct rpc_stat_res {
@@ -54,7 +55,8 @@ struct rpc_stat_res {
 
 %/***** LOOKUP *****/
 struct rpc_lookup_req {
-	struct nobjhndl	parent;
+	struct noid	parent_oid;
+	struct nvclock	parent_clock;
 	string		path<>;
 };
 
@@ -64,17 +66,20 @@ struct rpc_lookup_res {
 
 %/***** CREATE *****/
 struct rpc_create_req {
-	struct nobjhndl	parent;
+	struct noid	parent_oid;
+	struct nvclock	parent_clock;
 	string		path<>;
 	uint16_t	mode; /* see NATTR_* in common/include/nomad/atrr.h */
 };
 
 struct rpc_create_res {
-	struct noid	handle;
+	struct noid	oid;
+	struct nvclock	clock;
 };
 
 %/***** REMOVE *****/
 struct rpc_remove_req {
-	struct nobjhndl	parent;
+	struct noid	parent_oid;
+	struct nvclock	parent_clock;
 	string		path<>;
 };

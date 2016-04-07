@@ -120,17 +120,17 @@ int objstore_getroot(struct objstore *vg, struct noid *root)
 	return ret;
 }
 
-int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
-		     struct nattr *attr)
+int objstore_getattr(struct objstore *vg, const struct noid *oid,
+		     const struct nvclock *clock, struct nattr *attr)
 {
 	int ret;
 
-	if (!vg || !hndl || !attr)
+	if (!vg || !oid || !clock || !attr)
 		return -EINVAL;
 
 	mxlock(&vg->lock);
 	if (vg->vol)
-		ret = vol_getattr(vg->vol, hndl, attr);
+		ret = vol_getattr(vg->vol, oid, clock, attr);
 	else
 		ret = -ENXIO;
 	mxunlock(&vg->lock);
@@ -138,20 +138,21 @@ int objstore_getattr(struct objstore *vg, const struct nobjhndl *hndl,
 	return ret;
 }
 
-int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
-		    const char *name, struct noid *child)
+int objstore_lookup(struct objstore *vg, const struct noid *dir_oid,
+		    const struct nvclock *dir_clock, const char *name,
+		    struct noid *child)
 {
 	int ret;
 
-	cmn_err(CE_DEBUG, "%s(%p, %p, '%s', %p)", __func__, vg, dir, name,
-		child);
+	cmn_err(CE_DEBUG, "%s(%p, %p, %p, '%s', %p)", __func__, vg, dir_oid,
+		dir_clock, name, child);
 
-	if (!vg || !dir || !name || !child)
+	if (!vg || !dir_oid || !dir_clock || !name || !child)
 		return -EINVAL;
 
 	mxlock(&vg->lock);
 	if (vg->vol)
-		ret = vol_lookup(vg->vol, dir, name, child);
+		ret = vol_lookup(vg->vol, dir_oid, dir_clock, name, child);
 	else
 		ret = -ENXIO;
 	mxunlock(&vg->lock);
@@ -159,21 +160,22 @@ int objstore_lookup(struct objstore *vg, const struct nobjhndl *dir,
 	return ret;
 }
 
-int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
-                    const char *name, uint16_t mode,
-                    struct noid *child)
+int objstore_create(struct objstore *vg, const struct noid *dir_oid,
+		    const struct nvclock *dir_clock, const char *name,
+		    uint16_t mode, struct noid *child)
 {
 	int ret;
 
-	cmn_err(CE_DEBUG, "%s(%p, %p, '%s', %#o, %p)", __func__, vg, dir,
-		name, mode, child);
+	cmn_err(CE_DEBUG, "%s(%p, %p, %p, '%s', %#o, %p)", __func__, vg,
+		dir_oid, dir_clock, name, mode, child);
 
-	if (!vg || !dir || !name || !child)
+	if (!vg || !dir_oid || !dir_clock || !name || !child)
 		return -EINVAL;
 
 	mxlock(&vg->lock);
 	if (vg->vol)
-		ret = vol_create(vg->vol, dir, name, mode, child);
+		ret = vol_create(vg->vol, dir_oid, dir_clock, name, mode,
+				 child);
 	else
 		ret = -ENXIO;
 	mxunlock(&vg->lock);
@@ -181,19 +183,20 @@ int objstore_create(struct objstore *vg, const struct nobjhndl *dir,
 	return ret;
 }
 
-int objstore_remove(struct objstore *vg, const struct nobjhndl *dir,
-                    const char *name)
+int objstore_remove(struct objstore *vg, const struct noid *dir_oid,
+		    const struct nvclock *dir_clock, const char *name)
 {
 	int ret;
 
-	cmn_err(CE_DEBUG, "%s(%p, %p, '%s')", __func__, vg, dir, name);
+	cmn_err(CE_DEBUG, "%s(%p, %p, %p, '%s')", __func__, vg, dir_oid,
+		dir_clock, name);
 
-	if (!vg || !dir || !name)
+	if (!vg || !dir_oid || !dir_clock || !name)
 		return -EINVAL;
 
 	mxlock(&vg->lock);
 	if (vg->vol)
-		ret = vol_remove(vg->vol, dir, name);
+		ret = vol_remove(vg->vol, dir_oid, dir_clock, name);
 	else
 		ret = -ENXIO;
 	mxunlock(&vg->lock);

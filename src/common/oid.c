@@ -54,29 +54,3 @@ bool_t xdr_noid(XDR *xdrs, struct noid *oid)
 		return FALSE;
 	return TRUE;
 }
-
-int nobjhndl_cpy(struct nobjhndl *dst, const struct noid *oid,
-		 const struct nvclock *clock)
-{
-	if (!dst || !oid)
-		return -EINVAL;
-
-	dst->oid = *oid;
-
-	if (!clock) {
-		dst->clock = NULL;
-		return 0;
-	}
-
-	dst->clock = nvclock_dup(clock);
-	return dst->clock ? 0 : -ENOMEM;
-}
-
-bool_t xdr_nobjhndl(XDR *xdrs, struct nobjhndl *hndl)
-{
-	if (!xdr_noid(xdrs, &hndl->oid))
-		return FALSE;
-	if (!xdr_nvclock(xdrs, &hndl->clock))
-		return FALSE;
-	return TRUE;
-}

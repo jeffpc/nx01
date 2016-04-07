@@ -448,40 +448,13 @@ int nvclock_cmp_total(const struct nvclock *c1, const struct nvclock *c2)
 	return 0xbad; /* pacify gcc */
 }
 
-bool_t xdr_nvclock(XDR *xdrs, struct nvclock **arg)
+bool_t xdr_nvclock(XDR *xdrs, struct nvclock *clock)
 {
-	bool shouldfree = false;
-	struct nvclock dummy;
-	struct nvclock *clock;
 	uint32_t num_nodes;
 	int i;
 
-	clock = *arg;
-
-	if (xdrs->x_op == XDR_FREE) {
-		nvclock_free(clock);
+	if (xdrs->x_op == XDR_FREE)
 		return TRUE;
-	}
-
-	/*
-	 * If we don't have clock...
-	 */
-	if (!clock && (xdrs->x_op == XDR_ENCODE)) {
-		/*
-		 * ...send one filled with zeros.
-		 */
-		memset(&dummy, 0, sizeof(struct nvclock));
-		clock = &dummy;
-	} else if (!clock && (xdrs->x_op == XDR_DECODE)) {
-		/*
-		 * ...recieve into a newly allocated one.
-		 */
-		clock = nvclock_alloc();
-		if (!clock)
-			return FALSE;
-		*arg = clock;
-		shouldfree = true;
-	}
 
 	if (xdrs->x_op == XDR_ENCODE) {
 		/* count the number of in-use nodes */
@@ -492,7 +465,7 @@ bool_t xdr_nvclock(XDR *xdrs, struct nvclock **arg)
 
 		/* send the number of nodes to follow */
 		if (!xdr_uint32_t(xdrs, &num_nodes))
-			goto err;
+			return FALSE;
 
 		/* send the in-use <node,seq> pairs */
 		for (i = 0; i < NVCLOCK_NUM_NODES; i++) {
@@ -500,25 +473,25 @@ bool_t xdr_nvclock(XDR *xdrs, struct nvclock **arg)
 				continue;
 
 			if (!xdr_uint64_t(xdrs, &clock->ent[i].node))
-				goto err;
+				return FALSE;
 			if (!xdr_uint64_t(xdrs, &clock->ent[i].seq))
-				goto err;
+				return FALSE;
 		}
 	} else {
 		/* get the number of nodes being sent */
 		if (!xdr_uint32_t(xdrs, &num_nodes))
-			goto err;
+			return FALSE;
 
 		/* don't allow more than what we expect to be the max */
 		if (num_nodes > NVCLOCK_NUM_NODES)
-			goto err;
+			return FALSE;
 
 		/* receive all the sent nodes */
 		for (i = 0; i < num_nodes; i++) {
 			if (!xdr_uint64_t(xdrs, &clock->ent[i].node))
-				goto err;
+				return FALSE;
 			if (!xdr_uint64_t(xdrs, &clock->ent[i].seq))
-				goto err;
+				return FALSE;
 		}
 
 		/* and zero out the rest */
@@ -529,12 +502,4 @@ bool_t xdr_nvclock(XDR *xdrs, struct nvclock **arg)
 	}
 
 	return TRUE;
-
-err:
-	if (shouldfree) {
-		nvclock_free(clock);
-		*arg = NULL;
-	}
-
-	return FALSE;
 }

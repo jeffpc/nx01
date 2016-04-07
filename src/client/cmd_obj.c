@@ -30,5 +30,5 @@ int cmd_stat(struct fsconn *conn, union cmd *cmd)
 	struct rpc_stat_req *req = &cmd->stat.req;
 	struct rpc_stat_res *res = &cmd->stat.res;
 
-	return objstore_getattr(conn->vg, &req->handle, &res->attr);
+	return objstore_getattr(conn->vg, &req->oid, &req->clock, &res->attr);
 }

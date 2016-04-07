@@ -51,21 +51,11 @@ struct noid {
 	uint64_t uniq;		/* dataset-local id */
 };
 
-/* object handle: a specific version of an object */
-struct nobjhndl {
-	struct noid oid;
-	struct nvclock *clock;
-};
-
 extern int nomad_set_local_node_id(uint64_t newid);
 extern uint64_t nomad_local_node_id(void);
 
 extern void noid_set(struct noid *n1, uint32_t ds, uint64_t uniq);
 extern int noid_cmp(const struct noid *n1, const struct noid *n2);
 extern bool_t xdr_noid(XDR *xdrs, struct noid *oid);
-
-extern int nobjhndl_cpy(struct nobjhndl *dst, const struct noid *oid,
-			const struct nvclock *clock);
-extern bool_t xdr_nobjhndl(XDR *xdrs, struct nobjhndl *hndl);
 
 #endif

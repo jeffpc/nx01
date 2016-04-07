@@ -63,6 +63,6 @@ extern int nvclock_set(struct nvclock *clock, uint64_t seq);
 extern int nvclock_inc(struct nvclock *clock);
 extern bool nvclock_is_null(const struct nvclock *clock);
 
-extern bool_t xdr_nvclock(XDR *xdrs, struct nvclock **clock);
+extern bool_t xdr_nvclock(XDR *xdrs, struct nvclock *clock);
 
 #endif

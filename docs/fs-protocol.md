@@ -28,9 +28,6 @@ The following list of RPC commands does not explicitly list the request and
 response headers since they are always present.  It only lists the
 additional fields that follow.
 
-Many of the RPC commands use an object handle (`struct nobjhndl`) which is
-just a shorthand for a oid combined with a vector clock.
-
 
 NOP (0x0000)
 ============
@@ -69,15 +66,16 @@ STAT (0x0002)
 
 Get attributes (`struct nattr`) for of an object.
 
-If the handle specifies a non-null vector clock, only that version of the
-object is considered.  If a null vector clock is specificied and there is
-only one version of the object, the attributes of that version are returned.
-If a null vector clock is specified and there are multiple version of the
-object, the operation fails with `ENOTUNIQ`.
+If a non-null vector clock is specified, only that version of the object is
+considered.  If a null vector clock is specificied and there is only one
+version of the object, the attributes of that version are returned.  If a
+null vector clock is specified and there are multiple version of the object,
+the operation fails with `ENOTUNIQ`.
 
 Inputs
 ------
-* obj handle
+* oid of the file or directory
+* vector clock of the file or directory
 
 Outputs
 -------
@@ -91,15 +89,15 @@ Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 LOOKUP (0x0003)
 ===============
 
-Given a directory (handle) and a path component (string), do a lookup of the
-path component in the directory.
+Given a directory (oid and vector clock) and a path component (string), do a
+lookup of the path component in the directory.
 
-The directory handle's vector clock handling is identical to that of the
-STAT RPC.
+The directory's vector clock handling is identical to that of the STAT RPC.
 
 Inputs
 ------
-* directory/parent obj handle
+* directory/parent oid
+* directory/parent vector clock
 * path component name
 
 Outputs
@@ -114,17 +112,17 @@ Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 CREATE (0x0004)
 ===============
 
-Given a directory (obj handle), a path component (string), and mode (both
-type and access bits) create the new path component returning the handle of
-the newly created file.  Creating an already existing path component fails
-with `EEXIST`.
+Given a directory (oid and vector clock), a path component (string), and
+mode (both type and access bits) create the new path component returning the
+oid of the newly created file.  Creating an already existing path component
+fails with `EEXIST`.
 
-The directory handle's vector clock handling is identical to that of the
-STAT RPC.
+The directory's vector clock handling is identical to that of the STAT RPC.
 
 Inputs
 ------
-* directory/parent obj handle
+* directory/parent oid
+* directory/parent vector clock
 * path component name
 * mode (see `NATTR_*`)
 
@@ -140,20 +138,20 @@ Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 REMOVE (0x0005)
 ===============
 
-Given a directory (obj handle) and a path component (string), remove the
-path component from the directory.  Removing a non-existent path component
-fails with `ENOENT`.
+Given a directory (oid and vector clock) and a path component (string),
+remove the path component from the directory.  Removing a non-existent path
+component fails with `ENOENT`.
 
-The directory handle's vector clock handling is identical to that of the
-STAT RPC.
+The directory's vector clock handling is identical to that of the STAT RPC.
 
 Inputs
 ------
-* directory/parent obj handle
+* directory/parent oid
+* directory/parent vector clock
 * path component name
 
-THOUGHT: Should this RPC also take an obj handle of the object we want to
-remove?
+THOUGHT: Should this RPC also take an oid/vector clock of the object we want
+to remove?
 
 Limitations
 -----------

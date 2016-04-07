@@ -30,8 +30,9 @@ int cmd_create(struct fsconn *conn, union cmd *cmd)
 	struct rpc_create_req *req = &cmd->create.req;
 	struct rpc_create_res *res = &cmd->create.res;
 
-	return objstore_create(conn->vg, &req->parent, req->path, req->mode,
-			       &res->handle);
+	return objstore_create(conn->vg, &req->parent_oid,
+			       &req->parent_clock, req->path, req->mode,
+			       &res->oid);
 }
 
 int cmd_lookup(struct fsconn *conn, union cmd *cmd)
@@ -39,12 +40,14 @@ int cmd_lookup(struct fsconn *conn, union cmd *cmd)
 	struct rpc_lookup_req *req = &cmd->lookup.req;
 	struct rpc_lookup_res *res = &cmd->lookup.res;
 
-	return objstore_lookup(conn->vg, &req->parent, req->path, &res->child);
+	return objstore_lookup(conn->vg, &req->parent_oid,
+			       &req->parent_clock, req->path, &res->child);
 }
 
 int cmd_remove(struct fsconn *conn, union cmd *cmd)
 {
 	struct rpc_remove_req *req = &cmd->remove.req;
 
-	return objstore_remove(conn->vg, &req->parent, req->path);
+	return objstore_remove(conn->vg, &req->parent_oid,
+			       &req->parent_clock, req->path);
 }

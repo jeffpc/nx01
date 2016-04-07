@@ -211,13 +211,14 @@ struct memobj *findobj(struct memstore *store, const struct noid *oid)
  * returns a specific version of an object, with the object held & locked
  */
 struct memver *findver_by_hndl(struct memstore *store,
-			       const struct nobjhndl *hndl)
+			       const struct noid *oid,
+			       const struct nvclock *clock)
 {
 	struct memobj *obj;
 	struct memver *ver;
 
 	mxlock(&store->lock);
-	obj = findobj(store, &hndl->oid);
+	obj = findobj(store, oid);
 	mxunlock(&store->lock);
 
 	if (!obj)
@@ -230,17 +231,17 @@ struct memver *findver_by_hndl(struct memstore *store,
 		case 1:
 			ver = avl_first(&obj->versions);
 
-			if (nvclock_is_null(hndl->clock) ||
-			    nvclock_cmp(hndl->clock, ver->clock) == NVC_EQ)
+			if (nvclock_is_null(clock) ||
+			    nvclock_cmp(clock, ver->clock) == NVC_EQ)
 				return ver;
 
 			break;
 		default: {
 			struct memver key = {
-				.clock = hndl->clock,
+				.clock = (struct nvclock *) clock,
 			};
 
-			if (nvclock_is_null(hndl->clock)) {
+			if (nvclock_is_null(clock)) {
 				mxunlock(&obj->lock);
 				memobj_putref(obj);
 				return ERR_PTR(-ENOTUNIQ);
@@ -261,18 +262,18 @@ struct memver *findver_by_hndl(struct memstore *store,
 	return ERR_PTR(-ENOENT);
 }
 
-static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl,
-			   struct nattr *attr)
+static int mem_obj_getattr(struct objstore_vol *vol, const struct noid *oid,
+			   const struct nvclock *clock, struct nattr *attr)
 {
 	struct memstore *ms;
 	struct memver *ver;
 
-	if (!vol || !hndl || !attr)
+	if (!vol || !oid || !clock || !attr)
 		return -EINVAL;
 
 	ms = vol->private;
 
-	ver = findver_by_hndl(ms, hndl);
+	ver = findver_by_hndl(ms, oid, clock);
 	if (IS_ERR(ver))
 		return PTR_ERR(ver);
 
@@ -285,8 +286,9 @@ static int mem_obj_getattr(struct objstore_vol *vol, const struct nobjhndl *hndl
 	return 0;
 }
 
-static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
-                          const char *name, struct noid *child)
+static int mem_obj_lookup(struct objstore_vol *vol, const struct noid *dir_oid,
+			  const struct nvclock *dir_clock, const char *name,
+			  struct noid *child)
 {
 	const struct memdentry key = {
 		.name = name,
@@ -296,12 +298,12 @@ static int mem_obj_lookup(struct objstore_vol *vol, const struct nobjhndl *dir,
 	struct memver *dirver;
 	int ret;
 
-	if (!vol || !dir || !name || !child)
+	if (!vol || !dir_oid || !dir_clock || !name || !child)
 		return -EINVAL;
 
 	ms = vol->private;
 
-	dirver = findver_by_hndl(ms, dir);
+	dirver = findver_by_hndl(ms, dir_oid, dir_clock);
 	if (IS_ERR(dirver))
 		return PTR_ERR(dirver);
 
@@ -371,9 +373,9 @@ static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 	return obj;
 }
 
-static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
-			  const char *name, uint16_t mode,
-			  struct noid *child)
+static int mem_obj_create(struct objstore_vol *vol, const struct noid *dir_oid,
+			  const struct nvclock *dir_clock, const char *name,
+			  uint16_t mode, struct noid *child)
 {
 	const struct memdentry key = {
 		.name = name,
@@ -383,12 +385,12 @@ static int mem_obj_create(struct objstore_vol *vol, const struct nobjhndl *dir,
 	struct memver *dirver;
 	int ret;
 
-	if (!vol || !dir || !name || !child)
+	if (!vol || !dir_oid || !dir_clock || !name || !child)
 		return -EINVAL;
 
 	ms = vol->private;
 
-	dirver = findver_by_hndl(ms, dir);
+	dirver = findver_by_hndl(ms, dir_oid, dir_clock);
 	if (IS_ERR(dirver))
 		return PTR_ERR(dirver);
 
@@ -462,8 +464,8 @@ static int __obj_remove(struct memstore *store, struct memver *dir,
 	return 0;
 }
 
-static int mem_obj_remove(struct objstore_vol *vol, const struct nobjhndl *dir,
-			  const char *name)
+static int mem_obj_remove(struct objstore_vol *vol, const struct noid *dir_oid,
+			  const struct nvclock *dir_clock, const char *name)
 {
 	const struct memdentry key = {
 		.name = name,
@@ -473,12 +475,12 @@ static int mem_obj_remove(struct objstore_vol *vol, const struct nobjhndl *dir,
 	struct memstore *ms;
 	int ret;
 
-	if (!vol || !dir || !name)
+	if (!vol || !dir_oid || !dir_clock || !name)
 		return -EINVAL;
 
 	ms = vol->private;
 
-	dirver = findver_by_hndl(ms, dir);
+	dirver = findver_by_hndl(ms, dir_oid, dir_clock);
 	if (IS_ERR(dirver))
 		return PTR_ERR(dirver);
 
