@@ -453,6 +453,7 @@ bool_t xdr_nvclock(XDR *xdrs, struct nvclock **arg)
 	bool shouldfree = false;
 	struct nvclock dummy;
 	struct nvclock *clock;
+	uint32_t num_nodes;
 	int i;
 
 	clock = *arg;
@@ -482,11 +483,49 @@ bool_t xdr_nvclock(XDR *xdrs, struct nvclock **arg)
 		shouldfree = true;
 	}
 
-	for (i = 0; i < NVCLOCK_NUM_NODES; i++) {
-		if (!xdr_uint64_t(xdrs, &clock->ent[i].node))
+	if (xdrs->x_op == XDR_ENCODE) {
+		/* count the number of in-use nodes */
+		num_nodes = 0;
+		for (i = 0; i < NVCLOCK_NUM_NODES; i++)
+			if (clock->ent[i].node)
+				num_nodes++;
+
+		/* send the number of nodes to follow */
+		if (!xdr_uint32_t(xdrs, &num_nodes))
 			goto err;
-		if (!xdr_uint64_t(xdrs, &clock->ent[i].seq))
+
+		/* send the in-use <node,seq> pairs */
+		for (i = 0; i < NVCLOCK_NUM_NODES; i++) {
+			if (!clock->ent[i].node)
+				continue;
+
+			if (!xdr_uint64_t(xdrs, &clock->ent[i].node))
+				goto err;
+			if (!xdr_uint64_t(xdrs, &clock->ent[i].seq))
+				goto err;
+		}
+	} else {
+		/* get the number of nodes being sent */
+		if (!xdr_uint32_t(xdrs, &num_nodes))
 			goto err;
+
+		/* don't allow more than what we expect to be the max */
+		if (num_nodes > NVCLOCK_NUM_NODES)
+			goto err;
+
+		/* receive all the sent nodes */
+		for (i = 0; i < num_nodes; i++) {
+			if (!xdr_uint64_t(xdrs, &clock->ent[i].node))
+				goto err;
+			if (!xdr_uint64_t(xdrs, &clock->ent[i].seq))
+				goto err;
+		}
+
+		/* and zero out the rest */
+		for (; i < NVCLOCK_NUM_NODES; i++) {
+			clock->ent[i].node = 0;
+			clock->ent[i].seq = 0;
+		}
 	}
 
 	return TRUE;
