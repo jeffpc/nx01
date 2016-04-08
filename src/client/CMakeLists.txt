@@ -39,7 +39,7 @@ target_link_libraries(nomad-client
 	nsl
 )
 
-install(TARGETS nomad-client DESTINATION bin
+install(TARGETS nomad-client DESTINATION sbin
 	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
 	            GROUP_READ GROUP_EXECUTE
 		    WORLD_READ GROUP_EXECUTE)

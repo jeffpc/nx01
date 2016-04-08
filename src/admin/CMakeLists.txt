@@ -29,7 +29,7 @@ target_link_libraries(nomadadm
 	common
 )
 
-install(TARGETS nomadadm DESTINATION bin
+install(TARGETS nomadadm DESTINATION sbin
 	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
 	            GROUP_READ GROUP_EXECUTE
 		    WORLD_READ GROUP_EXECUTE)

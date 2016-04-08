@@ -28,7 +28,7 @@ target_link_libraries(nomad-server
 	${BASE_LIBS}
 )
 
-install(TARGETS nomad-server DESTINATION bin
+install(TARGETS nomad-server DESTINATION sbin
 	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
 	            GROUP_READ GROUP_EXECUTE
 		    WORLD_READ GROUP_EXECUTE)
