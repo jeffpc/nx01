@@ -48,6 +48,9 @@ static int __set_host_id(struct val *cfg)
 	if (tmp->type != VT_INT) {
 		cmn_err(CE_CRIT, "config has non-integer host-id");
 		ret = -EINVAL;
+	} else if (!tmp->i) {
+		cmn_err(CE_CRIT, "config has zero host-id");
+		ret = -EINVAL;
 	} else {
 		ret = nomad_set_local_node_id(tmp->i);
 	}
