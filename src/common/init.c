@@ -31,12 +31,38 @@
 #define DEFAULT_CFG_FILENAME	"/etc/nomad.conf"
 #define CFG_ENV_NAME		"NOMAD_CONFIG"
 
+/*
+ * Extract the "host-id" value from the config and start using it.
+ */
+static int __set_host_id(struct val *cfg)
+{
+	struct val *tmp;
+	int ret;
+
+	tmp = sexpr_alist_lookup_val(cfg, "host-id");
+	if (!tmp) {
+		cmn_err(CE_CRIT, "config is missing host-id");
+		return -EINVAL;
+	}
+
+	if (tmp->type != VT_INT) {
+		cmn_err(CE_CRIT, "config has non-integer host-id");
+		ret = -EINVAL;
+	} else {
+		ret = nomad_set_local_node_id(tmp->i);
+	}
+
+	val_putref(tmp);
+
+	return ret;
+}
+
 static int load_config(void)
 {
 	struct val *cfg;
-	struct val *tmp;
 	char *fname;
 	char *raw;
+	int ret;
 
 	fname = getenv(CFG_ENV_NAME);
 	if (!fname)
@@ -47,30 +73,22 @@ static int load_config(void)
 		return PTR_ERR(raw);
 
 	cfg = sexpr_parse(raw, strlen(raw));
-	if (!cfg)
-		panic("failed to parse config (%s)", fname);
+	if (!cfg) {
+		cmn_err(CE_CRIT, "failed to parse config (%s)", fname);
+		ret = -EINVAL;
+		goto err;
+	}
 
-	/*
-	 * set the host-id
-	 */
-	tmp = sexpr_alist_lookup_val(cfg, "host-id");
-	if (!tmp)
-		panic("config (%s) is missing host-id", fname);
+	ret = __set_host_id(cfg);
 
-	if (tmp->type != VT_INT)
-		panic("config (%s) has non-integer host-id", fname);
-
-	VERIFY0(nomad_set_local_node_id(tmp->i));
-
-	val_putref(tmp);
-
+err:
 	/*
 	 * free the whole alist & raw string
 	 */
 	val_putref(cfg);
 	free(raw);
 
-	return 0;
+	return ret;
 }
 
 int common_init(void)
