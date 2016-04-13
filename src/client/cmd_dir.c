@@ -30,9 +30,13 @@ int cmd_create(struct fsconn *conn, union cmd *cmd)
 {
 	struct rpc_create_req *req = &cmd->create.req;
 	struct rpc_create_res *res = &cmd->create.res;
+	struct ohandle *oh;
 
-	return objstore_create(conn->vg, &req->parent_oid,
-			       &req->parent_clock, req->path, req->mode,
+	oh = ohandle_find(conn, req->parent);
+	if (!oh)
+		return -EINVAL;
+
+	return objstore_create(conn->vg, oh->cookie, req->path, req->mode,
 			       &res->oid);
 }
 

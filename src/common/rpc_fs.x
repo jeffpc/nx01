@@ -68,8 +68,7 @@ struct rpc_lookup_res {
 
 %/***** CREATE *****/
 struct rpc_create_req {
-	struct noid	parent_oid;
-	struct nvclock	parent_clock;
+	HANDLE(parent);
 	string		path<>;
 	uint16_t	mode; /* see NATTR_* in common/include/nomad/atrr.h */
 };

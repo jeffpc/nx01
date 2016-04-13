@@ -120,17 +120,14 @@ Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 CREATE (0x0004)
 ===============
 
-Given a directory (oid and vector clock), a path component (string), and
-mode (both type and access bits) create the new path component returning the
-oid of the newly created file.  Creating an already existing path component
+Given a directory open file handle, a path component (string), and mode
+(both type and access bits) create the new path component returning the oid
+of the newly created file.  Creating an already existing path component
 fails with `EEXIST`.
-
-The directory's vector clock handling is identical to that of the STAT RPC.
 
 Inputs
 ------
-* directory/parent oid
-* directory/parent vector clock
+* directory open file handle
 * path component name
 * mode (see `NATTR_*`)
 

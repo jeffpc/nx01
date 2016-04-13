@@ -73,18 +73,16 @@ int vol_lookup(struct objstore_vol *vol, const struct noid *dir_oid,
 	return vol->def->obj_ops->lookup(vol, dir_oid, dir_clock, name, child);
 }
 
-int vol_create(struct objstore_vol *vol, const struct noid *dir_oid,
-	       const struct nvclock *dir_clock, const char *name,
+int vol_create(struct objstore_vol *vol, void *dircookie, const char *name,
 	       uint16_t mode, struct noid *child)
 {
-	if (!vol || !dir_oid || !dir_clock || !name || !child)
+	if (!vol || !name || !child)
 		return -EINVAL;
 
 	if (!vol->def->obj_ops || !vol->def->obj_ops->create)
 		return -ENOTSUP;
 
-	return vol->def->obj_ops->create(vol, dir_oid, dir_clock, name,
-					 mode, child);
+	return vol->def->obj_ops->create(vol, dircookie, name, mode, child);
 }
 
 int vol_remove(struct objstore_vol *vol, void *dircookie, const char *name)

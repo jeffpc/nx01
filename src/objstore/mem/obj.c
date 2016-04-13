@@ -428,26 +428,23 @@ static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 	return obj;
 }
 
-static int mem_obj_create(struct objstore_vol *vol, const struct noid *dir_oid,
-			  const struct nvclock *dir_clock, const char *name,
-			  uint16_t mode, struct noid *child)
+static int mem_obj_create(struct objstore_vol *vol, void *dircookie,
+			  const char *name, uint16_t mode, struct noid *child)
 {
 	const struct memdentry key = {
 		.name = name,
 	};
 	struct memstore *ms;
 	struct memobj *childobj;
-	struct memver *dirver;
+	struct memver *dirver = dircookie;
 	int ret;
 
-	if (!vol || !dir_oid || !dir_clock || !name || !child)
+	if (!vol || !dirver || !name || !child)
 		return -EINVAL;
 
 	ms = vol->private;
 
-	dirver = findver_by_hndl(ms, dir_oid, dir_clock);
-	if (IS_ERR(dirver))
-		return PTR_ERR(dirver);
+	mxlock(&dirver->obj->lock);
 
 	if (!NATTR_ISDIR(dirver->attrs.mode)) {
 		ret = -ENOTDIR;
@@ -474,7 +471,6 @@ static int mem_obj_create(struct objstore_vol *vol, const struct noid *dir_oid,
 
 err_unlock:
 	mxunlock(&dirver->obj->lock);
-	memobj_putref(dirver->obj);
 
 	return ret;
 }
