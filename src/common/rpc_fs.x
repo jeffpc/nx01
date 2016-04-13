@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  * Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
  *
@@ -23,6 +23,8 @@
  */
 
 %#include <nomad/types.h>
+
+#define HANDLE(n)	uint32_t	n
 
 %/***** RPC header *****/
 struct rpc_header_req {
@@ -81,4 +83,19 @@ struct rpc_remove_req {
 	struct noid	parent_oid;
 	struct nvclock	parent_clock;
 	string		path<>;
+};
+
+%/***** OPEN *****/
+struct rpc_open_req {
+	struct noid	oid;
+	struct nvclock	clock;
+};
+
+struct rpc_open_res {
+	HANDLE(handle);
+};
+
+%/***** CLOSE *****/
+struct rpc_close_req {
+	HANDLE(handle);
 };

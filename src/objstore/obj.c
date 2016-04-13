@@ -25,6 +25,29 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
+void *vol_open(struct objstore_vol *vol, const struct noid *oid,
+	       const struct nvclock *clock)
+{
+	if (!vol || !oid || !clock)
+		return ERR_PTR(-EINVAL);
+
+	if (!vol->def->obj_ops || !vol->def->obj_ops->open)
+		return ERR_PTR(-ENOTSUP);
+
+	return vol->def->obj_ops->open(vol, oid, clock);
+}
+
+int vol_close(struct objstore_vol *vol, void *cookie)
+{
+	if (!vol)
+		return -EINVAL;
+
+	if (!vol->def->obj_ops || !vol->def->obj_ops->close)
+		return -ENOTSUP;
+
+	return vol->def->obj_ops->close(vol, cookie);
+}
+
 int vol_getattr(struct objstore_vol *vol, const struct noid *oid,
 		const struct nvclock *clock, struct nattr *attr)
 {

@@ -74,10 +74,12 @@ static const struct cmdtbl {
 	bool_t (*req)(XDR *, void *);
 	bool_t (*res)(XDR *, void *);
 } cmdtbl[] = {
+	CMD_ARG    (NRPC_CLOSE,         close,         cmd_close,       true),
 	CMD_ARG_RET(NRPC_CREATE,        create,        cmd_create,      true),
 	CMD_ARG_RET(NRPC_LOGIN,         login,         cmd_login,       false),
 	CMD_ARG_RET(NRPC_LOOKUP,        lookup,        cmd_lookup,      true),
 	CMD        (NRPC_NOP,           nop,           cmd_nop,         false),
+	CMD_ARG_RET(NRPC_OPEN,          open,          cmd_open,        true),
 	CMD_ARG    (NRPC_REMOVE,        remove,        cmd_remove,      true),
 	CMD_ARG_RET(NRPC_STAT,          stat,          cmd_stat,        true),
 };

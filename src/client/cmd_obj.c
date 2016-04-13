@@ -24,6 +24,54 @@
 #include <jeffpc/error.h>
 
 #include "cmds.h"
+#include "ohandle.h"
+
+int cmd_open(struct fsconn *conn, union cmd *cmd)
+{
+	struct rpc_open_req *req = &cmd->open.req;
+	struct rpc_open_res *res = &cmd->open.res;
+	struct ohandle *oh;
+	int ret;
+
+	oh = ohandle_alloc();
+	if (!oh)
+		return -ENOMEM;
+
+	oh->cookie = objstore_open(conn->vg, &req->oid, &req->clock);
+	if (IS_ERR(oh->cookie))
+		goto err;
+
+	res->handle = ohandle_insert(conn, oh);
+
+	return 0;
+
+err:
+	ret = PTR_ERR(oh->cookie);
+
+	ohandle_free(oh);
+
+	return ret;
+}
+
+int cmd_close(struct fsconn *conn, union cmd *cmd)
+{
+	struct rpc_close_req *req = &cmd->close.req;
+	struct ohandle *oh;
+	int ret;
+
+	oh = ohandle_find(conn, req->handle);
+	if (!oh)
+		return -EINVAL;
+
+	ret = objstore_close(conn->vg, oh->cookie);
+
+	if (!ret) {
+		ohandle_remove(conn, oh);
+		ohandle_free(oh);
+	}
+
+	return ret;
+}
 
 int cmd_stat(struct fsconn *conn, union cmd *cmd)
 {

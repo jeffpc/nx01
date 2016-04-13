@@ -133,6 +133,45 @@ int objstore_getroot(struct objstore *vg, struct noid *root)
 	return ret;
 }
 
+void *objstore_open(struct objstore *vg, const struct noid *oid,
+		    const struct nvclock *clock)
+{
+	struct objstore_vol *vol;
+	void *cookie;
+
+	if (!vg || !oid || !clock)
+		return ERR_PTR(-EINVAL);
+
+	vol = findvol(vg);
+	if (!vol)
+		return ERR_PTR(-ENXIO);
+
+	cookie = vol_open(vol, oid, clock);
+
+	vol_putref(vol);
+
+	return cookie;
+}
+
+int objstore_close(struct objstore *vg, void *cookie)
+{
+	struct objstore_vol *vol;
+	int ret;
+
+	if (!vg)
+		return -EINVAL;
+
+	vol = findvol(vg);
+	if (!vol)
+		return -ENXIO;
+
+	ret = vol_close(vol, cookie);
+
+	vol_putref(vol);
+
+	return ret;
+}
+
 int objstore_getattr(struct objstore *vg, const struct noid *oid,
 		     const struct nvclock *clock, struct nattr *attr)
 {

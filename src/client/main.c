@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <unistd.h>
 
 #include <jeffpc/error.h>
@@ -33,6 +34,7 @@
 #include <nomad/init.h>
 
 #include "cmds.h"
+#include "ohandle.h"
 
 #define CLIENT_DAEMON_PORT	2323
 
@@ -42,10 +44,18 @@ static void connection_acceptor(int fd, void *arg)
 
 	conn.fd = fd;
 	conn.vg = NULL;
+
+	avl_create(&conn.open_handles, ohandle_cmp, sizeof(struct ohandle),
+		   offsetof(struct ohandle, node));
+
 	cmn_err(CE_DEBUG, "%s: fd = %d, arg = %p", __func__, fd, arg);
 
 	while (process_connection(&conn))
 		;
+
+	ohandle_close_all(&conn);
+
+	avl_destroy(&conn.open_handles);
 }
 
 int main(int argc, char **argv)

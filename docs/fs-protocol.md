@@ -170,10 +170,53 @@ Limitations
 Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 
 
+OPEN (0x0006)
+=============
+
+Given a version of an object (oid and vector clock), open the specified
+object and return an open file handle.
+
+If a non-null vector clock is specified, only that version of the object is
+considered.  If a null vector clock is specificied and there is only one
+version of the object, the attributes of that version are returned.  If a
+null vector clock is specified and there are multiple version of the object,
+the operation fails with `ENOTUNIQ`.
+
+Inputs
+------
+* oid
+* vector clock
+
+Outputs
+-------
+* open file handle
+
+Limitations
+-----------
+Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
+
+
+CLOSE (0x0007)
+==============
+
+Close an open file handle.  If the handle supplied has not be open via the
+OPEN RPC, this operation fails with `EINVAL`.
+
+Inputs
+------
+* open file handle
+
+Outputs
+-------
+None.
+
+Limitations
+-----------
+Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
+
+
 Other RPCs that may end up useful
 =================================
 
-* OPEN - open a file/dir
-* CLOSE - close a file/dir
 * READ - read an open file
 * WRITE - write an open file

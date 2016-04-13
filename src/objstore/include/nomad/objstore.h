@@ -78,6 +78,9 @@ extern void objstore_vol_free(struct objstore_vol *vol);
 extern int objstore_getroot(struct objstore *vg, struct noid *root);
 
 /* object operations */
+extern void *objstore_open(struct objstore *vg, const struct noid *oid,
+			   const struct nvclock *clock);
+extern int objstore_close(struct objstore *vg, void *cookie);
 extern int objstore_getattr(struct objstore *vg, const struct noid *oid,
 			    const struct nvclock *clock, struct nattr *attr);
 extern int objstore_lookup(struct objstore *vg, const struct noid *dir_oid,

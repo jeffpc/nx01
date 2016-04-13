@@ -37,8 +37,9 @@ struct obj_ops {
 	int (*getversions)();
 
 	/* open objects must be closed */
-	int (*open)();		/* open an object */
-	int (*close)();		/* close an object */
+	void *(*open)(struct objstore_vol *vol, const struct noid *oid,
+		      const struct nvclock *clock);
+	int (*close)(struct objstore_vol *vol, void *cookie);
 
 	/* cloned objects must be committed/aborted */
 	int (*clone)();		/*
@@ -78,6 +79,9 @@ extern void vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
 extern int vol_getroot(struct objstore_vol *vol, struct noid *root);
 
 /* wrappers for object ops */
+extern void *vol_open(struct objstore_vol *vol, const struct noid *oid,
+		      const struct nvclock *clock);
+extern int vol_close(struct objstore_vol *vol, void *cookie);
 extern int vol_getattr(struct objstore_vol *vol, const struct noid *oid,
 		       const struct nvclock *clock, struct nattr *attr);
 extern int vol_lookup(struct objstore_vol *vol, const struct noid *dir_oid,

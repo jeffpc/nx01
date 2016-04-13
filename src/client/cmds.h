@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,10 +24,17 @@
 #ifndef __NOMAD_CLIENT_CMDS_H
 #define __NOMAD_CLIENT_CMDS_H
 
+#include <sys/avl.h>
+
 #include <nomad/rpc_fs.h>
 #include <nomad/objstore.h>
 
 union cmd {
+	/* close */
+	struct {
+		struct rpc_close_req req;
+	} close;
+
 	/* create */
 	struct {
 		struct rpc_create_req req;
@@ -48,6 +55,12 @@ union cmd {
 
 	/* nop - no req & no res */
 
+	/* open */
+	struct {
+		struct rpc_open_req req;
+		struct rpc_open_res res;
+	} open;
+
 	/* remove */
 	struct {
 		struct rpc_remove_req req;
@@ -63,15 +76,19 @@ union cmd {
 struct fsconn {
 	int fd;
 	struct objstore *vg;
+
+	avl_tree_t open_handles;
 };
 
 extern bool process_connection(struct fsconn *conn);
 
 /* RPC handlers */
+extern int cmd_close(struct fsconn *conn, union cmd *cmd);
 extern int cmd_create(struct fsconn *conn, union cmd *cmd);
 extern int cmd_login(struct fsconn *conn, union cmd *cmd);
 extern int cmd_lookup(struct fsconn *conn, union cmd *cmd);
 extern int cmd_nop(struct fsconn *conn, union cmd *cmd);
+extern int cmd_open(struct fsconn *conn, union cmd *cmd);
 extern int cmd_remove(struct fsconn *conn, union cmd *cmd);
 extern int cmd_stat(struct fsconn *conn, union cmd *cmd);
 

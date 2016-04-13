@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 add_executable(nomad-client
 	main.c
 	cmds.c
+	ohandle.c
 
 	# assorted RPC handlers
 	cmd_dir.c
@@ -34,6 +35,7 @@ add_executable(nomad-client
 target_link_libraries(nomad-client
 	${BASE_LIBS}
 	${TASKQ_LIBRARY}
+	${AVL_LIBRARY}
 	common
 	nomad_objstore
 	nsl
