@@ -51,7 +51,6 @@ static void connection_acceptor(int fd, void *arg)
 int main(int argc, char **argv)
 {
 	struct objstore *vg;
-	struct objstore_vol *vol;
 	int ret;
 
 	ret = common_init();
@@ -81,11 +80,10 @@ int main(int argc, char **argv)
 		goto err_init;
 	}
 
-	vol = objstore_vol_create(vg, "fauxpath", OS_MODE_STORE);
-	cmn_err(CE_DEBUG, "vol = %p", vol);
+	ret = objstore_vol_create(vg, "fauxpath", OS_MODE_STORE);
+	cmn_err(CE_DEBUG, "vol create = %d", ret);
 
-	if (IS_ERR(vol)) {
-		ret = PTR_ERR(vol);
+	if (ret) {
 		cmn_err(CE_CRIT, "error: %s", xstrerror(ret));
 		goto err_vg;
 	}

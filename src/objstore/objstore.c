@@ -91,18 +91,18 @@ err:
 	return ret;
 }
 
-struct objstore_vol *objstore_vol_create(struct objstore *vg, const char *path,
-					 enum objstore_mode mode)
+int objstore_vol_create(struct objstore *vg, const char *path,
+			enum objstore_mode mode)
 {
 	struct objstore_vol *s;
 	int ret;
 
 	if (!backend->def->vol_ops->create)
-		return ERR_PTR(-ENOTSUP);
+		return -ENOTSUP;
 
 	s = umem_cache_alloc(vol_cache, 0);
 	if (!s)
-		return ERR_PTR(-ENOMEM);
+		return -ENOMEM;
 
 	s->def = backend->def;
 	s->mode = mode;
@@ -118,7 +118,7 @@ struct objstore_vol *objstore_vol_create(struct objstore *vg, const char *path,
 
 	vg_add_vol(vg, s);
 
-	return s;
+	return 0;
 
 err_path:
 	free((char *) s->path);
@@ -126,11 +126,10 @@ err_path:
 err:
 	umem_cache_free(vol_cache, s);
 
-	return ERR_PTR(ret);
+	return ret;
 }
 
-struct objstore_vol *objstore_vol_load(struct objstore *vg, struct xuuid *uuid,
-				       const char *path)
+int objstore_vol_load(struct objstore *vg, struct xuuid *uuid, const char *path)
 {
-	return ERR_PTR(-ENOTSUP);
+	return -ENOTSUP;
 }
