@@ -240,23 +240,21 @@ int objstore_create(struct objstore *vg, const struct noid *dir_oid,
 	return ret;
 }
 
-int objstore_remove(struct objstore *vg, const struct noid *dir_oid,
-		    const struct nvclock *dir_clock, const char *name)
+int objstore_remove(struct objstore *vg, void *dircookie, const char *name)
 {
 	struct objstore_vol *vol;
 	int ret;
 
-	cmn_err(CE_DEBUG, "%s(%p, %p, %p, '%s')", __func__, vg, dir_oid,
-		dir_clock, name);
+	cmn_err(CE_DEBUG, "%s(%p, %p, '%s')", __func__, vg, dircookie, name);
 
-	if (!vg || !dir_oid || !dir_clock || !name)
+	if (!vg || !name)
 		return -EINVAL;
 
 	vol = findvol(vg);
 	if (!vol)
 		return -ENXIO;
 
-	ret = vol_remove(vol, dir_oid, dir_clock, name);
+	ret = vol_remove(vol, dircookie, name);
 
 	vol_putref(vol);
 

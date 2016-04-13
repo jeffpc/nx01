@@ -87,14 +87,13 @@ int vol_create(struct objstore_vol *vol, const struct noid *dir_oid,
 					 mode, child);
 }
 
-int vol_remove(struct objstore_vol *vol, const struct noid *dir_oid,
-	       const struct nvclock *dir_clock, const char *name)
+int vol_remove(struct objstore_vol *vol, void *dircookie, const char *name)
 {
-	if (!vol || !dir_oid || !dir_clock || !name)
+	if (!vol || !name)
 		return -EINVAL;
 
 	if (!vol->def->obj_ops || !vol->def->obj_ops->remove)
 		return -ENOTSUP;
 
-	return vol->def->obj_ops->remove(vol, dir_oid, dir_clock, name);
+	return vol->def->obj_ops->remove(vol, dircookie, name);
 }

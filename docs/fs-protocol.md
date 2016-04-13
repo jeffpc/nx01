@@ -146,16 +146,13 @@ Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 REMOVE (0x0005)
 ===============
 
-Given a directory (oid and vector clock) and a path component (string),
-remove the path component from the directory.  Removing a non-existent path
-component fails with `ENOENT`.
-
-The directory's vector clock handling is identical to that of the STAT RPC.
+Given a directory open file handle and a path component (string), remove the
+path component from the directory.  Removing a non-existent path component
+fails with `ENOENT`.
 
 Inputs
 ------
-* directory/parent oid
-* directory/parent vector clock
+* directory open file handle
 * path component name
 
 THOUGHT: Should this RPC also take an oid/vector clock of the object we want

@@ -24,6 +24,7 @@
 #include <jeffpc/error.h>
 
 #include "cmds.h"
+#include "ohandle.h"
 
 int cmd_create(struct fsconn *conn, union cmd *cmd)
 {
@@ -47,7 +48,11 @@ int cmd_lookup(struct fsconn *conn, union cmd *cmd)
 int cmd_remove(struct fsconn *conn, union cmd *cmd)
 {
 	struct rpc_remove_req *req = &cmd->remove.req;
+	struct ohandle *oh;
 
-	return objstore_remove(conn->vg, &req->parent_oid,
-			       &req->parent_clock, req->path);
+	oh = ohandle_find(conn, req->parent);
+	if (!oh)
+		return -EINVAL;
+
+	return objstore_remove(conn->vg, oh->cookie, req->path);
 }

@@ -80,8 +80,7 @@ struct rpc_create_res {
 
 %/***** REMOVE *****/
 struct rpc_remove_req {
-	struct noid	parent_oid;
-	struct nvclock	parent_clock;
+	HANDLE(parent);
 	string		path<>;
 };
 
