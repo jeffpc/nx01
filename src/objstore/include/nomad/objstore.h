@@ -25,6 +25,8 @@
 
 #include <sys/list.h>
 
+#include <jeffpc/refcnt.h>
+
 #include <nomad/types.h>
 #include <nomad/mutex.h>
 
@@ -54,6 +56,8 @@ struct objstore_vol {
 	const char *path;
 	enum objstore_mode mode;
 
+	refcnt_t refcnt;
+
 	void *private;
 };
 
@@ -68,6 +72,7 @@ extern int objstore_vol_create(struct objstore *vg, const char *path,
 			       enum objstore_mode mode);
 extern int objstore_vol_load(struct objstore *vg, struct xuuid *uuid,
 			     const char *path);
+extern void objstore_vol_free(struct objstore_vol *vol);
 
 /* volume operations */
 extern int objstore_getroot(struct objstore *vg, struct noid *root);

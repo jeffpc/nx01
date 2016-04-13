@@ -104,6 +104,8 @@ int objstore_vol_create(struct objstore *vg, const char *path,
 	if (!s)
 		return -ENOMEM;
 
+	refcnt_init(&s->refcnt, 1);
+
 	s->def = backend->def;
 	s->mode = mode;
 	s->path = strdup(path);
@@ -116,6 +118,7 @@ int objstore_vol_create(struct objstore *vg, const char *path,
 	if (ret)
 		goto err_path;
 
+	/* hand off our reference */
 	vg_add_vol(vg, s);
 
 	return 0;
@@ -127,6 +130,15 @@ err:
 	umem_cache_free(vol_cache, s);
 
 	return ret;
+}
+
+void objstore_vol_free(struct objstore_vol *vol)
+{
+	if (!vol)
+		return;
+
+	free((char *) vol->path);
+	umem_cache_free(vol_cache, vol);
 }
 
 int objstore_vol_load(struct objstore *vg, struct xuuid *uuid, const char *path)
