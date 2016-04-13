@@ -74,7 +74,6 @@ struct rpc_create_req {
 
 struct rpc_create_res {
 	struct noid	oid;
-	struct nvclock	clock;
 };
 
 %/***** REMOVE *****/
