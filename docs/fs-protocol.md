@@ -34,6 +34,14 @@ NOP (0x0000)
 
 This is a simple no-operation.
 
+Inputs
+------
+None.
+
+Output
+------
+None.
+
 Limitations
 -----------
 None.
@@ -152,6 +160,10 @@ Inputs
 
 THOUGHT: Should this RPC also take an oid/vector clock of the object we want
 to remove?
+
+Outputs
+-------
+None.
 
 Limitations
 -----------
