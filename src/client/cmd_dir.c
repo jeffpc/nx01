@@ -44,9 +44,13 @@ int cmd_lookup(struct fsconn *conn, union cmd *cmd)
 {
 	struct rpc_lookup_req *req = &cmd->lookup.req;
 	struct rpc_lookup_res *res = &cmd->lookup.res;
+	struct ohandle *oh;
 
-	return objstore_lookup(conn->vg, &req->parent_oid,
-			       &req->parent_clock, req->path, &res->child);
+	oh = ohandle_find(conn, req->parent);
+	if (!oh)
+		return -EINVAL;
+
+	return objstore_lookup(conn->vg, oh->cookie, req->path, &res->child);
 }
 
 int cmd_remove(struct fsconn *conn, union cmd *cmd)

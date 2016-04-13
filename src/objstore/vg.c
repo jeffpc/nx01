@@ -192,24 +192,23 @@ int objstore_getattr(struct objstore *vg, const struct noid *oid,
 	return ret;
 }
 
-int objstore_lookup(struct objstore *vg, const struct noid *dir_oid,
-		    const struct nvclock *dir_clock, const char *name,
+int objstore_lookup(struct objstore *vg, void *dircookie, const char *name,
 		    struct noid *child)
 {
 	struct objstore_vol *vol;
 	int ret;
 
-	cmn_err(CE_DEBUG, "%s(%p, %p, %p, '%s', %p)", __func__, vg, dir_oid,
-		dir_clock, name, child);
+	cmn_err(CE_DEBUG, "%s(%p, %p, '%s', %p)", __func__, vg, dircookie,
+		name, child);
 
-	if (!vg || !dir_oid || !dir_clock || !name || !child)
+	if (!vg || !name || !child)
 		return -EINVAL;
 
 	vol = findvol(vg);
 	if (!vol)
 		return -ENXIO;
 
-	ret = vol_lookup(vol, dir_oid, dir_clock, name, child);
+	ret = vol_lookup(vol, dircookie, name, child);
 
 	vol_putref(vol);
 

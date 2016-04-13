@@ -57,8 +57,7 @@ struct rpc_stat_res {
 
 %/***** LOOKUP *****/
 struct rpc_lookup_req {
-	struct noid	parent_oid;
-	struct nvclock	parent_clock;
+	HANDLE(parent);
 	string		path<>;
 };
 

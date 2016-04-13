@@ -97,15 +97,12 @@ Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 LOOKUP (0x0003)
 ===============
 
-Given a directory (oid and vector clock) and a path component (string), do a
+Given a directory open file handle and a path component (string), do a
 lookup of the path component in the directory.
-
-The directory's vector clock handling is identical to that of the STAT RPC.
 
 Inputs
 ------
-* directory/parent oid
-* directory/parent vector clock
+* directory open file handle
 * path component name
 
 Outputs

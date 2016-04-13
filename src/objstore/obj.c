@@ -60,17 +60,16 @@ int vol_getattr(struct objstore_vol *vol, const struct noid *oid,
 	return vol->def->obj_ops->getattr(vol, oid, clock, attr);
 }
 
-int vol_lookup(struct objstore_vol *vol, const struct noid *dir_oid,
-	       const struct nvclock *dir_clock, const char *name,
-	       struct noid *child)
+int vol_lookup(struct objstore_vol *vol, void *dircookie,
+	       const char *name, struct noid *child)
 {
-	if (!vol || !dir_oid || !dir_clock || !name || !child)
+	if (!vol || !name || !child)
 		return -EINVAL;
 
 	if (!vol->def->obj_ops || !vol->def->obj_ops->lookup)
 		return -ENOTSUP;
 
-	return vol->def->obj_ops->lookup(vol, dir_oid, dir_clock, name, child);
+	return vol->def->obj_ops->lookup(vol, dircookie, name, child);
 }
 
 int vol_create(struct objstore_vol *vol, void *dircookie, const char *name,

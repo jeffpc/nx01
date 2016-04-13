@@ -83,9 +83,8 @@ extern void *objstore_open(struct objstore *vg, const struct noid *oid,
 extern int objstore_close(struct objstore *vg, void *cookie);
 extern int objstore_getattr(struct objstore *vg, const struct noid *oid,
 			    const struct nvclock *clock, struct nattr *attr);
-extern int objstore_lookup(struct objstore *vg, const struct noid *dir_oid,
-			   const struct nvclock *dir_clock, const char *name,
-			   struct noid *child);
+extern int objstore_lookup(struct objstore *vg, void *dircookie,
+			   const char *name, struct noid *child);
 extern int objstore_create(struct objstore *vg, void *dircookie,
 			   const char *name, uint16_t mode, struct noid *child);
 extern int objstore_remove(struct objstore *vg, void *dircookie,
