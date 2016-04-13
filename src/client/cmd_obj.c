@@ -77,6 +77,11 @@ int cmd_stat(struct fsconn *conn, union cmd *cmd)
 {
 	struct rpc_stat_req *req = &cmd->stat.req;
 	struct rpc_stat_res *res = &cmd->stat.res;
+	struct ohandle *oh;
 
-	return objstore_getattr(conn->vg, &req->oid, &req->clock, &res->attr);
+	oh = ohandle_find(conn, req->handle);
+	if (!oh)
+		return -EINVAL;
+
+	return objstore_getattr(conn->vg, oh->cookie, &res->attr);
 }

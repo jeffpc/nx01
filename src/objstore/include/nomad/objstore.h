@@ -81,8 +81,8 @@ extern int objstore_getroot(struct objstore *vg, struct noid *root);
 extern void *objstore_open(struct objstore *vg, const struct noid *oid,
 			   const struct nvclock *clock);
 extern int objstore_close(struct objstore *vg, void *cookie);
-extern int objstore_getattr(struct objstore *vg, const struct noid *oid,
-			    const struct nvclock *clock, struct nattr *attr);
+extern int objstore_getattr(struct objstore *vg, void *cookie,
+			    struct nattr *attr);
 extern int objstore_lookup(struct objstore *vg, void *dircookie,
 			   const char *name, struct noid *child);
 extern int objstore_create(struct objstore *vg, void *dircookie,

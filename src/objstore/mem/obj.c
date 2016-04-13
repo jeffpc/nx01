@@ -317,26 +317,20 @@ static int mem_obj_close(struct objstore_vol *vol, void *cookie)
 	return 0;
 }
 
-static int mem_obj_getattr(struct objstore_vol *vol, const struct noid *oid,
-			   const struct nvclock *clock, struct nattr *attr)
+static int mem_obj_getattr(struct objstore_vol *vol, void *cookie,
+			   struct nattr *attr)
 {
-	struct memstore *ms;
-	struct memver *ver;
+	struct memver *ver = cookie;
 
-	if (!vol || !oid || !clock || !attr)
+	if (!vol || !cookie || !attr)
 		return -EINVAL;
 
-	ms = vol->private;
-
-	ver = findver_by_hndl(ms, oid, clock);
-	if (IS_ERR(ver))
-		return PTR_ERR(ver);
+	mxlock(&ver->obj->lock);
 
 	*attr = ver->attrs;
 	attr->nlink = ver->obj->nlink;
 
 	mxunlock(&ver->obj->lock);
-	memobj_putref(ver->obj);
 
 	return 0;
 }

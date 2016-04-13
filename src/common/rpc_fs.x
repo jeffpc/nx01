@@ -47,8 +47,7 @@ struct rpc_login_res {
 
 %/***** STAT *****/
 struct rpc_stat_req {
-	struct noid	oid;
-	struct nvclock	clock;
+	HANDLE(handle);
 };
 
 struct rpc_stat_res {

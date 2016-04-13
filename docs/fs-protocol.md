@@ -72,18 +72,12 @@ after a successful LOGIN will fail with `EALREADY`.
 STAT (0x0002)
 =============
 
-Get attributes (`struct nattr`) for of an object.
-
-If a non-null vector clock is specified, only that version of the object is
-considered.  If a null vector clock is specificied and there is only one
-version of the object, the attributes of that version are returned.  If a
-null vector clock is specified and there are multiple version of the object,
-the operation fails with `ENOTUNIQ`.
+Get attributes (`struct nattr`) for of an object identified an open file
+handle.
 
 Inputs
 ------
-* oid of the file or directory
-* vector clock of the file or directory
+* open file handle
 
 Outputs
 -------

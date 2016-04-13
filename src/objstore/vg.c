@@ -172,20 +172,19 @@ int objstore_close(struct objstore *vg, void *cookie)
 	return ret;
 }
 
-int objstore_getattr(struct objstore *vg, const struct noid *oid,
-		     const struct nvclock *clock, struct nattr *attr)
+int objstore_getattr(struct objstore *vg, void *cookie, struct nattr *attr)
 {
 	struct objstore_vol *vol;
 	int ret;
 
-	if (!vg || !oid || !clock || !attr)
+	if (!vg || !attr)
 		return -EINVAL;
 
 	vol = findvol(vg);
 	if (!vol)
 		return -ENXIO;
 
-	ret = vol_getattr(vol, oid, clock, attr);
+	ret = vol_getattr(vol, cookie, attr);
 
 	vol_putref(vol);
 

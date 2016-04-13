@@ -48,16 +48,15 @@ int vol_close(struct objstore_vol *vol, void *cookie)
 	return vol->def->obj_ops->close(vol, cookie);
 }
 
-int vol_getattr(struct objstore_vol *vol, const struct noid *oid,
-		const struct nvclock *clock, struct nattr *attr)
+int vol_getattr(struct objstore_vol *vol, void *cookie, struct nattr *attr)
 {
-	if (!vol || !oid || !clock || !attr)
+	if (!vol || !attr)
 		return -EINVAL;
 
 	if (!vol->def->obj_ops || !vol->def->obj_ops->getattr)
 		return -ENOTSUP;
 
-	return vol->def->obj_ops->getattr(vol, oid, clock, attr);
+	return vol->def->obj_ops->getattr(vol, cookie, attr);
 }
 
 int vol_lookup(struct objstore_vol *vol, void *dircookie,

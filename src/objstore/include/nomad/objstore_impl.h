@@ -49,8 +49,8 @@ struct obj_ops {
 	int (*commit)();	/* make temp object live */
 	int (*abort)();		/* delete temp object */
 
-	int (*getattr)(struct objstore_vol *store, const struct noid *oid,
-		       const struct nvclock *clock, struct nattr *attr);
+	int (*getattr)(struct objstore_vol *store, void *cookie,
+		       struct nattr *attr);
 	int (*setattr)();	/* set attributes of an object */
 	ssize_t (*read)();	/* read portion of an object */
 	ssize_t (*write)();	/* write portion of an object */
@@ -80,8 +80,8 @@ extern int vol_getroot(struct objstore_vol *vol, struct noid *root);
 extern void *vol_open(struct objstore_vol *vol, const struct noid *oid,
 		      const struct nvclock *clock);
 extern int vol_close(struct objstore_vol *vol, void *cookie);
-extern int vol_getattr(struct objstore_vol *vol, const struct noid *oid,
-		       const struct nvclock *clock, struct nattr *attr);
+extern int vol_getattr(struct objstore_vol *vol, void *cookie,
+		       struct nattr *attr);
 extern int vol_lookup(struct objstore_vol *vol, void *dircookie,
 		      const char *name, struct noid *child);
 extern int vol_create(struct objstore_vol *vol, void *dircookie,
