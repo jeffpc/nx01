@@ -49,18 +49,18 @@ Internal Dependencies
 =====================
 
 ```text
-             | sunavl | sunlist | common | fakeumem | objstore | suntaskq
--------------+--------+---------+--------+----------+----------+----------
-sunavl       |   -    |    n    |   n    |    n     |    n     |     n
-sunlist      |   n    |    -    |   n    |    n     |    n     |     n
-common       |   n    |    n    |   -    |    y     |    n     |     y
-fakeumem     |   n    |    n    |   n    |    -     |    n     |     n
-objstore     |   n    |    n    |   n    |    y     |    -     |     n
-suntaskq     |   n    |    n    |   y    |    y     |    n     |     -
-objs. module |   ?    |    ?    |   y    |    y     |    n     |     n
-client       |   n    |    n    |   n    |    y     |    n     |     n
-server       |   n    |    n    |   n    |    y     |    n     |     n
-tool         |   n    |    n    |   n    |    y     |    n     |     n
+             | sunavl | sunlist | fakeumem | suntaskq | common | objstore 
+-------------+--------+---------+----------+----------+--------+----------
+sunavl       |   -    |    n    |    n     |     n    |   n    |    n     
+sunlist      |   n    |    -    |    n     |     n    |   n    |    n     
+fakeumem     |   n    |    n    |    -     |     n    |   n    |    n     
+suntaskq     |   n    |    n    |    y     |     -    |   n    |    n     
+common       |   n    |    n    |    y     |     y    |   -    |    n     
+objstore     |   n    |    y    |    y     |     n    |   n    |    -     
+objs. module |   ?    |    ?    |    ?     |     ?    |   ?    |    n     
+client       |   y    |    n    |    y     |     n    |   y    |    y     
+server       |   n    |    n    |    y     |     n    |   n    |    n     
+tool         |   n    |    n    |    y     |     n    |   n    |    n     
 
   y = yes, linked against
   n = no, not linked against
