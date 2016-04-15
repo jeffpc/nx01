@@ -203,5 +203,8 @@ Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 Other RPCs that may end up useful
 =================================
 
+* RENAME - rename a "file"
+* LINK - create a symlink or a hardlink
+* GETDENTS - list contents of a directory
 * READ - read an open file
 * WRITE - write an open file
