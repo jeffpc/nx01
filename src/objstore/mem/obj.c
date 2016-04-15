@@ -373,6 +373,56 @@ err_unlock:
 	return ret;
 }
 
+static ssize_t mem_obj_write(struct objstore_vol *vol, void *cookie,
+			     const void *buf, size_t len, uint64_t offset)
+{
+	struct memver *ver = cookie;
+	ssize_t ret;
+
+	if (!vol || !cookie || !buf)
+		return -EINVAL;
+
+	/* nothing to do */
+	if (!len)
+		return 0;
+
+	mxlock(&ver->obj->lock);
+
+	if (NATTR_ISDIR(ver->attrs.mode)) {
+		ret = -EISDIR;
+		goto err_unlock;
+	}
+
+	/* TODO: do we need to check for other types? */
+
+	/* object will grow - need to resize the blob buffer */
+	if ((offset + len) > ver->attrs.size) {
+		size_t newsize = offset + len;
+		void *tmp;
+
+		tmp = realloc(ver->blob, newsize);
+		if (!tmp) {
+			ret = -ENOMEM;
+			goto err_unlock;
+		}
+
+		ver->attrs.size = newsize;
+		ver->blob = tmp;
+	}
+
+	memcpy(ver->blob + offset, buf, len);
+
+	ret = len;
+
+	 /* TODO: do we need to tweak the versions AVL tree? */
+	nvclock_inc(ver->clock);
+
+err_unlock:
+	mxunlock(&ver->obj->lock);
+
+	return ret;
+}
+
 static int mem_obj_lookup(struct objstore_vol *vol, void *dircookie,
 			  const char *name, struct noid *child)
 {
@@ -583,6 +633,7 @@ const struct obj_ops obj_ops = {
 	.close   = mem_obj_close,
 	.getattr = mem_obj_getattr,
 	.read    = mem_obj_read,
+	.write   = mem_obj_write,
 	.lookup  = mem_obj_lookup,
 	.create  = mem_obj_create,
 	.remove  = mem_obj_remove,
