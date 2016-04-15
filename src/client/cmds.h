@@ -77,6 +77,11 @@ union cmd {
 		struct rpc_stat_req req;
 		struct rpc_stat_res res;
 	} stat;
+
+	/* write */
+	struct {
+		struct rpc_write_req req;
+	} write;
 };
 
 struct fsconn {
@@ -98,5 +103,6 @@ extern int cmd_open(struct fsconn *conn, union cmd *cmd);
 extern int cmd_read(struct fsconn *conn, union cmd *cmd);
 extern int cmd_remove(struct fsconn *conn, union cmd *cmd);
 extern int cmd_stat(struct fsconn *conn, union cmd *cmd);
+extern int cmd_write(struct fsconn *conn, union cmd *cmd);
 
 #endif

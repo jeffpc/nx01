@@ -112,3 +112,11 @@ struct rpc_read_res {
 	/* length is sent as part of data */
 	opaque data<4294967295>;
 };
+
+%/***** WRITE *****/
+struct rpc_write_req {
+	HANDLE(handle);
+	uint64_t offset;
+	/* length is sent as part of data */
+	opaque data<4294967295>;
+};

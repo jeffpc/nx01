@@ -104,6 +104,26 @@ int cmd_read(struct fsconn *conn, union cmd *cmd)
 	return 0;
 }
 
+int cmd_write(struct fsconn *conn, union cmd *cmd)
+{
+	struct rpc_write_req *req = &cmd->write.req;
+	struct ohandle *oh;
+	ssize_t ret;
+
+	oh = ohandle_find(conn, req->handle);
+	if (!oh)
+		return -EINVAL;
+
+	/* TODO: should we limit the requested write size? */
+
+	ret = objstore_write(conn->vg, oh->cookie, req->data.data_val,
+			     req->data.data_len, req->offset);
+
+	VERIFY3S(ret, ==, req->data.data_len);
+
+	return (ret < 0) ? ret : 0;
+}
+
 int cmd_stat(struct fsconn *conn, union cmd *cmd)
 {
 	struct rpc_stat_req *req = &cmd->stat.req;

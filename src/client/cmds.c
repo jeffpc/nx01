@@ -83,6 +83,7 @@ static const struct cmdtbl {
 	CMD_ARG_RET(NRPC_READ,          read,          cmd_read,        true),
 	CMD_ARG    (NRPC_REMOVE,        remove,        cmd_remove,      true),
 	CMD_ARG_RET(NRPC_STAT,          stat,          cmd_stat,        true),
+	CMD_ARG    (NRPC_WRITE,         write,         cmd_write,       true),
 };
 
 static bool send_response(XDR *xdr, int fd, int err)

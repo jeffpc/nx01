@@ -225,10 +225,32 @@ Limitations
 Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 
 
+WRITE (0x0009)
+==============
+
+Write a portion of an open object.  Trying to write to a directory fails with
+`EISDIR`.  Writing past the end of the object succeeds and the object length is
+updated automatically.
+
+Inputs
+------
+* open file handle
+* offset into the object version's data
+* length (in bytes) to write
+* data
+
+Outputs
+-------
+None.
+
+Limitations
+-----------
+Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
+
+
 Other RPCs that may end up useful
 =================================
 
 * RENAME - rename a "file"
 * LINK - create a symlink or a hardlink
 * GETDENTS - list contents of a directory
-* WRITE - write an open file
