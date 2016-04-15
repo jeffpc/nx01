@@ -73,6 +73,37 @@ int cmd_close(struct fsconn *conn, union cmd *cmd)
 	return ret;
 }
 
+int cmd_read(struct fsconn *conn, union cmd *cmd)
+{
+	struct rpc_read_req *req = &cmd->read.req;
+	struct rpc_read_res *res = &cmd->read.res;
+	struct ohandle *oh;
+	ssize_t ret;
+	void *buf;
+
+	oh = ohandle_find(conn, req->handle);
+	if (!oh)
+		return -EINVAL;
+
+	/* TODO: should we limit the requested read size? */
+
+	buf = malloc(req->length);
+	if (!buf)
+		return -ENOMEM;
+
+	ret = objstore_read(conn->vg, oh->cookie, buf, req->length,
+			    req->offset);
+	if (ret < 0) {
+		free(buf);
+		return ret;
+	}
+
+	res->data.data_len = ret;
+	res->data.data_val = buf;
+
+	return 0;
+}
+
 int cmd_stat(struct fsconn *conn, union cmd *cmd)
 {
 	struct rpc_stat_req *req = &cmd->stat.req;

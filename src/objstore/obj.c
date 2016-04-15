@@ -59,6 +59,18 @@ int vol_getattr(struct objstore_vol *vol, void *cookie, struct nattr *attr)
 	return vol->def->obj_ops->getattr(vol, cookie, attr);
 }
 
+ssize_t vol_read(struct objstore_vol *vol, void *cookie, void *buf, size_t len,
+		 uint64_t offset)
+{
+	if (!vol || !buf)
+		return -EINVAL;
+
+	if (!vol->def->obj_ops || !vol->def->obj_ops->read)
+		return -ENOTSUP;
+
+	return vol->def->obj_ops->read(vol, cookie, buf, len, offset);
+}
+
 int vol_lookup(struct objstore_vol *vol, void *dircookie,
 	       const char *name, struct noid *child)
 {

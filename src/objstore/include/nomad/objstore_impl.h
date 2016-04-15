@@ -52,7 +52,8 @@ struct obj_ops {
 	int (*getattr)(struct objstore_vol *store, void *cookie,
 		       struct nattr *attr);
 	int (*setattr)();	/* set attributes of an object */
-	ssize_t (*read)();	/* read portion of an object */
+	ssize_t (*read)(struct objstore_vol *store, void *cookie,
+			void *buf, size_t len, uint64_t offset);
 	ssize_t (*write)();	/* write portion of an object */
 
 	int (*lookup)(struct objstore_vol *vol, void *dircookie,
@@ -82,6 +83,8 @@ extern void *vol_open(struct objstore_vol *vol, const struct noid *oid,
 extern int vol_close(struct objstore_vol *vol, void *cookie);
 extern int vol_getattr(struct objstore_vol *vol, void *cookie,
 		       struct nattr *attr);
+extern ssize_t vol_read(struct objstore_vol *vol, void *cookie, void *buf,
+			size_t len, uint64_t offset);
 extern int vol_lookup(struct objstore_vol *vol, void *dircookie,
 		      const char *name, struct noid *child);
 extern int vol_create(struct objstore_vol *vol, void *dircookie,

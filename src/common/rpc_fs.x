@@ -95,3 +95,20 @@ struct rpc_open_res {
 struct rpc_close_req {
 	HANDLE(handle);
 };
+
+%/***** READ *****/
+struct rpc_read_req {
+	HANDLE(handle);
+	uint64_t offset;
+	/*
+	 * 32-bit length is ok because rpcgen doesn't know how to send more
+	 * than 4GB anyway.  Furthermore, the object store has a 31-bit
+	 * length limitation on 32-bit systems.
+	 */
+	uint32_t length;
+};
+
+struct rpc_read_res {
+	/* length is sent as part of data */
+	opaque data<4294967295>;
+};

@@ -191,6 +191,29 @@ int objstore_getattr(struct objstore *vg, void *cookie, struct nattr *attr)
 	return ret;
 }
 
+ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf, size_t len,
+		      uint64_t offset)
+{
+	struct objstore_vol *vol;
+	ssize_t ret;
+
+	if (!vg || !buf)
+		return -EINVAL;
+
+	if (len > (SIZE_MAX / 2))
+		return -EOVERFLOW;
+
+	vol = findvol(vg);
+	if (!vol)
+		return -ENXIO;
+
+	ret = vol_read(vol, cookie, buf, len, offset);
+
+	vol_putref(vol);
+
+	return ret;
+}
+
 int objstore_lookup(struct objstore *vg, void *dircookie, const char *name,
 		    struct noid *child)
 {

@@ -34,5 +34,6 @@
 #define NRPC_REMOVE	0x0005
 #define NRPC_OPEN	0x0006
 #define NRPC_CLOSE	0x0007
+#define NRPC_READ	0x0008
 
 #endif

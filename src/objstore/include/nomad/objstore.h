@@ -83,6 +83,8 @@ extern void *objstore_open(struct objstore *vg, const struct noid *oid,
 extern int objstore_close(struct objstore *vg, void *cookie);
 extern int objstore_getattr(struct objstore *vg, void *cookie,
 			    struct nattr *attr);
+extern ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf,
+			     size_t len, uint64_t offset);
 extern int objstore_lookup(struct objstore *vg, void *dircookie,
 			   const char *name, struct noid *child);
 extern int objstore_create(struct objstore *vg, void *dircookie,

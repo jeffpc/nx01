@@ -80,6 +80,7 @@ static const struct cmdtbl {
 	CMD_ARG_RET(NRPC_LOOKUP,        lookup,        cmd_lookup,      true),
 	CMD        (NRPC_NOP,           nop,           cmd_nop,         false),
 	CMD_ARG_RET(NRPC_OPEN,          open,          cmd_open,        true),
+	CMD_ARG_RET(NRPC_READ,          read,          cmd_read,        true),
 	CMD_ARG    (NRPC_REMOVE,        remove,        cmd_remove,      true),
 	CMD_ARG_RET(NRPC_STAT,          stat,          cmd_stat,        true),
 };

@@ -200,11 +200,35 @@ Limitations
 Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 
 
+READ (0x0008)
+=============
+
+Read a portion of an open object.  Trying to read from a directory fails with
+`EISDIR`.  If the requested number of bytes would read beyond the end of the
+object, only the data between the requested offset and the end of the object
+is returned.  (Therefore, reading with an offset that is greater than or
+equal to the object size will yield zero bytes.)
+
+Inputs
+------
+* open file handle
+* offset into the object version's data
+* length (in bytes) to read
+
+Outputs
+-------
+* length of data
+* data
+
+Limitations
+-----------
+Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
+
+
 Other RPCs that may end up useful
 =================================
 
 * RENAME - rename a "file"
 * LINK - create a symlink or a hardlink
 * GETDENTS - list contents of a directory
-* READ - read an open file
 * WRITE - write an open file
