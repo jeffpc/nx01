@@ -335,6 +335,44 @@ static int mem_obj_getattr(struct objstore_vol *vol, void *cookie,
 	return 0;
 }
 
+static ssize_t mem_obj_read(struct objstore_vol *vol, void *cookie,
+			    void *buf, size_t len, uint64_t offset)
+{
+	struct memver *ver = cookie;
+	ssize_t ret;
+
+	if (!vol || !cookie || !buf)
+		return -EINVAL;
+
+	/* nothing to do */
+	if (!len)
+		return 0;
+
+	mxlock(&ver->obj->lock);
+
+	if (NATTR_ISDIR(ver->attrs.mode)) {
+		ret = -EISDIR;
+		goto err_unlock;
+	}
+
+	/* TODO: do we need to check for other types? */
+
+	if (offset >= ver->attrs.size)
+		ret = 0;
+	else if ((offset + len) > ver->attrs.size)
+		ret = ver->attrs.size - offset;
+	else
+		ret = len;
+
+	if (ret)
+		memcpy(buf, ver->blob + offset, ret);
+
+err_unlock:
+	mxunlock(&ver->obj->lock);
+
+	return ret;
+}
+
 static int mem_obj_lookup(struct objstore_vol *vol, void *dircookie,
 			  const char *name, struct noid *child)
 {
@@ -544,6 +582,7 @@ const struct obj_ops obj_ops = {
 	.open    = mem_obj_open,
 	.close   = mem_obj_close,
 	.getattr = mem_obj_getattr,
+	.read    = mem_obj_read,
 	.lookup  = mem_obj_lookup,
 	.create  = mem_obj_create,
 	.remove  = mem_obj_remove,
