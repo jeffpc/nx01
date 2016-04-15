@@ -583,7 +583,7 @@ static int __obj_remove(struct memstore *store, struct memver *dir,
 	/*
 	 * We changed the dir, so we need to up the version.
 	 *
-	 * TODO: do we need to tweak the dentries AVL tree?
+	 * TODO: do we need to tweak the versions AVL tree?
 	 */
 	nvclock_inc(dir->clock);
 
