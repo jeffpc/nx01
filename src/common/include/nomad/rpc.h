@@ -55,6 +55,7 @@
 #define NERR_ENOSPC            28
 #define NERR_ENOTSUP           48
 #define NERR_EPROTO            71
+#define NERR_EOVERFLOW         79
 #define NERR_ENOTUNIQ          80
 #define NERR_EALREADY          149
 
