@@ -124,10 +124,10 @@ int cmd_write(struct fsconn *conn, union cmd *cmd)
 	return (ret < 0) ? ret : 0;
 }
 
-int cmd_stat(struct fsconn *conn, union cmd *cmd)
+int cmd_getattr(struct fsconn *conn, union cmd *cmd)
 {
-	struct rpc_stat_req *req = &cmd->stat.req;
-	struct rpc_stat_res *res = &cmd->stat.res;
+	struct rpc_getattr_req *req = &cmd->getattr.req;
+	struct rpc_getattr_res *res = &cmd->getattr.res;
 	struct ohandle *oh;
 
 	oh = ohandle_find(conn, req->handle);

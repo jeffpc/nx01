@@ -69,8 +69,8 @@ At most one successful LOGIN is allowed per connection.  All LOGIN attempts
 after a successful LOGIN will fail with `EALREADY`.
 
 
-STAT (0x0002)
-=============
+GETATTR (0x0002)
+================
 
 Get attributes (`struct nattr`) for of an object identified an open file
 handle.

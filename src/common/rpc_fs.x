@@ -45,12 +45,12 @@ struct rpc_login_res {
 	struct noid	root;
 };
 
-%/***** STAT *****/
-struct rpc_stat_req {
+%/***** GETATTR *****/
+struct rpc_getattr_req {
 	HANDLE(handle);
 };
 
-struct rpc_stat_res {
+struct rpc_getattr_res {
 	struct nattr	attr;
 };
 
