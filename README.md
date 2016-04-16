@@ -24,6 +24,22 @@ $ make install
 This will build and install the binaries and libraries under the specified
 prefix.
 
+You can also define the following cmake variables to help it find libjeffpc.
+
+	WITH_JEFFPC_LIB=<directory containing libjeffpc.so>
+	WITH_JEFFPC_INCLUDES=<directory containing jeffpc/jeffpc.h>
+
+Setting `WITH_JEFFPC` to `/path` yields the same effect as setting both:
+
+	WITH_JEFFPC_LIB=/path/lib
+	WITH_JEFFPC_INCLUDES=/path/include
+
+For example:
+
+```sh
+$ cmake -DCMAKE_INSTALL_PREFIX=/prefix -DWITH_JEFFPC=/opt/jeffpc .
+```
+
 
 Running
 =======
