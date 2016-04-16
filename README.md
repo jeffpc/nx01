@@ -16,7 +16,7 @@ Building and Installing
 =======================
 
 ```sh
-$ cmake . -DCMAKE_INSTALL_PREFIX=/prefix
+$ cmake -DCMAKE_INSTALL_PREFIX=/prefix .
 $ make
 $ make install
 ```
