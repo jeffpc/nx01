@@ -61,7 +61,7 @@ struct obj_ops {
 		      const char *name, struct noid *child);
 	int (*create)(struct objstore_vol *vol, void *dircookie,
 		      const char *name, uint16_t mode, struct noid *child);
-	int (*remove)(struct objstore_vol *vol, void *dircookie,
+	int (*unlink)(struct objstore_vol *vol, void *dircookie,
 		      const char *name);
 };
 
@@ -92,7 +92,7 @@ extern int vol_lookup(struct objstore_vol *vol, void *dircookie,
 		      const char *name, struct noid *child);
 extern int vol_create(struct objstore_vol *vol, void *dircookie,
 		      const char *name, uint16_t mode, struct noid *child);
-extern int vol_remove(struct objstore_vol *vol, void *dircookie,
+extern int vol_unlink(struct objstore_vol *vol, void *dircookie,
 		      const char *name);
 
 #endif

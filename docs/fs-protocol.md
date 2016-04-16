@@ -131,7 +131,7 @@ Limitations
 Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 
 
-REMOVE (0x0005)
+UNLINK (0x0005)
 ===============
 
 Given a directory open file handle and a path component (string), remove the

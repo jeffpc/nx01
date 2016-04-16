@@ -53,14 +53,14 @@ int cmd_lookup(struct fsconn *conn, union cmd *cmd)
 	return objstore_lookup(conn->vg, oh->cookie, req->path, &res->child);
 }
 
-int cmd_remove(struct fsconn *conn, union cmd *cmd)
+int cmd_unlink(struct fsconn *conn, union cmd *cmd)
 {
-	struct rpc_remove_req *req = &cmd->remove.req;
+	struct rpc_unlink_req *req = &cmd->unlink.req;
 	struct ohandle *oh;
 
 	oh = ohandle_find(conn, req->parent);
 	if (!oh)
 		return -EINVAL;
 
-	return objstore_remove(conn->vg, oh->cookie, req->path);
+	return objstore_unlink(conn->vg, oh->cookie, req->path);
 }

@@ -550,7 +550,7 @@ err_unlock:
 	return ret;
 }
 
-static int __obj_remove(struct memstore *store, struct memver *dir,
+static int __obj_unlink(struct memstore *store, struct memver *dir,
 			struct memdentry *dentry)
 {
 	struct memobj *child;
@@ -590,7 +590,7 @@ static int __obj_remove(struct memstore *store, struct memver *dir,
 	return 0;
 }
 
-static int mem_obj_remove(struct objstore_vol *vol, void *dircookie,
+static int mem_obj_unlink(struct objstore_vol *vol, void *dircookie,
 			  const char *name)
 {
 	const struct memdentry key = {
@@ -620,7 +620,7 @@ static int mem_obj_remove(struct objstore_vol *vol, void *dircookie,
 	}
 
 	/* ok, we got the dentry - remove it */
-	ret = __obj_remove(ms, dirver, dentry);
+	ret = __obj_unlink(ms, dirver, dentry);
 
 err_unlock:
 	mxunlock(&dirver->obj->lock);
@@ -636,5 +636,5 @@ const struct obj_ops obj_ops = {
 	.write   = mem_obj_write,
 	.lookup  = mem_obj_lookup,
 	.create  = mem_obj_create,
-	.remove  = mem_obj_remove,
+	.unlink  = mem_obj_unlink,
 };

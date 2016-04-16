@@ -107,13 +107,13 @@ int vol_create(struct objstore_vol *vol, void *dircookie, const char *name,
 	return vol->def->obj_ops->create(vol, dircookie, name, mode, child);
 }
 
-int vol_remove(struct objstore_vol *vol, void *dircookie, const char *name)
+int vol_unlink(struct objstore_vol *vol, void *dircookie, const char *name)
 {
 	if (!vol || !name)
 		return -EINVAL;
 
-	if (!vol->def->obj_ops || !vol->def->obj_ops->remove)
+	if (!vol->def->obj_ops || !vol->def->obj_ops->unlink)
 		return -ENOTSUP;
 
-	return vol->def->obj_ops->remove(vol, dircookie, name);
+	return vol->def->obj_ops->unlink(vol, dircookie, name);
 }

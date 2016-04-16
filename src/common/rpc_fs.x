@@ -75,8 +75,8 @@ struct rpc_create_res {
 	struct noid	oid;
 };
 
-%/***** REMOVE *****/
-struct rpc_remove_req {
+%/***** UNLINK *****/
+struct rpc_unlink_req {
 	HANDLE(parent);
 	string		path<>;
 };

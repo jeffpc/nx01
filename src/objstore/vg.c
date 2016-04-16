@@ -283,7 +283,7 @@ int objstore_create(struct objstore *vg, void *dircookie, const char *name,
 	return ret;
 }
 
-int objstore_remove(struct objstore *vg, void *dircookie, const char *name)
+int objstore_unlink(struct objstore *vg, void *dircookie, const char *name)
 {
 	struct objstore_vol *vol;
 	int ret;
@@ -297,7 +297,7 @@ int objstore_remove(struct objstore *vg, void *dircookie, const char *name)
 	if (!vol)
 		return -ENXIO;
 
-	ret = vol_remove(vol, dircookie, name);
+	ret = vol_unlink(vol, dircookie, name);
 
 	vol_putref(vol);
 

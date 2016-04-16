@@ -91,7 +91,7 @@ extern int objstore_lookup(struct objstore *vg, void *dircookie,
 			   const char *name, struct noid *child);
 extern int objstore_create(struct objstore *vg, void *dircookie,
 			   const char *name, uint16_t mode, struct noid *child);
-extern int objstore_remove(struct objstore *vg, void *dircookie,
+extern int objstore_unlink(struct objstore *vg, void *dircookie,
 			   const char *name);
 
 #endif

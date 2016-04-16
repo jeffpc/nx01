@@ -67,16 +67,16 @@ union cmd {
 		struct rpc_read_res res;
 	} read;
 
-	/* remove */
-	struct {
-		struct rpc_remove_req req;
-	} remove;
-
 	/* stat */
 	struct {
 		struct rpc_stat_req req;
 		struct rpc_stat_res res;
 	} stat;
+
+	/* unlink */
+	struct {
+		struct rpc_unlink_req req;
+	} unlink;
 
 	/* write */
 	struct {
@@ -101,8 +101,8 @@ extern int cmd_lookup(struct fsconn *conn, union cmd *cmd);
 extern int cmd_nop(struct fsconn *conn, union cmd *cmd);
 extern int cmd_open(struct fsconn *conn, union cmd *cmd);
 extern int cmd_read(struct fsconn *conn, union cmd *cmd);
-extern int cmd_remove(struct fsconn *conn, union cmd *cmd);
 extern int cmd_stat(struct fsconn *conn, union cmd *cmd);
+extern int cmd_unlink(struct fsconn *conn, union cmd *cmd);
 extern int cmd_write(struct fsconn *conn, union cmd *cmd);
 
 #endif
