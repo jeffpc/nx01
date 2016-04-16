@@ -63,7 +63,7 @@ static const struct cmdtbl {
 	const char *name;
 	uint16_t opcode;
 	int (*handler)(struct fsconn *, union cmd *);
-	bool_t requires_login;
+	bool requires_login;
 	size_t reqoff;
 	size_t resoff;
 
