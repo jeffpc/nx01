@@ -248,6 +248,31 @@ Limitations
 Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 
 
+SETATTR (0x000A)
+================
+
+Set selected attributes on an open object.  Even though the entire attribute
+structure is sent, only the attributes marked as valid are set.
+
+Setting the file size either truncates the object to the specified size or
+extends it padding it with zero bytes.
+
+Inputs
+------
+* open file handle
+* new attributes (`struct nattr`)
+* size is valid
+* mode is valid
+
+Outputs
+-------
+None.
+
+Limitations
+-----------
+Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
+
+
 Other RPCs that may end up useful
 =================================
 

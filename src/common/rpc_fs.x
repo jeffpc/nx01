@@ -120,3 +120,11 @@ struct rpc_write_req {
 	/* length is sent as part of data */
 	opaque data<4294967295>;
 };
+
+%/***** SETATTR *****/
+struct rpc_setattr_req {
+	HANDLE(handle);
+	struct nattr attr;
+	bool size_is_valid;
+	bool mode_is_valid;
+};

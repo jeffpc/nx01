@@ -136,3 +136,20 @@ int cmd_getattr(struct fsconn *conn, union cmd *cmd)
 
 	return objstore_getattr(conn->vg, oh->cookie, &res->attr);
 }
+
+int cmd_setattr(struct fsconn *conn, union cmd *cmd)
+{
+	struct rpc_setattr_req *req = &cmd->setattr.req;
+	struct ohandle *oh;
+	unsigned valid;
+
+	oh = ohandle_find(conn, req->handle);
+	if (!oh)
+		return -EINVAL;
+
+	valid = 0;
+	valid |= req->mode_is_valid ? OBJ_ATTR_MODE : 0;
+	valid |= req->size_is_valid ? OBJ_ATTR_SIZE : 0;
+
+	return objstore_setattr(conn->vg, oh->cookie, &req->attr, valid);
+}

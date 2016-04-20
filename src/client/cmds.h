@@ -73,6 +73,11 @@ union cmd {
 		struct rpc_read_res res;
 	} read;
 
+	/* setattr */
+	struct {
+		struct rpc_setattr_req req;
+	} setattr;
+
 	/* unlink */
 	struct {
 		struct rpc_unlink_req req;
@@ -102,6 +107,7 @@ extern int cmd_lookup(struct fsconn *conn, union cmd *cmd);
 extern int cmd_nop(struct fsconn *conn, union cmd *cmd);
 extern int cmd_open(struct fsconn *conn, union cmd *cmd);
 extern int cmd_read(struct fsconn *conn, union cmd *cmd);
+extern int cmd_setattr(struct fsconn *conn, union cmd *cmd);
 extern int cmd_unlink(struct fsconn *conn, union cmd *cmd);
 extern int cmd_write(struct fsconn *conn, union cmd *cmd);
 

@@ -191,6 +191,29 @@ int objstore_getattr(struct objstore *vg, void *cookie, struct nattr *attr)
 	return ret;
 }
 
+int objstore_setattr(struct objstore *vg, void *cookie, const struct nattr *attr,
+		     const unsigned valid)
+{
+	struct objstore_vol *vol;
+	int ret;
+
+	if (!vg || !attr)
+		return -EINVAL;
+
+	vol = findvol(vg);
+	if (!vol)
+		return -ENXIO;
+
+	if (!valid)
+		ret = 0;
+	else
+		ret = vol_setattr(vol, cookie, attr, valid);
+
+	vol_putref(vol);
+
+	return ret;
+}
+
 ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf, size_t len,
 		      uint64_t offset)
 {

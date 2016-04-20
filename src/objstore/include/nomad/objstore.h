@@ -35,6 +35,11 @@ enum objstore_mode {
 	OS_MODE_STORE,
 };
 
+enum {
+	OBJ_ATTR_MODE	= 0x01,
+	OBJ_ATTR_SIZE	= 0x02,
+};
+
 struct objstore_vol;
 
 struct objstore {
@@ -83,6 +88,8 @@ extern void *objstore_open(struct objstore *vg, const struct noid *oid,
 extern int objstore_close(struct objstore *vg, void *cookie);
 extern int objstore_getattr(struct objstore *vg, void *cookie,
 			    struct nattr *attr);
+extern int objstore_setattr(struct objstore *vg, void *cookie,
+			    const struct nattr *attr, const unsigned valid);
 extern ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf,
 			     size_t len, uint64_t offset);
 extern ssize_t objstore_write(struct objstore *vg, void *cookie,

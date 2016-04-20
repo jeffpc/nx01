@@ -51,7 +51,8 @@ struct obj_ops {
 
 	int (*getattr)(struct objstore_vol *store, void *cookie,
 		       struct nattr *attr);
-	int (*setattr)();	/* set attributes of an object */
+	int (*setattr)(struct objstore_vol *store, void *cookie,
+		       const struct nattr *attr, const unsigned valid);
 	ssize_t (*read)(struct objstore_vol *store, void *cookie,
 			void *buf, size_t len, uint64_t offset);
 	ssize_t (*write)(struct objstore_vol *store, void *cookie,
@@ -84,6 +85,8 @@ extern void *vol_open(struct objstore_vol *vol, const struct noid *oid,
 extern int vol_close(struct objstore_vol *vol, void *cookie);
 extern int vol_getattr(struct objstore_vol *vol, void *cookie,
 		       struct nattr *attr);
+extern int vol_setattr(struct objstore_vol *vol, void *cookie,
+		       const struct nattr *attr, const unsigned valid);
 extern ssize_t vol_read(struct objstore_vol *vol, void *cookie, void *buf,
 			size_t len, uint64_t offset);
 extern ssize_t vol_write(struct objstore_vol *vol, void *cookie,
