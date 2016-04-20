@@ -335,6 +335,82 @@ static int mem_obj_getattr(struct objstore_vol *vol, void *cookie,
 	return 0;
 }
 
+static int __truncate(struct memver *ver, uint64_t newsize, bool zero)
+{
+	void *tmp;
+
+	if (newsize == ver->attrs.size)
+		return 0;
+
+	if (newsize < ver->attrs.size) {
+		ver->attrs.size = newsize;
+		return 0;
+	}
+
+	tmp = realloc(ver->blob, newsize);
+	if (!tmp)
+		return -ENOMEM;
+
+	/* clear the new bytes */
+	if (zero)
+		memset(ver->blob + ver->attrs.size, 0,
+		       newsize - ver->attrs.size);
+
+	ver->attrs.size = newsize;
+	ver->blob = tmp;
+
+	return 0;
+}
+
+static int mem_obj_setattr(struct objstore_vol *vol, void *cookie,
+			   const struct nattr *attr, const unsigned valid)
+{
+	struct memver *ver = cookie;
+	int ret;
+
+	if (!vol || !cookie || !attr)
+		return -EINVAL;
+
+	mxlock(&ver->obj->lock);
+
+	/*
+	 * first do some checks
+	 */
+	if (!NATTR_ISREG(ver->attrs.mode)) {
+		ret = -EINVAL;
+		goto err_unlock;
+	}
+
+	/* we can't change the type of the object */
+	if ((attr->mode & NATTR_TMASK) != (ver->attrs.mode & NATTR_TMASK)) {
+		ret = -EINVAL;
+		goto err_unlock;
+	}
+
+	/*
+	 * now do the updates
+	 */
+	/* must be first since it can fail */
+	if (valid & OBJ_ATTR_SIZE) {
+		ret = __truncate(ver, attr->size, true);
+		if (ret)
+			goto err_unlock;
+	}
+
+	if (valid & OBJ_ATTR_MODE)
+		ver->attrs.mode = attr->mode;
+
+	/* TODO: do we need to tweak the versions AVL tree? */
+	nvclock_inc(ver->clock);
+
+	ret = 0;
+
+err_unlock:
+	mxunlock(&ver->obj->lock);
+
+	return ret;
+}
+
 static ssize_t mem_obj_read(struct objstore_vol *vol, void *cookie,
 			    void *buf, size_t len, uint64_t offset)
 {
@@ -397,17 +473,9 @@ static ssize_t mem_obj_write(struct objstore_vol *vol, void *cookie,
 
 	/* object will grow - need to resize the blob buffer */
 	if ((offset + len) > ver->attrs.size) {
-		size_t newsize = offset + len;
-		void *tmp;
-
-		tmp = realloc(ver->blob, newsize);
-		if (!tmp) {
-			ret = -ENOMEM;
+		ret = __truncate(ver, offset + len, false);
+		if (ret)
 			goto err_unlock;
-		}
-
-		ver->attrs.size = newsize;
-		ver->blob = tmp;
 	}
 
 	memcpy(ver->blob + offset, buf, len);
@@ -632,6 +700,7 @@ const struct obj_ops obj_ops = {
 	.open    = mem_obj_open,
 	.close   = mem_obj_close,
 	.getattr = mem_obj_getattr,
+	.setattr = mem_obj_setattr,
 	.read    = mem_obj_read,
 	.write   = mem_obj_write,
 	.lookup  = mem_obj_lookup,
