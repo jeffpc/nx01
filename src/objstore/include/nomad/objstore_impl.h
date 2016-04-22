@@ -23,58 +23,26 @@
 #ifndef __NOMAD_OBJSTORE_IMPL_H
 #define __NOMAD_OBJSTORE_IMPL_H
 
+/*
+ * There are three objstore include files.  Make sure to include the right
+ * one.
+ *
+ * (1) If you are simply trying to use objstore, include <nomad/objstore.h>.
+ * (2) If you are trying to write a backend, include <nomad/objstore_backend.h>.
+ * (3) If you are developing objstore itself, include <nomad/objstore_impl.h>.
+ */
+
 #include <nomad/objstore.h>
-
-REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, objstore_vol_free)
-
-struct vol_ops {
-	int (*create)(struct objstore_vol *store);
-	int (*load)(struct objstore_vol *store);
-	int (*getroot)(struct objstore_vol *store, struct noid *root);
-};
-
-struct obj_ops {
-	int (*getversions)();
-
-	/* open objects must be closed */
-	void *(*open)(struct objstore_vol *vol, const struct noid *oid,
-		      const struct nvclock *clock);
-	int (*close)(struct objstore_vol *vol, void *cookie);
-
-	/* cloned objects must be committed/aborted */
-	int (*clone)();		/*
-				 * create a new temp obj as a copy of
-				 * existing obj
-				 */
-	int (*commit)();	/* make temp object live */
-	int (*abort)();		/* delete temp object */
-
-	int (*getattr)(struct objstore_vol *store, void *cookie,
-		       struct nattr *attr);
-	int (*setattr)(struct objstore_vol *store, void *cookie,
-		       const struct nattr *attr, const unsigned valid);
-	ssize_t (*read)(struct objstore_vol *store, void *cookie,
-			void *buf, size_t len, uint64_t offset);
-	ssize_t (*write)(struct objstore_vol *store, void *cookie,
-			 const void *buf, size_t len, uint64_t offset);
-
-	int (*lookup)(struct objstore_vol *vol, void *dircookie,
-		      const char *name, struct noid *child);
-	int (*create)(struct objstore_vol *vol, void *dircookie,
-		      const char *name, uint16_t mode, struct noid *child);
-	int (*unlink)(struct objstore_vol *vol, void *dircookie,
-		      const char *name);
-};
-
-struct objstore_vol_def {
-	const char *name;
-	const struct vol_ops *vol_ops;
-	const struct obj_ops *obj_ops;
-};
+#include <nomad/objstore_backend.h>
 
 /* internal volume group management helpers */
 extern int vg_init(void);
 extern void vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
+
+/* internal volume management helpers */
+extern void objstore_vol_free(struct objstore_vol *vol);
+
+REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, objstore_vol_free)
 
 /* wrappers for volume ops */
 extern int vol_getroot(struct objstore_vol *vol, struct noid *root);

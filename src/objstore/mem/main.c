@@ -27,7 +27,7 @@
 #include <jeffpc/error.h>
 #include <jeffpc/rand.h>
 
-#include <nomad/objstore_impl.h>
+#include <nomad/objstore_backend.h>
 
 #include "mem.h"
 
