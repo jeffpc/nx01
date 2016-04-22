@@ -122,7 +122,7 @@ err:
 	return ERR_PTR(ret);
 }
 
-struct memobj *newobj(struct memstore *ms, uint16_t mode)
+struct memobj *newmemobj(struct memstore *ms, uint16_t mode)
 {
 	struct memver *ver;
 	struct memobj *obj;
@@ -181,7 +181,7 @@ static void freeobjver(struct memver *ver)
 	free(ver);
 }
 
-void freeobj(struct memobj *obj)
+void freememobj(struct memobj *obj)
 {
 	struct memver *ver;
 	void *cookie;
@@ -198,7 +198,7 @@ void freeobj(struct memobj *obj)
 	free(obj);
 }
 
-struct memobj *findobj(struct memstore *store, const struct noid *oid)
+struct memobj *findmemobj(struct memstore *store, const struct noid *oid)
 {
 	struct memobj key = {
 		.oid = *oid,
@@ -218,7 +218,7 @@ struct memver *findver_by_hndl(struct memstore *store,
 	struct memver *ver;
 
 	mxlock(&store->lock);
-	obj = findobj(store, oid);
+	obj = findmemobj(store, oid);
 	mxunlock(&store->lock);
 
 	if (!obj)
@@ -537,7 +537,7 @@ static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 	struct memobj *obj;
 
 	/* allocate the child object */
-	obj = newobj(store, mode);
+	obj = newmemobj(store, mode);
 	if (IS_ERR(obj))
 		return obj;
 

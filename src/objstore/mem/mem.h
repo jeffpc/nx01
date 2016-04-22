@@ -122,10 +122,10 @@ struct memstore {
 
 extern const struct obj_ops obj_ops;
 
-extern struct memobj *newobj(struct memstore *ms, uint16_t mode);
-extern void freeobj(struct memobj *obj);
-extern struct memobj *findobj(struct memstore *store, const struct noid *oid);
+extern struct memobj *newmemobj(struct memstore *ms, uint16_t mode);
+extern void freememobj(struct memobj *obj);
+extern struct memobj *findmemobj(struct memstore *store, const struct noid *oid);
 
-REFCNT_INLINE_FXNS(struct memobj, memobj, refcnt, freeobj);
+REFCNT_INLINE_FXNS(struct memobj, memobj, refcnt, freememobj);
 
 #endif
