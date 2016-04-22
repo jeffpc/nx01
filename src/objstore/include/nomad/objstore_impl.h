@@ -35,11 +35,11 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_backend.h>
 
-/* internal volume group management helpers */
+/* internal volume group management */
 extern int vg_init(void);
 extern void vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
 
-/* internal volume management helpers */
+/* internal volume management */
 extern void objstore_vol_free(struct objstore_vol *vol);
 
 REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, objstore_vol_free)
