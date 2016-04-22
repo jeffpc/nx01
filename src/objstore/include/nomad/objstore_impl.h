@@ -32,17 +32,28 @@
  * (3) If you are developing objstore itself, include <nomad/objstore_impl.h>.
  */
 
+#include <umem.h>
+
 #include <nomad/objstore.h>
 #include <nomad/objstore_backend.h>
+
+/* backend support */
+struct backend {
+	const struct objstore_vol_def *def;
+	void *module;
+};
+
+extern struct backend *backend;
 
 /* internal volume group management */
 extern int vg_init(void);
 extern void vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
 
 /* internal volume management */
-extern void objstore_vol_free(struct objstore_vol *vol);
+extern umem_cache_t *vol_cache;
+extern void vol_free(struct objstore_vol *vol);
 
-REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, objstore_vol_free)
+REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, vol_free)
 
 /* wrappers for volume ops */
 extern int vol_getroot(struct objstore_vol *vol, struct noid *root);

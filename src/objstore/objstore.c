@@ -24,26 +24,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <umem.h>
 
 #include <jeffpc/error.h>
 
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-struct backend {
-	const struct objstore_vol_def *def;
-	void *module;
-};
-
 /*
  * TODO: eventually turn this into something that can support multiple
  * backends.
  */
 static struct backend mem_backend;
-static struct backend *backend;
+struct backend *backend;
 
-static umem_cache_t *vol_cache;
+umem_cache_t *vol_cache;
 
 static int load_backend(struct backend *backend, const char *name)
 {
@@ -89,59 +83,4 @@ err:
 	umem_cache_destroy(vol_cache);
 
 	return ret;
-}
-
-int objstore_vol_create(struct objstore *vg, const char *path,
-			enum objstore_mode mode)
-{
-	struct objstore_vol *s;
-	int ret;
-
-	if (!backend->def->vol_ops->create)
-		return -ENOTSUP;
-
-	s = umem_cache_alloc(vol_cache, 0);
-	if (!s)
-		return -ENOMEM;
-
-	refcnt_init(&s->refcnt, 1);
-
-	s->def = backend->def;
-	s->mode = mode;
-	s->path = strdup(path);
-	if (!s->path) {
-		ret = -ENOMEM;
-		goto err;
-	}
-
-	ret = s->def->vol_ops->create(s);
-	if (ret)
-		goto err_path;
-
-	/* hand off our reference */
-	vg_add_vol(vg, s);
-
-	return 0;
-
-err_path:
-	free((char *) s->path);
-
-err:
-	umem_cache_free(vol_cache, s);
-
-	return ret;
-}
-
-void objstore_vol_free(struct objstore_vol *vol)
-{
-	if (!vol)
-		return;
-
-	free((char *) vol->path);
-	umem_cache_free(vol_cache, vol);
-}
-
-int objstore_vol_load(struct objstore *vg, struct xuuid *uuid, const char *path)
-{
-	return -ENOTSUP;
 }
