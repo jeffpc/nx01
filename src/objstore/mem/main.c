@@ -39,7 +39,7 @@ static int objcmp(const void *va, const void *vb)
 	return noid_cmp(&a->oid, &b->oid);
 }
 
-static int mem_vol_create(struct objstore_vol *store)
+static int mem_create(struct objstore_vol *vol)
 {
 	struct memstore *ms;
 	struct memobj *obj;
@@ -67,7 +67,7 @@ static int mem_vol_create(struct objstore_vol *store)
 	avl_add(&ms->objs, memobj_getref(obj));
 	ms->root = obj; /* hand off our reference */
 
-	store->private = ms;
+	vol->private = ms;
 
 	return 0;
 }
@@ -89,12 +89,14 @@ static int mem_vol_getroot(struct objstore_vol *store, struct noid *root)
 }
 
 static const struct vol_ops vol_ops = {
-	.create = mem_vol_create,
 	.getroot = mem_vol_getroot,
 };
 
 const struct objstore_vol_def objvol = {
 	.name = "mem",
+
+	.create = mem_create,
+
 	.vol_ops = &vol_ops,
 	.obj_ops = &obj_ops,
 };

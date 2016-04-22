@@ -39,40 +39,40 @@ int vol_getroot(struct objstore_vol *vol, struct noid *root)
 int objstore_vol_create(struct objstore *vg, const char *path,
 			enum objstore_mode mode)
 {
-	struct objstore_vol *s;
+	struct objstore_vol *vol;
 	int ret;
 
-	if (!backend->def->vol_ops->create)
+	if (!backend->def->create)
 		return -ENOTSUP;
 
-	s = umem_cache_alloc(vol_cache, 0);
-	if (!s)
+	vol = umem_cache_alloc(vol_cache, 0);
+	if (!vol)
 		return -ENOMEM;
 
-	refcnt_init(&s->refcnt, 1);
+	refcnt_init(&vol->refcnt, 1);
 
-	s->def = backend->def;
-	s->mode = mode;
-	s->path = strdup(path);
-	if (!s->path) {
+	vol->def = backend->def;
+	vol->mode = mode;
+	vol->path = strdup(path);
+	if (!vol->path) {
 		ret = -ENOMEM;
 		goto err;
 	}
 
-	ret = s->def->vol_ops->create(s);
+	ret = vol->def->create(vol);
 	if (ret)
 		goto err_path;
 
 	/* hand off our reference */
-	vg_add_vol(vg, s);
+	vg_add_vol(vg, vol);
 
 	return 0;
 
 err_path:
-	free((char *) s->path);
+	free((char *) vol->path);
 
 err:
-	umem_cache_free(vol_cache, s);
+	umem_cache_free(vol_cache, vol);
 
 	return ret;
 }

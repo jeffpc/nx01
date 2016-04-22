@@ -59,13 +59,15 @@ struct obj_ops {
 };
 
 struct vol_ops {
-	int (*create)(struct objstore_vol *store);
-	int (*load)(struct objstore_vol *store);
 	int (*getroot)(struct objstore_vol *store, struct noid *root);
 };
 
 struct objstore_vol_def {
 	const char *name;
+
+	int (*create)(struct objstore_vol *vol);
+	int (*load)(struct objstore_vol *vol);
+
 	const struct obj_ops *obj_ops;
 	const struct vol_ops *vol_ops;
 };
