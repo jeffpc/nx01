@@ -31,6 +31,26 @@
 
 #include "mem.h"
 
+static int mem_vol_getroot(struct objstore_vol *store, struct noid *root)
+{
+	struct memstore *ms;
+
+	if (!store || !store->private || !root)
+		return -EINVAL;
+
+	ms = store->private;
+
+	mxlock(&ms->lock);
+	*root = ms->root->oid;
+	mxunlock(&ms->lock);
+
+	return 0;
+}
+
+static const struct vol_ops vol_ops = {
+	.getroot = mem_vol_getroot,
+};
+
 static int objcmp(const void *va, const void *vb)
 {
 	const struct memobj *a = va;
@@ -43,6 +63,8 @@ static int mem_create(struct objstore_vol *vol)
 {
 	struct memstore *ms;
 	struct memobj *obj;
+
+	vol->ops = &vol_ops;
 
 	ms = malloc(sizeof(struct memstore));
 	if (!ms)
@@ -72,31 +94,10 @@ static int mem_create(struct objstore_vol *vol)
 	return 0;
 }
 
-static int mem_vol_getroot(struct objstore_vol *store, struct noid *root)
-{
-	struct memstore *ms;
-
-	if (!store || !store->private || !root)
-		return -EINVAL;
-
-	ms = store->private;
-
-	mxlock(&ms->lock);
-	*root = ms->root->oid;
-	mxunlock(&ms->lock);
-
-	return 0;
-}
-
-static const struct vol_ops vol_ops = {
-	.getroot = mem_vol_getroot,
-};
-
 const struct objstore_vol_def objvol = {
 	.name = "mem",
 
 	.create = mem_create,
 
-	.vol_ops = &vol_ops,
 	.obj_ops = &obj_ops,
 };

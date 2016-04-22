@@ -69,12 +69,12 @@ struct objstore_vol_def {
 	int (*load)(struct objstore_vol *vol);
 
 	const struct obj_ops *obj_ops;
-	const struct vol_ops *vol_ops;
 };
 
 struct objstore_vol {
 	struct objstore *vg;
 
+	const struct vol_ops *ops;
 	const struct objstore_vol_def *def;
 
 	struct xuuid uuid;

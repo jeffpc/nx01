@@ -30,10 +30,10 @@ int vol_getroot(struct objstore_vol *vol, struct noid *root)
 	if (!vol || !root)
 		return -EINVAL;
 
-	if (!vol->def->vol_ops || !vol->def->vol_ops->getroot)
+	if (!vol->ops || !vol->ops->getroot)
 		return -ENOTSUP;
 
-	return vol->def->vol_ops->getroot(vol, root);
+	return vol->ops->getroot(vol, root);
 }
 
 int objstore_vol_create(struct objstore *vg, const char *path,

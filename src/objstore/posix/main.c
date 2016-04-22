@@ -24,14 +24,10 @@
 
 #include <nomad/objstore_impl.h>
 
-static const struct vol_ops vol_ops = {
-};
-
 static const struct obj_ops obj_ops = {
 };
 
 const struct objstore_vol_def objvol = {
 	.name = "posix",
-	.vol_ops = &vol_ops,
 	.obj_ops = &obj_ops,
 };
