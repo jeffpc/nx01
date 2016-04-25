@@ -57,6 +57,14 @@ int vg_init(void)
 	return 0;
 }
 
+static int objcmp(const void *va, const void *vb)
+{
+	const struct obj *a = va;
+	const struct obj *b = vb;
+
+	return noid_cmp(&a->oid, &b->oid);
+}
+
 struct objstore *objstore_vg_create(const char *name)
 {
 	struct objstore *vg;
@@ -74,6 +82,8 @@ struct objstore *objstore_vg_create(const char *name)
 	vg->vol = NULL;
 
 	mxinit(&vg->lock);
+	avl_create(&vg->objs, objcmp, sizeof(struct obj),
+		   offsetof(struct obj, node));
 
 	mxlock(&vgs_lock);
 	list_insert_tail(&vgs, vg);

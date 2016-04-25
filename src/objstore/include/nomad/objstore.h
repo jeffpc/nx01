@@ -24,6 +24,7 @@
 #define __NOMAD_OBJSTORE_H
 
 #include <sys/list.h>
+#include <sys/avl.h>
 
 #include <jeffpc/refcnt.h>
 
@@ -48,6 +49,8 @@ struct objstore {
 	pthread_mutex_t lock;
 	const char *name;
 	struct objstore_vol *vol;
+
+	avl_tree_t objs;
 };
 
 extern int objstore_init(void);

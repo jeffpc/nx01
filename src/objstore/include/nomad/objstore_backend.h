@@ -47,6 +47,7 @@ struct obj {
 	enum obj_state state;
 	refcnt_t refcnt;
 	pthread_mutex_t lock;
+	avl_node_t node;
 
 	/* constant for the lifetime of the object */
 	struct objstore_vol *vol;
