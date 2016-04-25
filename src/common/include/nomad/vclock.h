@@ -47,6 +47,7 @@ struct nvclock {
 
 extern struct nvclock *nvclock_alloc(void);
 extern struct nvclock *nvclock_dup(const struct nvclock *clock);
+extern void nvclock_copy(struct nvclock *dst, const struct nvclock *src);
 extern void nvclock_free(struct nvclock *clock);
 extern enum nvclockcmp nvclock_cmp(const struct nvclock *c1,
 				   const struct nvclock *c2);

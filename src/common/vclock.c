@@ -84,6 +84,16 @@ struct nvclock *nvclock_dup(const struct nvclock *clock)
 	return ret;
 }
 
+void nvclock_copy(struct nvclock *dst, const struct nvclock *src)
+{
+	/*
+	 * Since the contents of struct nvclock are very simple, we can get
+	 * away with doing this.  If the structure ever gains internal
+	 * pointers/etc., we'll have to expand this.
+	 */
+	*dst = *src;
+}
+
 void nvclock_free(struct nvclock *clock)
 {
 	umem_cache_free(vclock_cache, clock);
