@@ -107,6 +107,8 @@ struct obj_ops {
 
 struct vol_ops {
 	int (*getroot)(struct objstore_vol *store, struct noid *root);
+	int (*allocobj)(struct obj *obj);
+	void (*freeobj)(struct obj *obj);
 };
 
 struct objstore_vol_def {

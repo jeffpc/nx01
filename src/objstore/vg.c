@@ -124,6 +124,220 @@ static struct objstore_vol *findvol(struct objstore *vg)
 	return vol;
 }
 
+/*
+ * Find the object with oid, if there isn't one, allocate one and add it to
+ * the vg's list of objects.
+ *
+ * Returns obj (locked and referenced) on success, negated errno on failure.
+ */
+static struct obj *__find_or_alloc(struct objstore *vg, struct objstore_vol *vol,
+				   const struct noid *oid)
+{
+	struct obj key = {
+		.oid = *oid,
+	};
+	struct obj *obj, *newobj;
+	avl_index_t where;
+	bool inserted;
+
+	inserted = false;
+	newobj = NULL;
+
+	for (;;) {
+		mxlock(&vg->lock);
+
+		/* try to find the object */
+		obj = obj_getref(avl_find(&vg->objs, &key, &where));
+
+		/* not found and this is the second attempt -> insert it */
+		if (!obj && newobj) {
+			avl_insert(&vg->objs, obj_getref(newobj), where);
+			obj = newobj;
+			newobj = NULL;
+			inserted = true;
+		}
+
+		mxunlock(&vg->lock);
+
+		/* found or inserted -> we're done */
+		if (obj) {
+			/* newly inserted objects are already locked */
+			if (!inserted)
+				mxlock(&obj->lock);
+
+			if (obj->state == OBJ_STATE_DEAD) {
+				/* this is a dead one, try again */
+				mxunlock(&obj->lock);
+				obj_putref(obj);
+				continue;
+			}
+
+			if (newobj) {
+				mxunlock(&newobj->lock);
+				obj_putref(newobj);
+			}
+
+			break;
+		}
+
+		/* allocate a new object */
+		newobj = allocobj();
+		if (!newobj)
+			return ERR_PTR(-ENOMEM);
+
+		mxlock(&newobj->lock);
+
+		newobj->oid = *oid;
+		newobj->vol = vol_getref(vol);
+
+		/* retry the search, and insert if necessary */
+	}
+
+	return obj;
+}
+
+/*
+ * Given a vg and an oid, find the corresponding object structure.
+ *
+ * Return with the object locked and referenced.
+ */
+static struct obj *getobj(struct objstore *vg, const struct noid *oid)
+{
+	struct objstore_vol *vol;
+	struct obj *obj;
+	int ret;
+
+	vol = findvol(vg);
+	if (!vol)
+		return ERR_PTR(-ENXIO);
+
+	obj = __find_or_alloc(vg, vol, oid);
+	if (IS_ERR(obj)) {
+		ret = PTR_ERR(obj);
+		goto err;
+	}
+
+	switch (obj->state) {
+		case OBJ_STATE_NEW:
+			if (vol->ops && vol->ops->allocobj &&
+			    (ret = vol->ops->allocobj(obj))) {
+				/* the allocobj op failed, mark the obj dead */
+				obj->state = OBJ_STATE_DEAD;
+
+				/* remove the object from the objs list */
+				mxlock(&vg->lock);
+				avl_remove(&vg->objs, obj);
+				mxunlock(&vg->lock);
+				goto err_obj;
+			}
+
+			obj->state = OBJ_STATE_LIVE;
+			break;
+		case OBJ_STATE_LIVE:
+			break;
+		case OBJ_STATE_DEAD:
+			ret = -EINVAL;
+			goto err_obj;
+	}
+
+	vol_putref(vol);
+
+	return obj;
+
+err_obj:
+	mxunlock(&obj->lock);
+	obj_putref(obj);
+
+err:
+	vol_putref(vol);
+
+	return ERR_PTR(ret);
+}
+
+/*
+ * Given a vg, an oid, and a vector clock, find the corresponding object
+ * version structure.
+ *
+ * Return the found version, with the object referenced and locked.
+ */
+static struct objver *getver(struct objstore *vg, const struct noid *oid,
+			     const struct nvclock *clock)
+{
+	struct objver *ver;
+	struct obj *obj;
+
+	/*
+	 * First, find the object based on the oid.
+	 */
+	obj = getobj(vg, oid);
+	if (IS_ERR(obj))
+		return ERR_CAST(obj);
+
+	/*
+	 * Second, find the right version of the object.
+	 */
+	if (obj->nversions == 0) {
+		/*
+		 * There are no versions at all.
+		 */
+		ver = ERR_PTR(-ENOENT);
+	} else if (!nvclock_is_null(clock)) {
+		/*
+		 * We are looking for a specific version.  Since the
+		 * obj->objects AVL tree is only a cache, it may not contain
+		 * it.  If it doesn't we need to call into the backend to
+		 * fetch it.
+		 */
+		struct objver key = {
+			.clock = (struct nvclock *) clock,
+		};
+
+		ver = avl_find(&obj->versions, &key, NULL);
+		if (ver)
+			return ver;
+
+		/*
+		 * TODO: try to fetch the version from the backend
+		 */
+		ver = ERR_PTR(-ENOTSUP);
+		if (!IS_ERR(ver)) {
+			avl_add(&obj->versions, ver);
+			return ver;
+		}
+	} else if (obj->nversions == 1) {
+		/*
+		 * We are *not* looking for a specific version, and there is
+		 * only one version available, so we just return that.  This
+		 * is slightly complicated by the fact that the
+		 * obj->versions AVL tree is only a cache, and therefore it
+		 * might be empty.  If it is, we need to call into the
+		 * backend to fetch it.
+		 */
+		ver = avl_first(&obj->versions);
+		if (ver)
+			return ver;
+
+		/*
+		 * TODO: get the only version
+		 */
+		ver = ERR_PTR(-ENOTSUP);
+		if (!IS_ERR(ver)) {
+			avl_add(&obj->versions, ver);
+			return ver;
+		}
+	} else {
+		/*
+		 * We are *not* looking for a specific version, and there
+		 * are two or more versions.
+		 */
+		ver = ERR_PTR(-ENOTUNIQ);
+	}
+
+	mxunlock(&obj->lock);
+	obj_putref(obj);
+	return ver;
+}
+
 int objstore_getroot(struct objstore *vg, struct noid *root)
 {
 	struct objstore_vol *vol;
