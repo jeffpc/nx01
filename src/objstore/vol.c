@@ -40,6 +40,7 @@ int objstore_vol_create(struct objstore *vg, const char *path,
 
 	refcnt_init(&vol->refcnt, 1);
 
+	vol->vg = vg;
 	vol->def = backend->def;
 	vol->mode = mode;
 	vol->path = strdup(path);
