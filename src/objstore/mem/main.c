@@ -62,12 +62,10 @@ static int mem_allocobj(struct obj *obj)
 	if (!mobj)
 		return -ENOENT;
 
-	mxlock(&mobj->lock);
 	obj->nversions = avl_numnodes(&mobj->versions);
 	obj->nlink = mobj->nlink;
 	obj->private = mobj;
 	obj->ops = &obj_ops;
-	mxunlock(&mobj->lock);
 
 	return 0;
 }

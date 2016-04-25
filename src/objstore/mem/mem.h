@@ -94,7 +94,6 @@ struct memobj {
 	/* misc */
 	avl_node_t node;
 	refcnt_t refcnt;
-	pthread_mutex_t lock;
 };
 
 /* <name> -> <specific version of an obj> */

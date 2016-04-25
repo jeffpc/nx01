@@ -143,7 +143,6 @@ struct memobj *newmemobj(struct memstore *ms, uint16_t mode)
 	obj->nlink = 0;
 
 	refcnt_init(&obj->refcnt, 1);
-	mxinit(&obj->lock);
 
 	avl_create(&obj->versions, ver_cmp, sizeof(struct memver),
 		   offsetof(struct memver, node));
@@ -194,7 +193,6 @@ void freememobj(struct memobj *obj)
 		freeobjver(ver);
 
 	avl_destroy(&obj->versions);
-	mxdestroy(&obj->lock);
 	free(obj);
 }
 
@@ -208,7 +206,7 @@ struct memobj *findmemobj(struct memstore *store, const struct noid *oid)
 }
 
 /*
- * returns a specific version of an object, with the object held & locked
+ * returns a specific version of an object, with the object held
  */
 struct memver *findver_by_hndl(struct memstore *store,
 			       const struct noid *oid,
@@ -224,7 +222,6 @@ struct memver *findver_by_hndl(struct memstore *store,
 	if (!obj)
 		return ERR_PTR(-ENOENT);
 
-	mxlock(&obj->lock);
 	switch (avl_numnodes(&obj->versions)) {
 		case 0:
 			break;
@@ -242,7 +239,6 @@ struct memver *findver_by_hndl(struct memstore *store,
 			};
 
 			if (nvclock_is_null(clock)) {
-				mxunlock(&obj->lock);
 				memobj_putref(obj);
 				return ERR_PTR(-ENOTUNIQ);
 			}
@@ -254,8 +250,6 @@ struct memver *findver_by_hndl(struct memstore *store,
 			break;
 		}
 	}
-
-	mxunlock(&obj->lock);
 
 	memobj_putref(obj);
 
@@ -278,10 +272,10 @@ static void *mem_obj_open(struct objstore_vol *vol, const struct noid *oid,
 		return ver;
 
 	/*
-	 * The object associated with 'ver' is locked and held.  We unlock
-	 * it, but keep the hold on it.  Then we return the pointer to the
-	 * memver to the caller.  Then, later on when the caller calls the
-	 * close function, we release the object's hold.
+	 * The object associated with 'ver' is held.  We keep the hold on
+	 * it.  Then we return the pointer to the memver to the caller.
+	 * Then, later on when the caller calls the close function, we
+	 * release the object's hold.
 	 *
 	 * While the object version is open, we maintain this reference hold
 	 * keeping the object and the version structures in memory.  Even if
@@ -289,8 +283,6 @@ static void *mem_obj_open(struct objstore_vol *vol, const struct noid *oid,
 	 * operations use them.  This mimics the POSIX file system semantics
 	 * well.
 	 */
-
-	mxunlock(&ver->obj->lock);
 
 	return ver;
 }
@@ -325,12 +317,8 @@ static int mem_obj_getattr(struct objstore_vol *vol, void *cookie,
 	if (!vol || !cookie || !attr)
 		return -EINVAL;
 
-	mxlock(&ver->obj->lock);
-
 	*attr = ver->attrs;
 	attr->nlink = ver->obj->nlink;
-
-	mxunlock(&ver->obj->lock);
 
 	return 0;
 }
@@ -371,21 +359,15 @@ static int mem_obj_setattr(struct objstore_vol *vol, void *cookie,
 	if (!vol || !cookie || !attr)
 		return -EINVAL;
 
-	mxlock(&ver->obj->lock);
-
 	/*
 	 * first do some checks
 	 */
-	if (!NATTR_ISREG(ver->attrs.mode)) {
-		ret = -EINVAL;
-		goto err_unlock;
-	}
+	if (!NATTR_ISREG(ver->attrs.mode))
+		return -EINVAL;
 
 	/* we can't change the type of the object */
-	if ((attr->mode & NATTR_TMASK) != (ver->attrs.mode & NATTR_TMASK)) {
-		ret = -EINVAL;
-		goto err_unlock;
-	}
+	if ((attr->mode & NATTR_TMASK) != (ver->attrs.mode & NATTR_TMASK))
+		return -EINVAL;
 
 	/*
 	 * now do the updates
@@ -394,7 +376,7 @@ static int mem_obj_setattr(struct objstore_vol *vol, void *cookie,
 	if (valid & OBJ_ATTR_SIZE) {
 		ret = __truncate(ver, attr->size, true);
 		if (ret)
-			goto err_unlock;
+			return ret;
 	}
 
 	if (valid & OBJ_ATTR_MODE)
@@ -403,12 +385,7 @@ static int mem_obj_setattr(struct objstore_vol *vol, void *cookie,
 	/* TODO: do we need to tweak the versions AVL tree? */
 	nvclock_inc(ver->clock);
 
-	ret = 0;
-
-err_unlock:
-	mxunlock(&ver->obj->lock);
-
-	return ret;
+	return 0;
 }
 
 static ssize_t mem_obj_read(struct objstore_vol *vol, void *cookie,
@@ -424,12 +401,8 @@ static ssize_t mem_obj_read(struct objstore_vol *vol, void *cookie,
 	if (!len)
 		return 0;
 
-	mxlock(&ver->obj->lock);
-
-	if (NATTR_ISDIR(ver->attrs.mode)) {
-		ret = -EISDIR;
-		goto err_unlock;
-	}
+	if (NATTR_ISDIR(ver->attrs.mode))
+		return -EISDIR;
 
 	/* TODO: do we need to check for other types? */
 
@@ -442,9 +415,6 @@ static ssize_t mem_obj_read(struct objstore_vol *vol, void *cookie,
 
 	if (ret)
 		memcpy(buf, ver->blob + offset, ret);
-
-err_unlock:
-	mxunlock(&ver->obj->lock);
 
 	return ret;
 }
@@ -462,12 +432,8 @@ static ssize_t mem_obj_write(struct objstore_vol *vol, void *cookie,
 	if (!len)
 		return 0;
 
-	mxlock(&ver->obj->lock);
-
-	if (NATTR_ISDIR(ver->attrs.mode)) {
-		ret = -EISDIR;
-		goto err_unlock;
-	}
+	if (NATTR_ISDIR(ver->attrs.mode))
+		return -EISDIR;
 
 	/* TODO: do we need to check for other types? */
 
@@ -475,7 +441,7 @@ static ssize_t mem_obj_write(struct objstore_vol *vol, void *cookie,
 	if ((offset + len) > ver->attrs.size) {
 		ret = __truncate(ver, offset + len, false);
 		if (ret)
-			goto err_unlock;
+			return ret;
 	}
 
 	memcpy(ver->blob + offset, buf, len);
@@ -484,9 +450,6 @@ static ssize_t mem_obj_write(struct objstore_vol *vol, void *cookie,
 
 	 /* TODO: do we need to tweak the versions AVL tree? */
 	nvclock_inc(ver->clock);
-
-err_unlock:
-	mxunlock(&ver->obj->lock);
 
 	return ret;
 }
@@ -499,37 +462,23 @@ static int mem_obj_lookup(struct objstore_vol *vol, void *dircookie,
 	};
 	struct memver *dirver = dircookie;
 	struct memdentry *dentry;
-	int ret;
 
 	if (!vol || !dirver || !name || !child)
 		return -EINVAL;
 
-	mxlock(&dirver->obj->lock);
-
-	if (!NATTR_ISDIR(dirver->attrs.mode)) {
-		ret = -ENOTDIR;
-		goto err_unlock;
-	}
+	if (!NATTR_ISDIR(dirver->attrs.mode))
+		return -ENOTDIR;
 
 	dentry = avl_find(&dirver->dentries, &key, NULL);
-	if (!dentry) {
-		ret = -ENOENT;
-		goto err_unlock;
-	}
+	if (!dentry)
+		return -ENOENT;
 
-	mxlock(&dentry->obj->lock);
 	*child = dentry->obj->oid;
-	mxunlock(&dentry->obj->lock);
 
-	ret = 0;
-
-err_unlock:
-	mxunlock(&dirver->obj->lock);
-
-	return ret;
+	return 0;
 }
 
-/* returns a locked & referenced child object */
+/* returns a referenced child object */
 static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 				   const char *name, uint16_t mode)
 {
@@ -547,9 +496,6 @@ static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 		memobj_putref(obj);
 		return ERR_CAST(dentry);
 	}
-
-	/* lock the object */
-	mxlock(&obj->lock);
 
 	/* add the dentry to the parent */
 	avl_add(&dir->dentries, dentry);
@@ -580,42 +526,28 @@ static int mem_obj_create(struct objstore_vol *vol, void *dircookie,
 	struct memstore *ms;
 	struct memobj *childobj;
 	struct memver *dirver = dircookie;
-	int ret;
 
 	if (!vol || !dirver || !name || !child)
 		return -EINVAL;
 
 	ms = vol->private;
 
-	mxlock(&dirver->obj->lock);
+	if (!NATTR_ISDIR(dirver->attrs.mode))
+		return -ENOTDIR;
 
-	if (!NATTR_ISDIR(dirver->attrs.mode)) {
-		ret = -ENOTDIR;
-		goto err_unlock;
-	}
-
-	if (avl_find(&dirver->dentries, &key, NULL)) {
-		ret = -EEXIST;
-		goto err_unlock;
-	}
+	if (avl_find(&dirver->dentries, &key, NULL))
+		return -EEXIST;
 
 	childobj = __obj_create(ms, dirver, name, mode);
-	if (IS_ERR(childobj)) {
-		ret = PTR_ERR(childobj);
-		goto err_unlock;
-	}
+	if (IS_ERR(childobj))
+		return PTR_ERR(childobj);
 
 	/* set return oid */
 	*child = childobj->oid;
-	ret = 0;
 
-	mxunlock(&childobj->lock);
 	memobj_putref(childobj);
 
-err_unlock:
-	mxunlock(&dirver->obj->lock);
-
-	return ret;
+	return 0;
 }
 
 static int __obj_unlink(struct memstore *store, struct memver *dir,
@@ -625,8 +557,6 @@ static int __obj_unlink(struct memstore *store, struct memver *dir,
 
 	/* get a reference for us */
 	child = memobj_getref(dentry->obj);
-
-	mxlock(&child->lock);
 
 	/* remove the dentry from the directory */
 	avl_remove(&dir->dentries, dentry);
@@ -644,8 +574,7 @@ static int __obj_unlink(struct memstore *store, struct memver *dir,
 		memobj_putref(child);
 	}
 
-	/* unlock & put our ref */
-	mxunlock(&child->lock);
+	/* put our ref */
 	memobj_putref(child);
 
 	/*
@@ -667,33 +596,21 @@ static int mem_obj_unlink(struct objstore_vol *vol, void *dircookie,
 	struct memdentry *dentry;
 	struct memver *dirver = dircookie;
 	struct memstore *ms;
-	int ret;
 
 	if (!vol || !dirver || !name)
 		return -EINVAL;
 
 	ms = vol->private;
 
-	mxlock(&dirver->obj->lock);
-
-	if (!NATTR_ISDIR(dirver->attrs.mode)) {
-		ret = -ENOTDIR;
-		goto err_unlock;
-	}
+	if (!NATTR_ISDIR(dirver->attrs.mode))
+		return -ENOTDIR;
 
 	dentry = avl_find(&dirver->dentries, &key, NULL);
-	if (!dentry) {
-		ret = -ENOENT;
-		goto err_unlock;
-	}
+	if (!dentry)
+		return -ENOENT;
 
 	/* ok, we got the dentry - remove it */
-	ret = __obj_unlink(ms, dirver, dentry);
-
-err_unlock:
-	mxunlock(&dirver->obj->lock);
-
-	return ret;
+	return __obj_unlink(ms, dirver, dentry);
 }
 
 const struct obj_ops obj_ops = {
