@@ -74,17 +74,27 @@ int objstore_init(void)
 		goto err;
 	}
 
+	objver_cache = umem_cache_create("objver", sizeof(struct objver),
+					 0, NULL, NULL, NULL, NULL, NULL, 0);
+	if (!objver_cache) {
+		ret = -ENOMEM;
+		goto err_obj;
+	}
+
 	ret = vg_init();
 	if (ret)
-		goto err_obj;
+		goto err_objver;
 
 	ret = load_backend(&mem_backend, "mem");
 	if (ret)
-		goto err_obj;
+		goto err_objver;
 
 	backend = &mem_backend;
 
 	return 0;
+
+err_objver:
+	umem_cache_destroy(objver_cache);
 
 err_obj:
 	umem_cache_destroy(obj_cache);

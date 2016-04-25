@@ -57,8 +57,11 @@ REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, vol_free)
 
 /* internal object management */
 extern umem_cache_t *obj_cache;
+extern umem_cache_t *objver_cache;
 extern struct obj *allocobj(void);
 extern void freeobj(struct obj *obj);
+extern struct objver *allocobjver(void);
+extern void freeobjver(struct objver *ver);
 
 REFCNT_INLINE_FXNS(struct obj, obj, refcnt, freeobj);
 

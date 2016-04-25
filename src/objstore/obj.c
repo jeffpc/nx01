@@ -20,12 +20,15 @@
  * SOFTWARE.
  */
 
+#include <stddef.h>
+
 #include <jeffpc/error.h>
 
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
 umem_cache_t *obj_cache;
+umem_cache_t *objver_cache;
 
 void *vol_open(struct objstore_vol *vol, const struct noid *oid,
 	       const struct nvclock *clock)
@@ -132,6 +135,14 @@ int vol_unlink(struct objstore_vol *vol, void *dircookie, const char *name)
 	return vol->def->obj_ops->unlink(vol, dircookie, name);
 }
 
+static int ver_cmp(const void *va, const void *vb)
+{
+	const struct objver *a = va;
+	const struct objver *b = vb;
+
+	return nvclock_cmp_total(a->clock, b->clock);
+}
+
 /*
  * Allocate a new generic object structure.
  */
@@ -145,6 +156,10 @@ struct obj *allocobj(void)
 
 	memset(&obj->oid, 0, sizeof(obj->oid));
 
+	avl_create(&obj->versions, ver_cmp, sizeof(struct objver),
+		   offsetof(struct objver, node));
+
+	obj->nversions = 0;
 	obj->nlink = 0;
 	obj->private = NULL;
 	obj->state = OBJ_STATE_NEW;
@@ -167,5 +182,49 @@ void freeobj(struct obj *obj)
 
 	mxdestroy(&obj->lock);
 	vol_putref(obj->vol);
+	avl_destroy(&obj->versions);
 	umem_cache_free(obj_cache, obj);
+}
+
+/*
+ * Allocate a new generic object version structure.
+ */
+struct objver *allocobjver(void)
+{
+	struct objver *ver;
+	int ret;
+
+	ver = umem_cache_alloc(objver_cache, 0);
+	if (!ver)
+		return ERR_PTR(-ENOMEM);
+
+	ver->clock = nvclock_alloc();
+	if (!ver->clock) {
+		ret = -ENOMEM;
+		goto err;
+	}
+
+	memset(&ver->attrs, 0, sizeof(ver->attrs));
+
+	ver->private = NULL;
+	ver->obj = NULL;
+
+	return ver;
+
+err:
+	umem_cache_free(objver_cache, ver);
+
+	return ERR_PTR(ret);
+}
+
+/*
+ * Free a generic object version structure.
+ */
+void freeobjver(struct objver *ver)
+{
+	if (!ver)
+		return;
+
+	nvclock_free(ver->clock);
+	umem_cache_free(objver_cache, ver);
 }

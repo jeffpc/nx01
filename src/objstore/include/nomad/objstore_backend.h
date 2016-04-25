@@ -38,6 +38,8 @@ struct obj {
 	struct noid oid;
 
 	/* value */
+	avl_tree_t versions;	/* cached versions */
+	uint64_t nversions;	/* number of versions */
 	uint32_t nlink;		/* file link count */
 	void *private;
 
@@ -49,6 +51,24 @@ struct obj {
 	/* constant for the lifetime of the object */
 	struct objstore_vol *vol;
 	const struct obj_ops *ops;
+};
+
+struct objver {
+	/* key */
+	struct nvclock *clock;
+
+	/* value */
+	/*
+	 * Everything in the attrs structure is used for attribute storage
+	 * except for:
+	 *   - nlink: use nlink field in struct obj
+	 */
+	struct nattr attrs;
+	void *private;
+
+	/* misc */
+	struct obj *obj;
+	avl_node_t node;
 };
 
 struct obj_ops {
