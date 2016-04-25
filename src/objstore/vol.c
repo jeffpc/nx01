@@ -25,17 +25,6 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-int vol_getroot(struct objstore_vol *vol, struct noid *root)
-{
-	if (!vol || !root)
-		return -EINVAL;
-
-	if (!vol->ops || !vol->ops->getroot)
-		return -ENOTSUP;
-
-	return vol->ops->getroot(vol, root);
-}
-
 int objstore_vol_create(struct objstore *vg, const char *path,
 			enum objstore_mode mode)
 {

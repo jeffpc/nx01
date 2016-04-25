@@ -55,9 +55,6 @@ extern void vol_free(struct objstore_vol *vol);
 
 REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, vol_free)
 
-/* wrappers for volume ops */
-extern int vol_getroot(struct objstore_vol *vol, struct noid *root);
-
 /* wrappers for object ops */
 extern void *vol_open(struct objstore_vol *vol, const struct noid *oid,
 		      const struct nvclock *clock);

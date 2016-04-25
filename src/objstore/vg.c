@@ -126,7 +126,10 @@ int objstore_getroot(struct objstore *vg, struct noid *root)
 	if (!vol)
 		return -ENXIO;
 
-	ret = vol_getroot(vol, root);
+	if (vol->ops && vol->ops->getroot)
+		ret = vol->ops->getroot(vol, root);
+	else
+		ret = -ENOTSUP;
 
 	vol_putref(vol);
 
