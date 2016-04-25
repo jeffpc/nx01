@@ -23,7 +23,33 @@
 #ifndef __NOMAD_OBJSTORE_BACKEND_H
 #define __NOMAD_OBJSTORE_BACKEND_H
 
+#include <sys/avl.h>
+
 #include <nomad/objstore.h>
+
+enum obj_state {
+	OBJ_STATE_NEW = 0,	/* newly allocated */
+	OBJ_STATE_LIVE,		/* fully initialized */
+	OBJ_STATE_DEAD,		/* initialization failed */
+};
+
+struct obj {
+	/* key */
+	struct noid oid;
+
+	/* value */
+	uint32_t nlink;		/* file link count */
+	void *private;
+
+	/* misc */
+	enum obj_state state;
+	refcnt_t refcnt;
+	pthread_mutex_t lock;
+
+	/* constant for the lifetime of the object */
+	struct objstore_vol *vol;
+	const struct obj_ops *ops;
+};
 
 struct obj_ops {
 	int (*getversions)();

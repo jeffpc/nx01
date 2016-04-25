@@ -25,6 +25,8 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
+umem_cache_t *obj_cache;
+
 void *vol_open(struct objstore_vol *vol, const struct noid *oid,
 	       const struct nvclock *clock)
 {
@@ -128,4 +130,42 @@ int vol_unlink(struct objstore_vol *vol, void *dircookie, const char *name)
 		return -ENOTSUP;
 
 	return vol->def->obj_ops->unlink(vol, dircookie, name);
+}
+
+/*
+ * Allocate a new generic object structure.
+ */
+struct obj *allocobj(void)
+{
+	struct obj *obj;
+
+	obj = umem_cache_alloc(obj_cache, 0);
+	if (!obj)
+		return NULL;
+
+	memset(&obj->oid, 0, sizeof(obj->oid));
+
+	obj->nlink = 0;
+	obj->private = NULL;
+	obj->state = OBJ_STATE_NEW;
+	obj->vol = NULL;
+	obj->ops = NULL;
+
+	refcnt_init(&obj->refcnt, 1);
+	mxinit(&obj->lock);
+
+	return obj;
+}
+
+/*
+ * Free a generic object structure.
+ */
+void freeobj(struct obj *obj)
+{
+	if (!obj)
+		return;
+
+	mxdestroy(&obj->lock);
+	vol_putref(obj->vol);
+	umem_cache_free(obj_cache, obj);
 }

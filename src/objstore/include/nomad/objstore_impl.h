@@ -55,6 +55,13 @@ extern void vol_free(struct objstore_vol *vol);
 
 REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, vol_free)
 
+/* internal object management */
+extern umem_cache_t *obj_cache;
+extern struct obj *allocobj(void);
+extern void freeobj(struct obj *obj);
+
+REFCNT_INLINE_FXNS(struct obj, obj, refcnt, freeobj);
+
 /* wrappers for object ops */
 extern void *vol_open(struct objstore_vol *vol, const struct noid *oid,
 		      const struct nvclock *clock);
