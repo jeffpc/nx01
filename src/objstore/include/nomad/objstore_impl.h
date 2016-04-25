@@ -66,9 +66,6 @@ extern void freeobjver(struct objver *ver);
 REFCNT_INLINE_FXNS(struct obj, obj, refcnt, freeobj);
 
 /* wrappers for object ops */
-extern void *vol_open(struct objstore_vol *vol, const struct noid *oid,
-		      const struct nvclock *clock);
-extern int vol_close(struct objstore_vol *vol, void *cookie);
 extern int vol_getattr(struct objstore_vol *vol, void *cookie,
 		       struct nattr *attr);
 extern int vol_setattr(struct objstore_vol *vol, void *cookie,

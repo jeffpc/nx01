@@ -389,57 +389,105 @@ int objstore_getroot(struct objstore *vg, struct noid *root)
 void *objstore_open(struct objstore *vg, const struct noid *oid,
 		    const struct nvclock *clock)
 {
-	struct objstore_vol *vol;
+	struct objver *objver;
+	struct obj *obj;
 	void *cookie;
 
 	if (!vg || !oid || !clock)
 		return ERR_PTR(-EINVAL);
 
-	vol = findvol(vg);
-	if (!vol)
-		return ERR_PTR(-ENXIO);
+	objver = getver(vg, oid, clock);
+	if (IS_ERR(objver))
+		return objver;
 
-	cookie = vol_open(vol, oid, clock);
+	obj = objver->obj;
 
-	vol_putref(vol);
+	if (obj->ops && obj->ops->open)
+		cookie = obj->ops->open(obj->vol, oid, clock);
+	else
+		cookie = NULL;
 
-	return cookie;
+	if (IS_ERR(cookie)) {
+		mxunlock(&obj->lock);
+		obj_putref(obj);
+		return cookie;
+	}
+
+	obj->open_cookie = cookie;
+
+	/*
+	 * The object associated with 'objver' is locked and held.  We
+	 * unlock it, but keep the hold on it.  Then we return the pointer
+	 * to the objver to the caller.  Then, later on when the caller
+	 * calls the close function, we release the object's hold.
+	 *
+	 * While the object version is open, we maintain this reference hold
+	 * keeping the object and the version structures in memory.  Even if
+	 * all links are removed, we keep the structures around and let
+	 * operations use them.  This mimics the POSIX file system semantics
+	 * well.
+	 */
+
+	mxunlock(&obj->lock);
+
+	return objver;
 }
 
 int objstore_close(struct objstore *vg, void *cookie)
 {
-	struct objstore_vol *vol;
+	struct objver *objver = cookie;
+	struct obj *obj;
 	int ret;
 
-	if (!vg)
+	if (!vg || !objver)
 		return -EINVAL;
 
-	vol = findvol(vg);
-	if (!vol)
+	if (vg != objver->obj->vol->vg)
 		return -ENXIO;
 
-	ret = vol_close(vol, cookie);
+	obj = objver->obj;
 
-	vol_putref(vol);
+	/*
+	 * Yes, we are dereferencing the pointer that the caller supplied.
+	 * Yes, this is safe.  The only reason this is safe is because we
+	 * rely on the caller to keep the pointer safe.  Specifically, we
+	 * assume that the caller didn't transmit the pointer over the
+	 * network.
+	 */
+
+	mxlock(&obj->lock);
+	if (obj->ops && obj->ops->close)
+		ret = obj->ops->close(obj->vol, obj->open_cookie);
+	else
+		ret = 0;
+
+	if (!ret)
+		obj->open_cookie = NULL;
+	mxunlock(&obj->lock);
+
+	/* release the reference obtained in objstore_open() */
+	obj_putref(obj);
 
 	return ret;
 }
 
 int objstore_getattr(struct objstore *vg, void *cookie, struct nattr *attr)
 {
-	struct objstore_vol *vol;
+	struct objver *objver = cookie;
+	struct obj *obj;
 	int ret;
 
-	if (!vg || !attr)
+	if (!vg || !objver || !attr)
 		return -EINVAL;
 
-	vol = findvol(vg);
-	if (!vol)
+	if (vg != objver->obj->vol->vg)
 		return -ENXIO;
 
-	ret = vol_getattr(vol, cookie, attr);
+	obj = objver->obj;
 
-	vol_putref(vol);
+	mxlock(&obj->lock);
+	ret = vol_getattr(obj->vol, obj->open_cookie, attr);
+	mxunlock(&obj->lock);
 
 	return ret;
 }
@@ -447,22 +495,24 @@ int objstore_getattr(struct objstore *vg, void *cookie, struct nattr *attr)
 int objstore_setattr(struct objstore *vg, void *cookie, const struct nattr *attr,
 		     const unsigned valid)
 {
-	struct objstore_vol *vol;
+	struct objver *objver = cookie;
+	struct obj *obj;
 	int ret;
 
-	if (!vg || !attr)
+	if (!vg || !objver || !attr)
 		return -EINVAL;
 
-	vol = findvol(vg);
-	if (!vol)
+	if (vg != objver->obj->vol->vg)
 		return -ENXIO;
 
+	obj = objver->obj;
+
+	mxlock(&obj->lock);
 	if (!valid)
 		ret = 0;
 	else
-		ret = vol_setattr(vol, cookie, attr, valid);
-
-	vol_putref(vol);
+		ret = vol_setattr(obj->vol, obj->open_cookie, attr, valid);
+	mxunlock(&obj->lock);
 
 	return ret;
 }
@@ -470,22 +520,24 @@ int objstore_setattr(struct objstore *vg, void *cookie, const struct nattr *attr
 ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf, size_t len,
 		      uint64_t offset)
 {
-	struct objstore_vol *vol;
+	struct objver *objver = cookie;
+	struct obj *obj;
 	ssize_t ret;
 
-	if (!vg || !buf)
+	if (!vg || !objver || !buf)
 		return -EINVAL;
 
 	if (len > (SIZE_MAX / 2))
 		return -EOVERFLOW;
 
-	vol = findvol(vg);
-	if (!vol)
+	if (vg != objver->obj->vol->vg)
 		return -ENXIO;
 
-	ret = vol_read(vol, cookie, buf, len, offset);
+	obj = objver->obj;
 
-	vol_putref(vol);
+	mxlock(&obj->lock);
+	ret = vol_read(obj->vol, obj->open_cookie, buf, len, offset);
+	mxunlock(&obj->lock);
 
 	return ret;
 }
@@ -493,22 +545,24 @@ ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf, size_t len,
 ssize_t objstore_write(struct objstore *vg, void *cookie, const void *buf,
 		       size_t len, uint64_t offset)
 {
-	struct objstore_vol *vol;
+	struct objver *objver = cookie;
+	struct obj *obj;
 	ssize_t ret;
 
-	if (!vg || !buf)
+	if (!vg || !objver || !buf)
 		return -EINVAL;
 
 	if (len > (SIZE_MAX / 2))
 		return -EOVERFLOW;
 
-	vol = findvol(vg);
-	if (!vol)
+	if (vg != objver->obj->vol->vg)
 		return -ENXIO;
 
-	ret = vol_write(vol, cookie, buf, len, offset);
+	obj = objver->obj;
 
-	vol_putref(vol);
+	mxlock(&obj->lock);
+	ret = vol_write(obj->vol, obj->open_cookie, buf, len, offset);
+	mxunlock(&obj->lock);
 
 	return ret;
 }
@@ -516,22 +570,24 @@ ssize_t objstore_write(struct objstore *vg, void *cookie, const void *buf,
 int objstore_lookup(struct objstore *vg, void *dircookie, const char *name,
 		    struct noid *child)
 {
-	struct objstore_vol *vol;
+	struct objver *dirver = dircookie;
+	struct obj *dir;
 	int ret;
 
 	cmn_err(CE_DEBUG, "%s(%p, %p, '%s', %p)", __func__, vg, dircookie,
 		name, child);
 
-	if (!vg || !name || !child)
+	if (!vg || !dirver || !name || !child)
 		return -EINVAL;
 
-	vol = findvol(vg);
-	if (!vol)
+	if (vg != dirver->obj->vol->vg)
 		return -ENXIO;
 
-	ret = vol_lookup(vol, dircookie, name, child);
+	dir = dirver->obj;
 
-	vol_putref(vol);
+	mxlock(&dir->lock);
+	ret = vol_lookup(dir->vol, dir->open_cookie, name, child);
+	mxunlock(&dir->lock);
 
 	return ret;
 }
@@ -539,43 +595,47 @@ int objstore_lookup(struct objstore *vg, void *dircookie, const char *name,
 int objstore_create(struct objstore *vg, void *dircookie, const char *name,
 		    uint16_t mode, struct noid *child)
 {
-	struct objstore_vol *vol;
+	struct objver *dirver = dircookie;
+	struct obj *dir;
 	int ret;
 
 	cmn_err(CE_DEBUG, "%s(%p, %p, '%s', %#o, %p)", __func__, vg,
 		dircookie, name, mode, child);
 
-	if (!vg || !name || !child)
+	if (!vg || !dirver || !name || !child)
 		return -EINVAL;
 
-	vol = findvol(vg);
-	if (!vol)
+	if (vg != dirver->obj->vol->vg)
 		return -ENXIO;
 
-	ret = vol_create(vol, dircookie, name, mode, child);
+	dir = dirver->obj;
 
-	vol_putref(vol);
+	mxlock(&dir->lock);
+	ret = vol_create(dir->vol, dir->open_cookie, name, mode, child);
+	mxunlock(&dir->lock);
 
 	return ret;
 }
 
 int objstore_unlink(struct objstore *vg, void *dircookie, const char *name)
 {
-	struct objstore_vol *vol;
+	struct objver *dirver = dircookie;
+	struct obj *dir;
 	int ret;
 
 	cmn_err(CE_DEBUG, "%s(%p, %p, '%s')", __func__, vg, dircookie, name);
 
-	if (!vg || !name)
+	if (!vg || !dirver || !name)
 		return -EINVAL;
 
-	vol = findvol(vg);
-	if (!vol)
+	if (vg != dirver->obj->vol->vg)
 		return -ENXIO;
 
-	ret = vol_unlink(vol, dircookie, name);
+	dir = dirver->obj;
 
-	vol_putref(vol);
+	mxlock(&dir->lock);
+	ret = vol_unlink(dir->vol, dir->open_cookie, name);
+	mxunlock(&dir->lock);
 
 	return ret;
 }
