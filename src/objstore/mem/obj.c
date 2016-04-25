@@ -256,6 +256,22 @@ struct memver *findver_by_hndl(struct memstore *store,
 	return ERR_PTR(-ENOENT);
 }
 
+static int mem_obj_getversion(struct objver *ver)
+{
+	struct memstore *ms = ver->obj->vol->private;
+	struct memver *mver;
+
+	mver = findver_by_hndl(ms, &ver->obj->oid, ver->clock);
+	if (IS_ERR(mver))
+		return PTR_ERR(mver);
+
+	ver->private = mver;
+
+	ver->attrs = mver->attrs;
+
+	return 0;
+}
+
 static void *mem_obj_open(struct objstore_vol *vol, const struct noid *oid,
 			  const struct nvclock *clock)
 {
@@ -614,6 +630,7 @@ static int mem_obj_unlink(struct objstore_vol *vol, void *dircookie,
 }
 
 const struct obj_ops obj_ops = {
+	.getversion = mem_obj_getversion,
 	.open    = mem_obj_open,
 	.close   = mem_obj_close,
 	.getattr = mem_obj_getattr,
