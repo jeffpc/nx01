@@ -47,8 +47,42 @@ static int mem_vol_getroot(struct objstore_vol *store, struct noid *root)
 	return 0;
 }
 
+static int mem_allocobj(struct obj *obj)
+{
+	struct memstore *ms = obj->vol->private;
+	struct memobj key = {
+		.oid = obj->oid,
+	};
+	struct memobj *mobj;
+
+	mxlock(&ms->lock);
+	mobj = memobj_getref(avl_find(&ms->objs, &key, NULL));
+	mxunlock(&ms->lock);
+
+	if (!mobj)
+		return -ENOENT;
+
+	mxlock(&mobj->lock);
+	obj->nversions = avl_numnodes(&mobj->versions);
+	obj->nlink = mobj->nlink;
+	obj->private = mobj;
+	obj->ops = &obj_ops;
+	mxunlock(&mobj->lock);
+
+	return 0;
+}
+
+static void mem_freeobj(struct obj *obj)
+{
+	struct memobj *mobj = obj->private;
+
+	memobj_putref(mobj);
+}
+
 static const struct vol_ops vol_ops = {
 	.getroot = mem_vol_getroot,
+	.allocobj = mem_allocobj,
+	.freeobj = mem_freeobj,
 };
 
 static int objcmp(const void *va, const void *vb)
