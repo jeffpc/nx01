@@ -73,7 +73,7 @@ struct objver {
 };
 
 struct obj_ops {
-	int (*getversions)();
+	int (*getversion)(struct objver *ver);
 
 	/* open objects must be closed */
 	void *(*open)(struct objstore_vol *vol, const struct noid *oid,

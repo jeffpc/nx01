@@ -255,6 +255,37 @@ err:
 }
 
 /*
+ * Fetch a version from the backend, adding it to the cached versions tree.
+ */
+static struct objver *__fetch_ver(struct obj *obj, const struct nvclock *clock)
+{
+	struct objver *ver;
+	int ret;
+
+	if (!obj || !obj->ops || !obj->ops->getversion)
+		return ERR_PTR(-ENOTSUP);
+
+	ver = allocobjver();
+	if (IS_ERR(ver))
+		return ver;
+
+	if (clock)
+		nvclock_copy(ver->clock, clock);
+
+	ver->obj = obj;
+
+	ret = obj->ops->getversion(ver);
+	if (ret) {
+		freeobjver(ver);
+		return ERR_PTR(ret);
+	}
+
+	avl_add(&obj->versions, ver);
+
+	return ver;
+}
+
+/*
  * Given a vg, an oid, and a vector clock, find the corresponding object
  * version structure.
  *
@@ -292,18 +323,15 @@ static struct objver *getver(struct objstore *vg, const struct noid *oid,
 			.clock = (struct nvclock *) clock,
 		};
 
+		/* check the cache */
 		ver = avl_find(&obj->versions, &key, NULL);
 		if (ver)
 			return ver;
 
-		/*
-		 * TODO: try to fetch the version from the backend
-		 */
-		ver = ERR_PTR(-ENOTSUP);
-		if (!IS_ERR(ver)) {
-			avl_add(&obj->versions, ver);
+		/* try to fetch the version from the backend */
+		ver = __fetch_ver(obj, clock);
+		if (!IS_ERR(ver))
 			return ver;
-		}
 	} else if (obj->nversions == 1) {
 		/*
 		 * We are *not* looking for a specific version, and there is
@@ -313,18 +341,16 @@ static struct objver *getver(struct objstore *vg, const struct noid *oid,
 		 * might be empty.  If it is, we need to call into the
 		 * backend to fetch it.
 		 */
+		ASSERT3U(avl_numnodes(&obj->versions), <=, 1);
+
 		ver = avl_first(&obj->versions);
 		if (ver)
 			return ver;
 
-		/*
-		 * TODO: get the only version
-		 */
-		ver = ERR_PTR(-ENOTSUP);
-		if (!IS_ERR(ver)) {
-			avl_add(&obj->versions, ver);
+		/* try to fetch the version from the backend */
+		ver = __fetch_ver(obj, NULL);
+		if (!IS_ERR(ver))
 			return ver;
-		}
 	} else {
 		/*
 		 * We are *not* looking for a specific version, and there
