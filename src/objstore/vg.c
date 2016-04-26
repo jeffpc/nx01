@@ -533,6 +533,10 @@ ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf, size_t len,
 	if (vg != objver->obj->vol->vg)
 		return -ENXIO;
 
+	/* nothing to do */
+	if (!len)
+		return 0;
+
 	obj = objver->obj;
 
 	mxlock(&obj->lock);
@@ -561,6 +565,10 @@ ssize_t objstore_write(struct objstore *vg, void *cookie, const void *buf,
 
 	if (vg != objver->obj->vol->vg)
 		return -ENXIO;
+
+	/* nothing to do */
+	if (!len)
+		return 0;
 
 	obj = objver->obj;
 

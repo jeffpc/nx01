@@ -413,10 +413,6 @@ static ssize_t mem_obj_read(struct objstore_vol *vol, void *cookie,
 	if (!vol || !cookie || !buf)
 		return -EINVAL;
 
-	/* nothing to do */
-	if (!len)
-		return 0;
-
 	if (offset >= ver->attrs.size)
 		ret = 0;
 	else if ((offset + len) > ver->attrs.size)
@@ -438,10 +434,6 @@ static ssize_t mem_obj_write(struct objstore_vol *vol, void *cookie,
 
 	if (!vol || !cookie || !buf)
 		return -EINVAL;
-
-	/* nothing to do */
-	if (!len)
-		return 0;
 
 	/* object will grow - need to resize the blob buffer */
 	if ((offset + len) > ver->attrs.size) {
