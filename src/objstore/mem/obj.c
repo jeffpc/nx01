@@ -395,23 +395,20 @@ static int __truncate(struct objver *ver, uint64_t newsize, bool zero)
 	return 0;
 }
 
-static int mem_obj_setattr(struct objstore_vol *vol, void *cookie,
-			   const struct nattr *attr, const unsigned valid)
+static int mem_obj_setattr(struct objver *ver, const struct nattr *attr,
+			   const unsigned valid)
 {
-	struct memver *ver = cookie;
 	int ret;
-
-	if (!vol || !cookie || !attr)
-		return -EINVAL;
 
 	/*
 	 * first do some checks
 	 */
-	if (!NATTR_ISREG(ver->attrs.mode))
+	if ((valid & OBJ_ATTR_SIZE) && !NATTR_ISREG(ver->attrs.mode))
 		return -EINVAL;
 
 	/* we can't change the type of the object */
-	if ((attr->mode & NATTR_TMASK) != (ver->attrs.mode & NATTR_TMASK))
+	if ((valid & OBJ_ATTR_MODE) &&
+	    (attr->mode & NATTR_TMASK) != (ver->attrs.mode & NATTR_TMASK))
 		return -EINVAL;
 
 	/*
@@ -429,6 +426,8 @@ static int mem_obj_setattr(struct objstore_vol *vol, void *cookie,
 
 	/* TODO: do we need to tweak the versions AVL tree? */
 	nvclock_inc(ver->clock);
+
+	sync_ver_to_mver(ver);
 
 	return 0;
 }

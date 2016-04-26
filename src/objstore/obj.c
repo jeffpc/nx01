@@ -41,18 +41,6 @@ int vol_getattr(struct objstore_vol *vol, void *cookie, struct nattr *attr)
 	return vol->def->obj_ops->getattr(vol, cookie, attr);
 }
 
-int vol_setattr(struct objstore_vol *vol, void *cookie,
-		const struct nattr *attr, const unsigned valid)
-{
-	if (!vol || !attr)
-		return -EINVAL;
-
-	if (!vol->def->obj_ops || !vol->def->obj_ops->setattr)
-		return -ENOTSUP;
-
-	return vol->def->obj_ops->setattr(vol, cookie, attr, valid);
-}
-
 int vol_lookup(struct objstore_vol *vol, void *dircookie,
 	       const char *name, struct noid *child)
 {

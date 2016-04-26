@@ -507,11 +507,15 @@ int objstore_setattr(struct objstore *vg, void *cookie, const struct nattr *attr
 
 	obj = objver->obj;
 
-	mxlock(&obj->lock);
+	if (!obj->ops || !obj->ops->setattr)
+		return -ENOTSUP;
+
+	/* nothing to do */
 	if (!valid)
-		ret = 0;
-	else
-		ret = vol_setattr(obj->vol, obj->open_cookie, attr, valid);
+		return 0;
+
+	mxlock(&obj->lock);
+	ret = obj->ops->setattr(objver, attr, valid);
 	mxunlock(&obj->lock);
 
 	return ret;
