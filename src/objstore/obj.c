@@ -30,17 +30,6 @@
 umem_cache_t *obj_cache;
 umem_cache_t *objver_cache;
 
-int vol_unlink(struct objstore_vol *vol, void *dircookie, const char *name)
-{
-	if (!vol || !name)
-		return -EINVAL;
-
-	if (!vol->def->obj_ops || !vol->def->obj_ops->unlink)
-		return -ENOTSUP;
-
-	return vol->def->obj_ops->unlink(vol, dircookie, name);
-}
-
 static int ver_cmp(const void *va, const void *vb)
 {
 	const struct objver *a = va;

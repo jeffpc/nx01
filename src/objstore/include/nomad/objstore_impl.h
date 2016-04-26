@@ -65,8 +65,4 @@ extern void freeobjver(struct objver *ver);
 
 REFCNT_INLINE_FXNS(struct obj, obj, refcnt, freeobj);
 
-/* wrappers for object ops */
-extern int vol_unlink(struct objstore_vol *vol, void *dircookie,
-		      const char *name);
-
 #endif

@@ -260,16 +260,25 @@ struct memver *findver_by_hndl(struct memstore *store,
  * We don't do I/O, instead we keep everything in memory.  This however
  * means that instead of doing I/O (which would write generic object and
  * object version state to disk) we need to copy the generic state into our
- * private backend structures.
+ * private backend structures.  We accomplish this using two helper
+ * functions:
+ *
+ *   sync_obj_to_mobj
+ *   sync_ver_to_mver
  */
+static void sync_obj_to_mobj(struct obj *obj)
+{
+	struct memobj *mobj = obj->private;
+
+	mobj->nlink = obj->nlink;
+}
+
 static void sync_ver_to_mver(struct objver *ver)
 {
-	struct memobj *mobj = ver->obj->private;
 	struct memver *mver = ver->private;
-	struct obj *obj = ver->obj;
 
 	/* object */
-	mobj->nlink = obj->nlink;
+	sync_obj_to_mobj(ver->obj);
 
 	/* version */
 	nvclock_copy(mver->clock, ver->clock);
@@ -561,13 +570,10 @@ static int mem_obj_create(struct objver *dirver, const char *name,
 	return 0;
 }
 
-static int __obj_unlink(struct memstore *store, struct memver *dir,
-			struct memdentry *dentry)
+static void __obj_unlink(struct memver *dir, struct memdentry *dentry,
+			 struct obj *child)
 {
-	struct memobj *child;
-
-	/* get a reference for us */
-	child = memobj_getref(dentry->obj);
+	VERIFY3P(child->private, ==, dentry->obj);
 
 	/* remove the dentry from the directory */
 	avl_remove(&dir->dentries, dentry);
@@ -575,50 +581,37 @@ static int __obj_unlink(struct memstore *store, struct memver *dir,
 	/* free the dentry */
 	freedentry(dentry);
 
-	/* if there are no more links to the child obj, free it */
-	if (!--child->nlink) {
-		mxlock(&store->lock);
-		avl_remove(&store->objs, child);
-		mxunlock(&store->lock);
+	child->nlink--;
 
-		/* put the global list's ref */
-		memobj_putref(child);
-	}
+	sync_obj_to_mobj(child);
+}
 
-	/* put our ref */
-	memobj_putref(child);
+static int mem_obj_unlink(struct objver *dirver, const char *name,
+			  struct obj *child)
+{
+	const struct memdentry key = {
+		.name = name,
+	};
+	struct memver *dirmver = dirver->private;
+	struct memdentry *dentry;
+
+	dentry = avl_find(&dirmver->dentries, &key, NULL);
+	if (!dentry)
+		return -ENOENT;
+
+	/* ok, we got the dentry - remove it */
+	__obj_unlink(dirmver, dentry, child);
 
 	/*
 	 * We changed the dir, so we need to up the version.
 	 *
 	 * TODO: do we need to tweak the versions AVL tree?
 	 */
-	nvclock_inc(dir->clock);
+	nvclock_inc(dirver->clock);
+
+	sync_ver_to_mver(dirver);
 
 	return 0;
-}
-
-static int mem_obj_unlink(struct objstore_vol *vol, void *dircookie,
-			  const char *name)
-{
-	const struct memdentry key = {
-		.name = name,
-	};
-	struct memdentry *dentry;
-	struct memver *dirver = dircookie;
-	struct memstore *ms;
-
-	if (!vol || !dirver || !name)
-		return -EINVAL;
-
-	ms = vol->private;
-
-	dentry = avl_find(&dirver->dentries, &key, NULL);
-	if (!dentry)
-		return -ENOENT;
-
-	/* ok, we got the dentry - remove it */
-	return __obj_unlink(ms, dirver, dentry);
 }
 
 const struct obj_ops obj_ops = {

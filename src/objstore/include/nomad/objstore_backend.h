@@ -101,8 +101,8 @@ struct obj_ops {
 		      struct noid *child);
 	int (*create)(struct objver *dirver, const char *name,
 		      uint16_t mode, struct noid *child);
-	int (*unlink)(struct objstore_vol *vol, void *dircookie,
-		      const char *name);
+	int (*unlink)(struct objver *dirver, const char *name,
+		      struct obj *child);
 
 	/*
 	 * Called just before the generic object is freed.

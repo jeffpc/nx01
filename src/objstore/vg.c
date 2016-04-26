@@ -658,6 +658,18 @@ int objstore_create(struct objstore *vg, void *dircookie, const char *name,
 	return ret;
 }
 
+static struct obj *getobj_in_dir(struct objver *dirver, const char *name)
+{
+	struct noid child_oid;
+	int ret;
+
+	ret = dirver->obj->ops->lookup(dirver, name, &child_oid);
+	if (ret)
+		return ERR_PTR(ret);
+
+	return getobj(dirver->obj->vol->vg, &child_oid);
+}
+
 int objstore_unlink(struct objstore *vg, void *dircookie, const char *name)
 {
 	struct objver *dirver = dircookie;
@@ -674,11 +686,25 @@ int objstore_unlink(struct objstore *vg, void *dircookie, const char *name)
 
 	dir = dirver->obj;
 
+	if (!dir->ops || !dir->ops->unlink || !dir->ops->lookup)
+		return -ENOTSUP;
+
 	mxlock(&dir->lock);
-	if (!NATTR_ISDIR(dirver->attrs.mode))
+	if (!NATTR_ISDIR(dirver->attrs.mode)) {
 		ret = -ENOTDIR;
-	else
-		ret = vol_unlink(dir->vol, dir->open_cookie, name);
+	} else {
+		struct obj *child;
+
+		child = getobj_in_dir(dirver, name);
+		if (!IS_ERR(child)) {
+			ret = dir->ops->unlink(dirver, name, child);
+
+			mxunlock(&child->lock);
+			obj_putref(child);
+		} else {
+			ret = PTR_ERR(child);
+		}
+	}
 	mxunlock(&dir->lock);
 
 	return ret;
