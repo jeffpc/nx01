@@ -77,9 +77,8 @@ struct obj_ops {
 	int (*getversion)(struct objver *ver);
 
 	/* open objects must be closed */
-	void *(*open)(struct objstore_vol *vol, const struct noid *oid,
-		      const struct nvclock *clock);
-	int (*close)(struct objstore_vol *vol, void *cookie);
+	int (*open)(struct objver *ver);
+	int (*close)(struct objver *ver);
 
 	/* cloned objects must be committed/aborted */
 	int (*clone)();		/*

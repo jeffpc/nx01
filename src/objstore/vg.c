@@ -391,7 +391,7 @@ void *objstore_open(struct objstore *vg, const struct noid *oid,
 {
 	struct objver *objver;
 	struct obj *obj;
-	void *cookie;
+	int ret;
 
 	if (!vg || !oid || !clock)
 		return ERR_PTR(-EINVAL);
@@ -403,17 +403,15 @@ void *objstore_open(struct objstore *vg, const struct noid *oid,
 	obj = objver->obj;
 
 	if (obj->ops && obj->ops->open)
-		cookie = obj->ops->open(obj->vol, oid, clock);
+		ret = obj->ops->open(objver);
 	else
-		cookie = NULL;
+		ret = 0;
 
-	if (IS_ERR(cookie)) {
+	if (ret) {
 		mxunlock(&obj->lock);
 		obj_putref(obj);
-		return cookie;
+		return ERR_PTR(ret);
 	}
-
-	obj->open_cookie = cookie;
 
 	/*
 	 * The object associated with 'objver' is locked and held.  We
@@ -457,16 +455,14 @@ int objstore_close(struct objstore *vg, void *cookie)
 
 	mxlock(&obj->lock);
 	if (obj->ops && obj->ops->close)
-		ret = obj->ops->close(obj->vol, obj->open_cookie);
+		ret = obj->ops->close(objver);
 	else
 		ret = 0;
-
-	if (!ret)
-		obj->open_cookie = NULL;
 	mxunlock(&obj->lock);
 
 	/* release the reference obtained in objstore_open() */
-	obj_putref(obj);
+	if (!ret)
+		obj_putref(obj);
 
 	return ret;
 }

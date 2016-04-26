@@ -301,59 +301,6 @@ static int mem_obj_getversion(struct objver *ver)
 	return 0;
 }
 
-static void *mem_obj_open(struct objstore_vol *vol, const struct noid *oid,
-			  const struct nvclock *clock)
-{
-	struct memstore *ms;
-	struct memver *ver;
-
-	if (!vol || !oid || !clock)
-		return ERR_PTR(-EINVAL);
-
-	ms = vol->private;
-
-	ver = findver_by_hndl(ms, oid, clock);
-	if (IS_ERR(ver))
-		return ver;
-
-	/*
-	 * The object associated with 'ver' is held.  We keep the hold on
-	 * it.  Then we return the pointer to the memver to the caller.
-	 * Then, later on when the caller calls the close function, we
-	 * release the object's hold.
-	 *
-	 * While the object version is open, we maintain this reference hold
-	 * keeping the object and the version structures in memory.  Even if
-	 * all links are removed, we keep the structures around and let
-	 * operations use them.  This mimics the POSIX file system semantics
-	 * well.
-	 */
-
-	return ver;
-}
-
-static int mem_obj_close(struct objstore_vol *vol, void *cookie)
-{
-	struct memver *ver = cookie;
-
-	if (!vol || !ver)
-		return -EINVAL;
-
-	/*
-	 * Yes, we are dereferencing the pointer that the caller supplied.
-	 * Yes, this is safe.  The only reason this is safe is because we
-	 * rely on the caller to keep the pointer safe.  Specifically, we
-	 * assume that the caller didn't transmit the pointer over the
-	 * network.
-	 *
-	 * See comment in mem_obj_open() for why we only putref the object.
-	 */
-
-	memobj_putref(ver->obj);
-
-	return 0;
-}
-
 static int mem_obj_getattr(struct objver *ver, struct nattr *attr)
 {
 	*attr = ver->attrs;
@@ -616,8 +563,6 @@ static int mem_obj_unlink(struct objver *dirver, const char *name,
 
 const struct obj_ops obj_ops = {
 	.getversion = mem_obj_getversion,
-	.open    = mem_obj_open,
-	.close   = mem_obj_close,
 	.getattr = mem_obj_getattr,
 	.setattr = mem_obj_setattr,
 	.read    = mem_obj_read,
