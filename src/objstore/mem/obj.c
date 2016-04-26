@@ -404,14 +404,11 @@ static int mem_obj_setattr(struct objstore_vol *vol, void *cookie,
 	return 0;
 }
 
-static ssize_t mem_obj_read(struct objstore_vol *vol, void *cookie,
-			    void *buf, size_t len, uint64_t offset)
+static ssize_t mem_obj_read(struct objver *ver, void *buf, size_t len,
+			    uint64_t offset)
 {
-	struct memver *ver = cookie;
+	struct memver *mver = ver->private;
 	ssize_t ret;
-
-	if (!vol || !cookie || !buf)
-		return -EINVAL;
 
 	if (offset >= ver->attrs.size)
 		ret = 0;
@@ -421,7 +418,7 @@ static ssize_t mem_obj_read(struct objstore_vol *vol, void *cookie,
 		ret = len;
 
 	if (ret)
-		memcpy(buf, ver->blob + offset, ret);
+		memcpy(buf, mver->blob + offset, ret);
 
 	return ret;
 }

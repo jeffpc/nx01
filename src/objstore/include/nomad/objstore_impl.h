@@ -70,8 +70,6 @@ extern int vol_getattr(struct objstore_vol *vol, void *cookie,
 		       struct nattr *attr);
 extern int vol_setattr(struct objstore_vol *vol, void *cookie,
 		       const struct nattr *attr, const unsigned valid);
-extern ssize_t vol_read(struct objstore_vol *vol, void *cookie, void *buf,
-			size_t len, uint64_t offset);
 extern ssize_t vol_write(struct objstore_vol *vol, void *cookie,
 			 const void *buf, size_t len, uint64_t offset);
 extern int vol_lookup(struct objstore_vol *vol, void *dircookie,

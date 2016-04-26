@@ -533,18 +533,21 @@ ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf, size_t len,
 	if (vg != objver->obj->vol->vg)
 		return -ENXIO;
 
+	obj = objver->obj;
+
+	if (!obj->ops || !obj->ops->read)
+		return -ENOTSUP;
+
 	/* nothing to do */
 	if (!len)
 		return 0;
-
-	obj = objver->obj;
 
 	mxlock(&obj->lock);
 	if (NATTR_ISDIR(objver->attrs.mode))
 		/* TODO: do we need to check for other types? */
 		ret = -EISDIR;
 	else
-		ret = vol_read(obj->vol, obj->open_cookie, buf, len, offset);
+		ret = obj->ops->read(objver, buf, len, offset);
 	mxunlock(&obj->lock);
 
 	return ret;

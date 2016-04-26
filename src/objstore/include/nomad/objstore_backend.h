@@ -93,8 +93,8 @@ struct obj_ops {
 		       struct nattr *attr);
 	int (*setattr)(struct objstore_vol *store, void *cookie,
 		       const struct nattr *attr, const unsigned valid);
-	ssize_t (*read)(struct objstore_vol *store, void *cookie,
-			void *buf, size_t len, uint64_t offset);
+	ssize_t (*read)(struct objver *ver, void *buf, size_t len,
+			uint64_t offset);
 	ssize_t (*write)(struct objstore_vol *store, void *cookie,
 			 const void *buf, size_t len, uint64_t offset);
 

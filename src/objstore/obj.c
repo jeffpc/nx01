@@ -53,18 +53,6 @@ int vol_setattr(struct objstore_vol *vol, void *cookie,
 	return vol->def->obj_ops->setattr(vol, cookie, attr, valid);
 }
 
-ssize_t vol_read(struct objstore_vol *vol, void *cookie, void *buf, size_t len,
-		 uint64_t offset)
-{
-	if (!vol || !buf)
-		return -EINVAL;
-
-	if (!vol->def->obj_ops || !vol->def->obj_ops->read)
-		return -ENOTSUP;
-
-	return vol->def->obj_ops->read(vol, cookie, buf, len, offset);
-}
-
 ssize_t vol_write(struct objstore_vol *vol, void *cookie, const void *buf,
 		  size_t len, uint64_t offset)
 {
