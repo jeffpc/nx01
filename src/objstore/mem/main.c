@@ -133,6 +133,4 @@ const struct objstore_vol_def objvol = {
 	.name = "mem",
 
 	.create = mem_create,
-
-	.obj_ops = &obj_ops,
 };

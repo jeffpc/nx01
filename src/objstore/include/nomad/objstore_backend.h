@@ -118,8 +118,6 @@ struct objstore_vol_def {
 
 	int (*create)(struct objstore_vol *vol);
 	int (*load)(struct objstore_vol *vol);
-
-	const struct obj_ops *obj_ops;
 };
 
 struct objstore_vol {
