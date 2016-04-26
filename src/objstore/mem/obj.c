@@ -468,21 +468,27 @@ static ssize_t mem_obj_write(struct objver *ver, const void *buf, size_t len,
 	return len;
 }
 
-static int mem_obj_lookup(struct objstore_vol *vol, void *dircookie,
-			  const char *name, struct noid *child)
+static int mem_obj_lookup(struct objver *dirver, const char *name,
+			  struct noid *child)
 {
 	const struct memdentry key = {
 		.name = name,
 	};
-	struct memver *dirver = dircookie;
+	struct memver *dirmver = dirver->private;
 	struct memdentry *dentry;
 
-	if (!vol || !dirver || !name || !child)
-		return -EINVAL;
-
-	dentry = avl_find(&dirver->dentries, &key, NULL);
+	dentry = avl_find(&dirmver->dentries, &key, NULL);
 	if (!dentry)
 		return -ENOENT;
+
+	/*
+	 * In theory, we should lock the child, but we don't have to
+	 * because:
+	 *
+	 * (1) the child can't go away - the dentry is holding a reference
+	 *     and we have the directory itself locked
+	 * (2) the oid never changes
+	 */
 
 	*child = dentry->obj->oid;
 

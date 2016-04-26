@@ -614,11 +614,14 @@ int objstore_lookup(struct objstore *vg, void *dircookie, const char *name,
 
 	dir = dirver->obj;
 
+	if (!dir->ops || !dir->ops->lookup)
+		return -ENOTSUP;
+
 	mxlock(&dir->lock);
 	if (!NATTR_ISDIR(dirver->attrs.mode))
 		ret = -ENOTDIR;
 	else
-		ret = vol_lookup(dir->vol, dir->open_cookie, name, child);
+		ret = dir->ops->lookup(dirver, name, child);
 	mxunlock(&dir->lock);
 
 	return ret;

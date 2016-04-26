@@ -97,8 +97,8 @@ struct obj_ops {
 	ssize_t (*write)(struct objver *ver, const void *buf, size_t len,
 			 uint64_t offset);
 
-	int (*lookup)(struct objstore_vol *vol, void *dircookie,
-		      const char *name, struct noid *child);
+	int (*lookup)(struct objver *dirver, const char *name,
+		      struct noid *child);
 	int (*create)(struct objstore_vol *vol, void *dircookie,
 		      const char *name, uint16_t mode, struct noid *child);
 	int (*unlink)(struct objstore_vol *vol, void *dircookie,
