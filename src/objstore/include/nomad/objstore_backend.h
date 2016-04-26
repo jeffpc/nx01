@@ -42,7 +42,6 @@ struct obj {
 	uint64_t nversions;	/* number of versions */
 	uint32_t nlink;		/* file link count */
 	void *private;
-	void *open_cookie;	/* cookie returned by the backend */
 
 	/* misc */
 	enum obj_state state;

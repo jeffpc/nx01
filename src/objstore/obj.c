@@ -57,7 +57,6 @@ struct obj *allocobj(void)
 	obj->nversions = 0;
 	obj->nlink = 0;
 	obj->private = NULL;
-	obj->open_cookie = NULL;
 	obj->state = OBJ_STATE_NEW;
 	obj->vol = NULL;
 	obj->ops = NULL;
