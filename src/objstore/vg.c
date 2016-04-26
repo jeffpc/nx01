@@ -536,7 +536,11 @@ ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf, size_t len,
 	obj = objver->obj;
 
 	mxlock(&obj->lock);
-	ret = vol_read(obj->vol, obj->open_cookie, buf, len, offset);
+	if (NATTR_ISDIR(objver->attrs.mode))
+		/* TODO: do we need to check for other types? */
+		ret = -EISDIR;
+	else
+		ret = vol_read(obj->vol, obj->open_cookie, buf, len, offset);
 	mxunlock(&obj->lock);
 
 	return ret;
@@ -561,7 +565,11 @@ ssize_t objstore_write(struct objstore *vg, void *cookie, const void *buf,
 	obj = objver->obj;
 
 	mxlock(&obj->lock);
-	ret = vol_write(obj->vol, obj->open_cookie, buf, len, offset);
+	if (NATTR_ISDIR(objver->attrs.mode))
+		/* TODO: do we need to check for other types? */
+		ret = -EISDIR;
+	else
+		ret = vol_write(obj->vol, obj->open_cookie, buf, len, offset);
 	mxunlock(&obj->lock);
 
 	return ret;

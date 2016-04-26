@@ -417,11 +417,6 @@ static ssize_t mem_obj_read(struct objstore_vol *vol, void *cookie,
 	if (!len)
 		return 0;
 
-	if (NATTR_ISDIR(ver->attrs.mode))
-		return -EISDIR;
-
-	/* TODO: do we need to check for other types? */
-
 	if (offset >= ver->attrs.size)
 		ret = 0;
 	else if ((offset + len) > ver->attrs.size)
@@ -447,11 +442,6 @@ static ssize_t mem_obj_write(struct objstore_vol *vol, void *cookie,
 	/* nothing to do */
 	if (!len)
 		return 0;
-
-	if (NATTR_ISDIR(ver->attrs.mode))
-		return -EISDIR;
-
-	/* TODO: do we need to check for other types? */
 
 	/* object will grow - need to resize the blob buffer */
 	if ((offset + len) > ver->attrs.size) {
