@@ -615,7 +615,10 @@ int objstore_lookup(struct objstore *vg, void *dircookie, const char *name,
 	dir = dirver->obj;
 
 	mxlock(&dir->lock);
-	ret = vol_lookup(dir->vol, dir->open_cookie, name, child);
+	if (!NATTR_ISDIR(dirver->attrs.mode))
+		ret = -ENOTDIR;
+	else
+		ret = vol_lookup(dir->vol, dir->open_cookie, name, child);
 	mxunlock(&dir->lock);
 
 	return ret;
@@ -640,7 +643,10 @@ int objstore_create(struct objstore *vg, void *dircookie, const char *name,
 	dir = dirver->obj;
 
 	mxlock(&dir->lock);
-	ret = vol_create(dir->vol, dir->open_cookie, name, mode, child);
+	if (!NATTR_ISDIR(dirver->attrs.mode))
+		ret = -ENOTDIR;
+	else
+		ret = vol_create(dir->vol, dir->open_cookie, name, mode, child);
 	mxunlock(&dir->lock);
 
 	return ret;
@@ -663,7 +669,10 @@ int objstore_unlink(struct objstore *vg, void *dircookie, const char *name)
 	dir = dirver->obj;
 
 	mxlock(&dir->lock);
-	ret = vol_unlink(dir->vol, dir->open_cookie, name);
+	if (!NATTR_ISDIR(dirver->attrs.mode))
+		ret = -ENOTDIR;
+	else
+		ret = vol_unlink(dir->vol, dir->open_cookie, name);
 	mxunlock(&dir->lock);
 
 	return ret;

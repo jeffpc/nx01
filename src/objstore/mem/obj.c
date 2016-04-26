@@ -480,9 +480,6 @@ static int mem_obj_lookup(struct objstore_vol *vol, void *dircookie,
 	if (!vol || !dirver || !name || !child)
 		return -EINVAL;
 
-	if (!NATTR_ISDIR(dirver->attrs.mode))
-		return -ENOTDIR;
-
 	dentry = avl_find(&dirver->dentries, &key, NULL);
 	if (!dentry)
 		return -ENOENT;
@@ -545,9 +542,6 @@ static int mem_obj_create(struct objstore_vol *vol, void *dircookie,
 		return -EINVAL;
 
 	ms = vol->private;
-
-	if (!NATTR_ISDIR(dirver->attrs.mode))
-		return -ENOTDIR;
 
 	if (avl_find(&dirver->dentries, &key, NULL))
 		return -EEXIST;
@@ -615,9 +609,6 @@ static int mem_obj_unlink(struct objstore_vol *vol, void *dircookie,
 		return -EINVAL;
 
 	ms = vol->private;
-
-	if (!NATTR_ISDIR(dirver->attrs.mode))
-		return -ENOTDIR;
 
 	dentry = avl_find(&dirver->dentries, &key, NULL);
 	if (!dentry)
