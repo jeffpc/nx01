@@ -30,18 +30,6 @@
 umem_cache_t *obj_cache;
 umem_cache_t *objver_cache;
 
-int vol_create(struct objstore_vol *vol, void *dircookie, const char *name,
-	       uint16_t mode, struct noid *child)
-{
-	if (!vol || !name || !child)
-		return -EINVAL;
-
-	if (!vol->def->obj_ops || !vol->def->obj_ops->create)
-		return -ENOTSUP;
-
-	return vol->def->obj_ops->create(vol, dircookie, name, mode, child);
-}
-
 int vol_unlink(struct objstore_vol *vol, void *dircookie, const char *name)
 {
 	if (!vol || !name)

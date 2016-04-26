@@ -645,11 +645,14 @@ int objstore_create(struct objstore *vg, void *dircookie, const char *name,
 
 	dir = dirver->obj;
 
+	if (!dir->ops || !dir->ops->create)
+		return -ENOTSUP;
+
 	mxlock(&dir->lock);
 	if (!NATTR_ISDIR(dirver->attrs.mode))
 		ret = -ENOTDIR;
 	else
-		ret = vol_create(dir->vol, dir->open_cookie, name, mode, child);
+		ret = dir->ops->create(dirver, name, mode, child);
 	mxunlock(&dir->lock);
 
 	return ret;

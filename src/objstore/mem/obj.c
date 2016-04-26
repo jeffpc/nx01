@@ -500,59 +500,47 @@ static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 				   const char *name, uint16_t mode)
 {
 	struct memdentry *dentry;
-	struct memobj *obj;
+	struct memobj *mchild;
 
 	/* allocate the child object */
-	obj = newmemobj(store, mode);
-	if (IS_ERR(obj))
-		return obj;
+	mchild = newmemobj(store, mode);
+	if (IS_ERR(mchild))
+		return mchild;
 
 	/* allocate the dentry */
-	dentry = newdentry(obj, name);
+	dentry = newdentry(mchild, name);
 	if (IS_ERR(dentry)) {
-		memobj_putref(obj);
+		memobj_putref(mchild);
 		return ERR_CAST(dentry);
 	}
 
 	/* add the dentry to the parent */
 	avl_add(&dir->dentries, dentry);
 
-	obj->nlink++;
-
-	/*
-	 * We changed the dir, so we need to up the version.
-	 *
-	 * TODO: do we need to tweak the dentries AVL tree?
-	 */
-	nvclock_inc(dir->clock);
+	mchild->nlink++;
 
 	/* add object to the global list */
 	mxlock(&store->lock);
-	avl_add(&store->objs, memobj_getref(obj));
+	avl_add(&store->objs, memobj_getref(mchild));
 	mxunlock(&store->lock);
 
-	return obj;
+	return mchild;
 }
 
-static int mem_obj_create(struct objstore_vol *vol, void *dircookie,
-			  const char *name, uint16_t mode, struct noid *child)
+static int mem_obj_create(struct objver *dirver, const char *name,
+			  uint16_t mode, struct noid *child)
 {
 	const struct memdentry key = {
 		.name = name,
 	};
-	struct memstore *ms;
+	struct memstore *ms = dirver->obj->vol->private;
+	struct memver *dirmver = dirver->private;
 	struct memobj *childobj;
-	struct memver *dirver = dircookie;
 
-	if (!vol || !dirver || !name || !child)
-		return -EINVAL;
-
-	ms = vol->private;
-
-	if (avl_find(&dirver->dentries, &key, NULL))
+	if (avl_find(&dirmver->dentries, &key, NULL))
 		return -EEXIST;
 
-	childobj = __obj_create(ms, dirver, name, mode);
+	childobj = __obj_create(ms, dirmver, name, mode);
 	if (IS_ERR(childobj))
 		return PTR_ERR(childobj);
 
@@ -560,6 +548,15 @@ static int mem_obj_create(struct objstore_vol *vol, void *dircookie,
 	*child = childobj->oid;
 
 	memobj_putref(childobj);
+
+	/*
+	 * We changed the dir, so we need to up the version.
+	 *
+	 * TODO: do we need to tweak the dentries AVL tree?
+	 */
+	nvclock_inc(dirver->clock);
+
+	sync_ver_to_mver(dirver);
 
 	return 0;
 }

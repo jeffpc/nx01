@@ -99,8 +99,8 @@ struct obj_ops {
 
 	int (*lookup)(struct objver *dirver, const char *name,
 		      struct noid *child);
-	int (*create)(struct objstore_vol *vol, void *dircookie,
-		      const char *name, uint16_t mode, struct noid *child);
+	int (*create)(struct objver *dirver, const char *name,
+		      uint16_t mode, struct noid *child);
 	int (*unlink)(struct objstore_vol *vol, void *dircookie,
 		      const char *name);
 
