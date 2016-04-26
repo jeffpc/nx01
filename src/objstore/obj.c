@@ -158,6 +158,9 @@ void freeobj(struct obj *obj)
 	if (!obj)
 		return;
 
+	if (obj->ops && obj->ops->free)
+		obj->ops->free(obj);
+
 	mxdestroy(&obj->lock);
 	vol_putref(obj->vol);
 	avl_destroy(&obj->versions);

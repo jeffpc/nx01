@@ -104,12 +104,16 @@ struct obj_ops {
 		      const char *name, uint16_t mode, struct noid *child);
 	int (*unlink)(struct objstore_vol *vol, void *dircookie,
 		      const char *name);
+
+	/*
+	 * Called just before the generic object is freed.
+	 */
+	void (*free)(struct obj *obj);
 };
 
 struct vol_ops {
 	int (*getroot)(struct objstore_vol *store, struct noid *root);
 	int (*allocobj)(struct obj *obj);
-	void (*freeobj)(struct obj *obj);
 };
 
 struct objstore_vol_def {

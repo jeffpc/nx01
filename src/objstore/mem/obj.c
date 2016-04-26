@@ -640,4 +640,5 @@ const struct obj_ops obj_ops = {
 	.lookup  = mem_obj_lookup,
 	.create  = mem_obj_create,
 	.unlink  = mem_obj_unlink,
+	.free    = mem_obj_free,
 };

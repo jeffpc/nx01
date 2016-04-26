@@ -70,7 +70,11 @@ static int mem_allocobj(struct obj *obj)
 	return 0;
 }
 
-static void mem_freeobj(struct obj *obj)
+/*
+ * We're keeping this here to keep it close to mem_allocobj().  As the name
+ * implies, this is an object op - not a volume op.
+ */
+void mem_obj_free(struct obj *obj)
 {
 	struct memobj *mobj = obj->private;
 
@@ -80,7 +84,6 @@ static void mem_freeobj(struct obj *obj)
 static const struct vol_ops vol_ops = {
 	.getroot = mem_vol_getroot,
 	.allocobj = mem_allocobj,
-	.freeobj = mem_freeobj,
 };
 
 static int objcmp(const void *va, const void *vb)

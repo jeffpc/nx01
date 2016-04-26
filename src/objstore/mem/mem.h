@@ -121,6 +121,8 @@ struct memstore {
 
 extern const struct obj_ops obj_ops;
 
+extern void mem_obj_free(struct obj *obj);
+
 extern struct memobj *newmemobj(struct memstore *ms, uint16_t mode);
 extern void freememobj(struct memobj *obj);
 extern struct memobj *findmemobj(struct memstore *store, const struct noid *oid);
