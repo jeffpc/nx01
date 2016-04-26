@@ -66,8 +66,6 @@ extern void freeobjver(struct objver *ver);
 REFCNT_INLINE_FXNS(struct obj, obj, refcnt, freeobj);
 
 /* wrappers for object ops */
-extern int vol_getattr(struct objstore_vol *vol, void *cookie,
-		       struct nattr *attr);
 extern int vol_lookup(struct objstore_vol *vol, void *dircookie,
 		      const char *name, struct noid *child);
 extern int vol_create(struct objstore_vol *vol, void *dircookie,

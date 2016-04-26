@@ -30,17 +30,6 @@
 umem_cache_t *obj_cache;
 umem_cache_t *objver_cache;
 
-int vol_getattr(struct objstore_vol *vol, void *cookie, struct nattr *attr)
-{
-	if (!vol || !attr)
-		return -EINVAL;
-
-	if (!vol->def->obj_ops || !vol->def->obj_ops->getattr)
-		return -ENOTSUP;
-
-	return vol->def->obj_ops->getattr(vol, cookie, attr);
-}
-
 int vol_lookup(struct objstore_vol *vol, void *dircookie,
 	       const char *name, struct noid *child)
 {

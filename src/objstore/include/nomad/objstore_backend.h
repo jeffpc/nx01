@@ -89,8 +89,7 @@ struct obj_ops {
 	int (*commit)();	/* make temp object live */
 	int (*abort)();		/* delete temp object */
 
-	int (*getattr)(struct objstore_vol *store, void *cookie,
-		       struct nattr *attr);
+	int (*getattr)(struct objver *ver, struct nattr *attr);
 	int (*setattr)(struct objver *ver, const struct nattr *attr,
 		       const unsigned valid);
 	ssize_t (*read)(struct objver *ver, void *buf, size_t len,

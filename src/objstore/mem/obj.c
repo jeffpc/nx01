@@ -345,14 +345,8 @@ static int mem_obj_close(struct objstore_vol *vol, void *cookie)
 	return 0;
 }
 
-static int mem_obj_getattr(struct objstore_vol *vol, void *cookie,
-			   struct nattr *attr)
+static int mem_obj_getattr(struct objver *ver, struct nattr *attr)
 {
-	struct memver *ver = cookie;
-
-	if (!vol || !cookie || !attr)
-		return -EINVAL;
-
 	*attr = ver->attrs;
 	attr->nlink = ver->obj->nlink;
 

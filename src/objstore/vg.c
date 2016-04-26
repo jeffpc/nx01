@@ -485,8 +485,11 @@ int objstore_getattr(struct objstore *vg, void *cookie, struct nattr *attr)
 
 	obj = objver->obj;
 
+	if (!obj->ops || !obj->ops->getattr)
+		return -ENOTSUP;
+
 	mxlock(&obj->lock);
-	ret = vol_getattr(obj->vol, obj->open_cookie, attr);
+	ret = obj->ops->getattr(objver, attr);
 	mxunlock(&obj->lock);
 
 	return ret;
