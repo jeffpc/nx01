@@ -599,9 +599,6 @@ int objstore_lookup(struct objstore *vg, void *dircookie, const char *name,
 	struct obj *dir;
 	int ret;
 
-	cmn_err(CE_DEBUG, "%s(%p, %p, '%s', %p)", __func__, vg, dircookie,
-		name, child);
-
 	if (!vg || !dirver || !name || !child)
 		return -EINVAL;
 
@@ -629,9 +626,6 @@ int objstore_create(struct objstore *vg, void *dircookie, const char *name,
 	struct objver *dirver = dircookie;
 	struct obj *dir;
 	int ret;
-
-	cmn_err(CE_DEBUG, "%s(%p, %p, '%s', %#o, %p)", __func__, vg,
-		dircookie, name, mode, child);
 
 	if (!vg || !dirver || !name || !child)
 		return -EINVAL;
@@ -671,8 +665,6 @@ int objstore_unlink(struct objstore *vg, void *dircookie, const char *name)
 	struct objver *dirver = dircookie;
 	struct obj *dir;
 	int ret;
-
-	cmn_err(CE_DEBUG, "%s(%p, %p, '%s')", __func__, vg, dircookie, name);
 
 	if (!vg || !dirver || !name)
 		return -EINVAL;
