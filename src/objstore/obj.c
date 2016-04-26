@@ -53,18 +53,6 @@ int vol_setattr(struct objstore_vol *vol, void *cookie,
 	return vol->def->obj_ops->setattr(vol, cookie, attr, valid);
 }
 
-ssize_t vol_write(struct objstore_vol *vol, void *cookie, const void *buf,
-		  size_t len, uint64_t offset)
-{
-	if (!vol || !buf)
-		return -EINVAL;
-
-	if (!vol->def->obj_ops || !vol->def->obj_ops->write)
-		return -ENOTSUP;
-
-	return vol->def->obj_ops->write(vol, cookie, buf, len, offset);
-}
-
 int vol_lookup(struct objstore_vol *vol, void *dircookie,
 	       const char *name, struct noid *child)
 {

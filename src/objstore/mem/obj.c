@@ -256,6 +256,26 @@ struct memver *findver_by_hndl(struct memstore *store,
 	return ERR_PTR(-ENOENT);
 }
 
+/*
+ * We don't do I/O, instead we keep everything in memory.  This however
+ * means that instead of doing I/O (which would write generic object and
+ * object version state to disk) we need to copy the generic state into our
+ * private backend structures.
+ */
+static void sync_ver_to_mver(struct objver *ver)
+{
+	struct memobj *mobj = ver->obj->private;
+	struct memver *mver = ver->private;
+	struct obj *obj = ver->obj;
+
+	/* object */
+	mobj->nlink = obj->nlink;
+
+	/* version */
+	nvclock_copy(mver->clock, ver->clock);
+	mver->attrs = ver->attrs;
+}
+
 static int mem_obj_getversion(struct objver *ver)
 {
 	struct memstore *ms = ver->obj->vol->private;
@@ -339,8 +359,16 @@ static int mem_obj_getattr(struct objstore_vol *vol, void *cookie,
 	return 0;
 }
 
-static int __truncate(struct memver *ver, uint64_t newsize, bool zero)
+/*
+ * Truncate the blob buffer.
+ *
+ * The objver's size is updated to the new size, and the memver's blob is
+ * reallocated as necessary.  If zero is true, any newly allocated bytes are
+ * zeroed.
+ */
+static int __truncate(struct objver *ver, uint64_t newsize, bool zero)
 {
+	struct memver *mver = ver->private;
 	void *tmp;
 
 	if (newsize == ver->attrs.size)
@@ -351,17 +379,18 @@ static int __truncate(struct memver *ver, uint64_t newsize, bool zero)
 		return 0;
 	}
 
-	tmp = realloc(ver->blob, newsize);
+	tmp = realloc(mver->blob, newsize);
 	if (!tmp)
 		return -ENOMEM;
 
 	/* clear the new bytes */
 	if (zero)
-		memset(ver->blob + ver->attrs.size, 0,
+		memset(tmp + ver->attrs.size, 0,
 		       newsize - ver->attrs.size);
 
 	ver->attrs.size = newsize;
-	ver->blob = tmp;
+
+	mver->blob = tmp;
 
 	return 0;
 }
@@ -423,14 +452,11 @@ static ssize_t mem_obj_read(struct objver *ver, void *buf, size_t len,
 	return ret;
 }
 
-static ssize_t mem_obj_write(struct objstore_vol *vol, void *cookie,
-			     const void *buf, size_t len, uint64_t offset)
+static ssize_t mem_obj_write(struct objver *ver, const void *buf, size_t len,
+			     uint64_t offset)
 {
-	struct memver *ver = cookie;
+	struct memver *mver = ver->private;
 	ssize_t ret;
-
-	if (!vol || !cookie || !buf)
-		return -EINVAL;
 
 	/* object will grow - need to resize the blob buffer */
 	if ((offset + len) > ver->attrs.size) {
@@ -439,14 +465,14 @@ static ssize_t mem_obj_write(struct objstore_vol *vol, void *cookie,
 			return ret;
 	}
 
-	memcpy(ver->blob + offset, buf, len);
-
-	ret = len;
+	memcpy(mver->blob + offset, buf, len);
 
 	 /* TODO: do we need to tweak the versions AVL tree? */
 	nvclock_inc(ver->clock);
 
-	return ret;
+	sync_ver_to_mver(ver);
+
+	return len;
 }
 
 static int mem_obj_lookup(struct objstore_vol *vol, void *dircookie,

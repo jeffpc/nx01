@@ -569,18 +569,21 @@ ssize_t objstore_write(struct objstore *vg, void *cookie, const void *buf,
 	if (vg != objver->obj->vol->vg)
 		return -ENXIO;
 
+	obj = objver->obj;
+
+	if (!obj->ops || !obj->ops->write)
+		return -ENOTSUP;
+
 	/* nothing to do */
 	if (!len)
 		return 0;
-
-	obj = objver->obj;
 
 	mxlock(&obj->lock);
 	if (NATTR_ISDIR(objver->attrs.mode))
 		/* TODO: do we need to check for other types? */
 		ret = -EISDIR;
 	else
-		ret = vol_write(obj->vol, obj->open_cookie, buf, len, offset);
+		ret = obj->ops->write(objver, buf, len, offset);
 	mxunlock(&obj->lock);
 
 	return ret;

@@ -95,8 +95,8 @@ struct obj_ops {
 		       const struct nattr *attr, const unsigned valid);
 	ssize_t (*read)(struct objver *ver, void *buf, size_t len,
 			uint64_t offset);
-	ssize_t (*write)(struct objstore_vol *store, void *cookie,
-			 const void *buf, size_t len, uint64_t offset);
+	ssize_t (*write)(struct objver *ver, const void *buf, size_t len,
+			 uint64_t offset);
 
 	int (*lookup)(struct objstore_vol *vol, void *dircookie,
 		      const char *name, struct noid *child);
