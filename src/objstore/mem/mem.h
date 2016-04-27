@@ -27,9 +27,9 @@
 #include <sys/avl.h>
 #include <jeffpc/atomic.h>
 #include <jeffpc/refcnt.h>
+#include <jeffpc/synch.h>
 
 #include <nomad/types.h>
-#include <nomad/mutex.h>
 
 /*
  * There is a handful of structures that keep track of everything.  At the
@@ -116,7 +116,7 @@ struct memstore {
 	uint32_t ds; /* our dataset id */
 	atomic64_t next_oid_uniq; /* the next unique part of noid */
 
-	pthread_mutex_t lock;
+	struct lock lock;
 };
 
 extern const struct obj_ops obj_ops;

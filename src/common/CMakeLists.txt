@@ -28,7 +28,6 @@ add_library(nomad_common SHARED
 	connsvc.c
 	error.c
 	init.c
-	mutex.c
 	node.c
 	oid.c
 	vclock.c
@@ -49,7 +48,6 @@ install(FILES	include/nomad/attr.h
 		include/nomad/init.h
 		include/nomad/iter.h
 		include/nomad/malloc.h
-		include/nomad/mutex.h
 		include/nomad/time.h
 		include/nomad/types.h
 		include/nomad/vclock.h

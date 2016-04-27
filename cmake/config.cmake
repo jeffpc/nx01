@@ -23,8 +23,6 @@
 include(CheckFunctionExists)
 include(CheckCSourceCompiles)
 
-check_function_exists(pthread_cond_reltimedwait_np HAVE_PTHREAD_COND_RELTIMEDWAIT_NP)
-
 include(cmake/config/xdr.cmake)
 
 set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")

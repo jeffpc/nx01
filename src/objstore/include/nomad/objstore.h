@@ -27,9 +27,9 @@
 #include <sys/avl.h>
 
 #include <jeffpc/refcnt.h>
+#include <jeffpc/synch.h>
 
 #include <nomad/types.h>
-#include <nomad/mutex.h>
 
 enum objstore_mode {
 	OS_MODE_CACHE,
@@ -46,7 +46,7 @@ struct objstore_vol;
 struct objstore {
 	list_node_t node;
 
-	pthread_mutex_t lock;
+	struct lock lock;
 	const char *name;
 	struct objstore_vol *vol;
 

@@ -31,7 +31,7 @@
 
 static umem_cache_t *vg_cache;
 
-static pthread_mutex_t vgs_lock;
+static struct lock vgs_lock;
 static list_t vgs;
 
 int vg_init(void)
