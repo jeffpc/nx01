@@ -15,6 +15,24 @@ Once these are done, we will reevaluate the next set of goals.
 Building and Installing
 =======================
 
+First, you need to get the code itself.  Since Nomad is under heavy
+development, there are no releases yet.  So, for now you have to clone it
+using git:
+
+```sh
+$ git clone https://github.com/jeffpc/nx01.git
+```
+
+After you have cloned the repository, you will need to check out the
+submodules:
+
+```sh
+$ git submodule init
+$ git submodule update
+```
+
+Now that you have all the necessary code, you can build it.
+
 ```sh
 $ cmake -DCMAKE_INSTALL_PREFIX=/prefix .
 $ make
