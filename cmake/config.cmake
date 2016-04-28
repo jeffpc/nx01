@@ -31,7 +31,6 @@ check_include_files(door.h HAVE_DOORS)
 set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")
 find_package(umem)
 find_package(avl)
-find_package(cmdutils)
 find_package(jeffpc)
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/common/include/nomad/config.h.in"

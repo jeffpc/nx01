@@ -84,6 +84,6 @@ tool         |   n    |    n    |    y     |     n    |   n    |    n
   ? = may be linked against as necessary
 ```
 
-The above table assumes the lack of avl, cmdutils, and umem libraries on the
-system.  If they are present, they are used instead of sunavl, sunlist, and
-fakeumem respectively.
+The above table assumes the lack of avl and umem libraries on the system.
+If they are present, they are used instead of sunavl and fakeumem
+respectively.

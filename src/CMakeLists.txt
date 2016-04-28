@@ -32,14 +32,7 @@ if(NOT AVL_FOUND)
 	add_subdirectory(sunavl)
 endif()
 
-if(NOT CMDUTILS_FOUND)
-	set(LIST_LIBRARY sunlist)
-	include_directories(sunlist/include)
-	add_subdirectory(sunlist)
-else()
-	set(LIST_LIBRARY ${CMDUTILS_LIBRARY})
-endif()
-
+set(LIST_LIBRARY sunlist)
 set(TASKQ_LIBRARY suntaskq)
 
 #
@@ -63,11 +56,13 @@ set(BASE_LIBS
 include_directories(
 	common/include
 	objstore/include
+	sunlist/include
 	suntaskq/include
 	${JEFFPC_INCLUDE_DIR}
 )
 
 add_subdirectory(common)
+add_subdirectory(sunlist)
 add_subdirectory(suntaskq)
 add_subdirectory(objstore)
 add_subdirectory(server)
