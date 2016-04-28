@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 # Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,15 +21,26 @@
 # SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.12.2)
 project(nomad)
 
 enable_testing()
 
-set(CMAKE_C_FLAGS "-Wall -O2 -g -std=gnu99 -D_XOPEN_SOURCE=700 -D__EXTENSIONS__ -D_REENTRANT")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-inline-small-functions")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-inline-functions-called-once")
+add_definitions(
+	-D__EXTENSIONS__
+	-D_REENTRANT
+	-D_XOPEN_SOURCE=700
+)
+
+add_compile_options(
+	-Wall
+	-O2
+	-g
+	-std=gnu99
+	-fno-omit-frame-pointer
+	$<$<C_COMPILER_ID:gcc>:-fno-inline-small-functions>
+	$<$<C_COMPILER_ID:gcc>:-fno-inline-functions-called-once>
+)
 
 set(CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/build")
