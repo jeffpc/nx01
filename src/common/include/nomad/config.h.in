@@ -28,4 +28,6 @@
 #cmakedefine HAVE_XDR_PUTINT32_CONST_ARG 1
 #cmakedefine HAVE_XDR_PUTLONG_CONST_ARG 1
 
+#cmakedefine HAVE_DOORS 1
+
 #endif

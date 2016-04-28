@@ -21,9 +21,12 @@
 #
 
 include(CheckFunctionExists)
+include(CheckIncludeFiles)
 include(CheckCSourceCompiles)
 
 include(cmake/config/xdr.cmake)
+
+check_include_files(door.h HAVE_DOORS)
 
 set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")
 find_package(umem)
