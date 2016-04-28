@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +26,9 @@
 
 #include <stdint.h>
 #include <rpc/rpc.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 /* object attributes */
 
@@ -66,6 +69,8 @@ struct nattr {
 	/* XXX: owner */
 	/* XXX: group */
 };
+
+extern void nattr_to_stat(const struct nattr *nattr, struct stat *stat);
 
 extern bool_t xdr_nattr(XDR *xdrs, struct nattr *attr);
 

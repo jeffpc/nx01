@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
+ * Copyright (c) 2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +21,67 @@
  * SOFTWARE.
  */
 
+#include <jeffpc/error.h>
+
 #include <nomad/types.h>
+
+#define M(i, o)		case i: mode |= o; break
+static inline mode_t cvt_mode(uint16_t nmode)
+{
+	mode_t mode;
+
+	/* copy permission bits */
+	mode = nmode & NATTR_AMASK;
+
+	switch (nmode & NATTR_TMASK) {
+		M(NATTR_REG, S_IFREG);
+		M(NATTR_DIR, S_IFDIR);
+		M(NATTR_FIFO, S_IFIFO);
+		M(NATTR_CHR, S_IFCHR);
+		M(NATTR_BLK, S_IFBLK);
+		M(NATTR_LNK, S_IFLNK);
+		M(NATTR_SOCK, S_IFSOCK);
+#ifdef HAVE_DOORS
+		M(NATTR_DOOR, S_IFDOOR);
+#else
+		case NATTR_DOOR:
+			panic("unable to map NATTR_DOOR");
+#endif
+		default:
+			panic("unknown nomad mode type: %o", nmode);
+	}
+
+	return mode;
+}
+#undef M
+
+static inline void cvt_time(struct timespec *s, const uint64_t t)
+{
+	s->tv_sec = t / 1000000000;
+	s->tv_nsec = t % 1000000000;
+}
+
+void nattr_to_stat(const struct nattr *nattr, struct stat *stat)
+{
+	stat->st_dev = 0;
+	stat->st_rdev = 0;
+	stat->st_ino = 0;
+	stat->st_mode = cvt_mode(nattr->mode);
+	stat->st_nlink = nattr->nlink;
+	stat->st_uid = 0;
+	stat->st_gid = 0;
+	stat->st_size = nattr->size;
+	cvt_time(&stat->st_atim, nattr->atime);
+	cvt_time(&stat->st_ctim, nattr->ctime);
+	cvt_time(&stat->st_mtim, nattr->mtime);
+	stat->st_blksize = 4096;
+	stat->st_blocks = (nattr->size + stat->st_blksize - 1) / stat->st_blksize;
+
+	/*
+	 * TODO: Illumos has a stat->st_fstype, should we zero it?  Linux
+	 * does not have this field.
+	 */
+}
 
 bool_t xdr_nattr(XDR *xdrs, struct nattr *attr)
 {
