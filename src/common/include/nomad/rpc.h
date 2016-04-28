@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
  * RPC error codes
  *
  * Note: When adding new error codes, don't forget to update errno_to_nerr
- * in error.c!
+ * and nerr_to_errno in error.c!
  */
 #define NERR_UNKNOWN_ERROR     -1
 #define NERR_SUCCESS           0
@@ -60,6 +60,7 @@
 #define NERR_EALREADY          149
 
 extern int errno_to_nerr(int e);
+extern int nerr_to_errno(int e);
 
 extern void xdrfd_create(XDR *xdr, int fd, enum xdr_op op);
 

@@ -68,3 +68,45 @@ int errno_to_nerr(int e)
 
 	return NERR_UNKNOWN_ERROR;
 }
+
+#define MAP_NERR(nerr)				\
+	case NERR_##nerr: return -nerr
+
+int nerr_to_errno(int e)
+{
+	switch (e) {
+		MAP_NERR(E2BIG);
+		MAP_NERR(EACCES);
+		MAP_NERR(EAGAIN);
+		MAP_NERR(EALREADY);
+		MAP_NERR(EBADF);
+		MAP_NERR(EBUSY);
+		MAP_NERR(EEXIST);
+		MAP_NERR(EFAULT);
+		MAP_NERR(EINTR);
+		MAP_NERR(EINVAL);
+		MAP_NERR(EIO);
+		MAP_NERR(EISDIR);
+		MAP_NERR(ENODEV);
+		MAP_NERR(ENOENT);
+		MAP_NERR(ENOMEM);
+		MAP_NERR(ENOSPC);
+		MAP_NERR(ENOTDIR);
+		MAP_NERR(ENOTSUP);
+		MAP_NERR(ENOTUNIQ);
+		MAP_NERR(ENXIO);
+		MAP_NERR(EOVERFLOW);
+		MAP_NERR(EPERM);
+		MAP_NERR(EPROTO);
+		MAP_NERR(ESRCH);
+		MAP_NERR(EXDEV);
+
+		/* special cases */
+		case NERR_SUCCESS:
+			return 0;
+		case NERR_UNKNOWN_ERROR:
+			return -EPROTO;
+	}
+
+	return -EPROTO;
+}
