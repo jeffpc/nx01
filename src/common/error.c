@@ -64,6 +64,7 @@ int errno_to_nerr(int e)
 		MAP_ERRNO(EXDEV);
 		case 0:
 			return NERR_SUCCESS;
+		/* there is no errno that maps to NERR_RPC_ERROR */
 	}
 
 	return NERR_UNKNOWN_ERROR;
@@ -105,6 +106,8 @@ int nerr_to_errno(int e)
 		case NERR_SUCCESS:
 			return 0;
 		case NERR_UNKNOWN_ERROR:
+			return -EPROTO;
+		case NERR_RPC_ERROR:
 			return -EPROTO;
 	}
 
