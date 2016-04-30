@@ -714,3 +714,33 @@ int objstore_unlink(struct objstore *vg, void *dircookie, const char *name)
 
 	return ret;
 }
+
+int objstore_getdent(struct objstore *vg, void *dircookie,
+		     const uint64_t offset, struct noid *child,
+		     char **childname, uint64_t *entry_size)
+{
+	struct objver *dirver = dircookie;
+	struct obj *dir;
+	int ret;
+
+	if (!vg || !dirver)
+		return -EINVAL;
+
+	if (vg != dirver->obj->vol->vg)
+		return -ENXIO;
+
+	dir = dirver->obj;
+
+	if (!dir->ops || !dir->ops->getdent)
+		return -ENOTSUP;
+
+	mxlock(&dir->lock);
+	if (!NATTR_ISDIR(dirver->attrs.mode))
+		ret = -ENOTDIR;
+	else
+		ret = dir->ops->getdent(dirver, offset, child, childname,
+					entry_size);
+	mxunlock(&dir->lock);
+
+	return ret;
+}

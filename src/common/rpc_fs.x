@@ -128,3 +128,15 @@ struct rpc_setattr_req {
 	bool size_is_valid;
 	bool mode_is_valid;
 };
+
+%/***** GETDENT *****/
+struct rpc_getdent_req {
+	HANDLE(parent);
+	uint64_t offset;
+};
+
+struct rpc_getdent_res {
+	struct noid oid;
+	string name<>;
+	uint64_t entry_size;
+};

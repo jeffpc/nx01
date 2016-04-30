@@ -86,5 +86,8 @@ extern int objstore_create(struct objstore *vg, void *dircookie,
 			   const char *name, uint16_t mode, struct noid *child);
 extern int objstore_unlink(struct objstore *vg, void *dircookie,
 			   const char *name);
+extern int objstore_getdent(struct objstore *vg, void *dircookie,
+			    const uint64_t offset, struct noid *child,
+			    char **childname, uint64_t *entry_size);
 
 #endif

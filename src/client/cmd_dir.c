@@ -64,3 +64,17 @@ int cmd_unlink(struct fsconn *conn, union cmd *cmd)
 
 	return objstore_unlink(conn->vg, oh->cookie, req->path);
 }
+
+int cmd_getdent(struct fsconn *conn, union cmd *cmd)
+{
+	struct rpc_getdent_req *req = &cmd->getdent.req;
+	struct rpc_getdent_res *res = &cmd->getdent.res;
+	struct ohandle *oh;
+
+	oh = ohandle_find(conn, req->parent);
+	if (!oh)
+		return -EINVAL;
+
+	return objstore_getdent(conn->vg, oh->cookie, req->offset,
+				&res->oid, &res->name, &res->entry_size);
+}

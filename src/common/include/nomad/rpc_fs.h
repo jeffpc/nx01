@@ -37,5 +37,6 @@
 #define NRPC_READ	0x0008
 #define NRPC_WRITE	0x0009
 #define NRPC_SETATTR	0x000A
+#define NRPC_GETDENT	0x000B
 
 #endif

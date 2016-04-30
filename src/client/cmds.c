@@ -77,6 +77,7 @@ static const struct cmdtbl {
 	CMD_ARG    (NRPC_CLOSE,         close,         cmd_close,       true),
 	CMD_ARG_RET(NRPC_CREATE,        create,        cmd_create,      true),
 	CMD_ARG_RET(NRPC_GETATTR,       getattr,       cmd_getattr,     true),
+	CMD_ARG_RET(NRPC_GETDENT,       getdent,       cmd_getdent,     true),
 	CMD_ARG_RET(NRPC_LOGIN,         login,         cmd_login,       false),
 	CMD_ARG_RET(NRPC_LOOKUP,        lookup,        cmd_lookup,      true),
 	CMD        (NRPC_NOP,           nop,           cmd_nop,         false),

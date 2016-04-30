@@ -103,6 +103,10 @@ struct obj_ops {
 	int (*unlink)(struct objver *dirver, const char *name,
 		      struct obj *child);
 
+	int (*getdent)(struct objver *dirver, const uint64_t offset,
+		       struct noid *child, char **childname,
+		       uint64_t *entry_size);
+
 	/*
 	 * Called just before the generic object is freed.
 	 */

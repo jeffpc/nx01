@@ -273,9 +273,31 @@ Limitations
 Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 
 
+GETDENT (0x000B)
+================
+
+Get the directory entry at a specific offset in a directory.  Additionally,
+it returns the size of the current entry.  Adding this size to the current
+offset will yield the offset of the next entry.
+
+Inputs
+------
+* directory open file handle
+* directory offset
+
+Outputs
+-------
+* child oid
+* child name
+* entry size
+
+Limitations
+-----------
+Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
+
+
 Other RPCs that may end up useful
 =================================
 
 * RENAME - rename a "file"
 * LINK - create a symlink or a hardlink
-* GETDENTS - list contents of a directory

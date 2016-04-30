@@ -47,6 +47,12 @@ union cmd {
 		struct rpc_getattr_res res;
 	} getattr;
 
+	/* getdent */
+	struct {
+		struct rpc_getdent_req req;
+		struct rpc_getdent_res res;
+	} getdent;
+
 	/* login */
 	struct {
 		struct rpc_login_req req;
@@ -102,6 +108,7 @@ extern bool process_connection(struct fsconn *conn);
 extern int cmd_close(struct fsconn *conn, union cmd *cmd);
 extern int cmd_create(struct fsconn *conn, union cmd *cmd);
 extern int cmd_getattr(struct fsconn *conn, union cmd *cmd);
+extern int cmd_getdent(struct fsconn *conn, union cmd *cmd);
 extern int cmd_login(struct fsconn *conn, union cmd *cmd);
 extern int cmd_lookup(struct fsconn *conn, union cmd *cmd);
 extern int cmd_nop(struct fsconn *conn, union cmd *cmd);
