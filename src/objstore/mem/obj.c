@@ -570,6 +570,30 @@ static int mem_obj_unlink(struct objver *dirver, const char *name,
 	return 0;
 }
 
+static int mem_obj_getdent(struct objver *dirver, const uint64_t user_offset,
+			   struct noid *child, char **childname,
+			   uint64_t *entry_size)
+{
+	struct memver *dirmver = dirver->private;
+	struct memdentry *dentry;
+	uint64_t off;
+
+	for (dentry = avl_first(&dirmver->dentries), off = 0;
+	     dentry;
+	     dentry = AVL_NEXT(&dirmver->dentries, dentry), off++) {
+		if (off < user_offset)
+			continue;
+
+		*child = dentry->obj->oid;
+		*childname = strdup(dentry->name);
+		*entry_size = 1; /* see comment in mem_obj_create() */
+
+		return *childname ? 0 : -ENOMEM;
+	}
+
+	return -ENOENT;
+}
+
 const struct obj_ops obj_ops = {
 	.getversion = mem_obj_getversion,
 	.getattr = mem_obj_getattr,
@@ -579,5 +603,6 @@ const struct obj_ops obj_ops = {
 	.lookup  = mem_obj_lookup,
 	.create  = mem_obj_create,
 	.unlink  = mem_obj_unlink,
+	.getdent = mem_obj_getdent,
 	.free    = mem_obj_free,
 };
