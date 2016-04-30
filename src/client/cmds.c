@@ -101,7 +101,7 @@ static bool send_response(XDR *xdr, int fd, int err)
 		return false; /* failed to send */
 
 	if (cmd.err != NERR_SUCCESS)
-		return false; /* RPC failed */
+		return true; /* RPC failed */
 
 	return true; /* all good */
 }
@@ -176,7 +176,7 @@ bool process_connection(struct fsconn *conn)
 		ok = send_response(&xdr, conn->fd, ret);
 
 		/* send back the response payload */
-		if (ok && def->res)
+		if (ok && !ret && def->res)
 			ok = send_returns(&xdr, def, &cmd);
 
 		goto out;
