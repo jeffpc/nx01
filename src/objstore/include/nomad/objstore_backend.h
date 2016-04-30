@@ -66,6 +66,7 @@ struct objver {
 	 */
 	struct nattr attrs;
 	void *private;
+	uint32_t open_count;
 
 	/* misc */
 	struct obj *obj;

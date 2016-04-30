@@ -402,16 +402,21 @@ void *objstore_open(struct objstore *vg, const struct noid *oid,
 
 	obj = objver->obj;
 
-	if (obj->ops && obj->ops->open)
-		ret = obj->ops->open(objver);
-	else
-		ret = 0;
+	if (!objver->open_count) {
+		/* first open */
+		if (obj->ops && obj->ops->open)
+			ret = obj->ops->open(objver);
+		else
+			ret = 0;
 
-	if (ret) {
-		mxunlock(&obj->lock);
-		obj_putref(obj);
-		return ERR_PTR(ret);
+		if (ret) {
+			mxunlock(&obj->lock);
+			obj_putref(obj);
+			return ERR_PTR(ret);
+		}
 	}
+
+	objver->open_count++;
 
 	/*
 	 * The object associated with 'objver' is locked and held.  We
@@ -435,6 +440,7 @@ int objstore_close(struct objstore *vg, void *cookie)
 {
 	struct objver *objver = cookie;
 	struct obj *obj;
+	bool putref;
 	int ret;
 
 	if (!vg || !objver)
@@ -454,14 +460,25 @@ int objstore_close(struct objstore *vg, void *cookie)
 	 */
 
 	mxlock(&obj->lock);
-	if (obj->ops && obj->ops->close)
-		ret = obj->ops->close(objver);
-	else
+	objver->open_count--;
+	putref = true;
+
+	if (objver->open_count) {
 		ret = 0;
+		putref = false;
+	} else if (obj->ops && obj->ops->close) {
+		/* last close */
+		ret = obj->ops->close(objver);
+	} else {
+		ret = 0;
+	}
+
+	if (ret)
+		objver->open_count++; /* undo earlier decrement */
 	mxunlock(&obj->lock);
 
 	/* release the reference obtained in objstore_open() */
-	if (!ret)
+	if (putref && !ret)
 		obj_putref(obj);
 
 	return ret;

@@ -105,6 +105,7 @@ struct objver *allocobjver(void)
 	memset(&ver->attrs, 0, sizeof(ver->attrs));
 
 	ver->private = NULL;
+	ver->open_count = 0;
 	ver->obj = NULL;
 
 	return ver;
