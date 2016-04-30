@@ -506,6 +506,12 @@ static int mem_obj_create(struct objver *dirver, const char *name,
 	memobj_putref(childobj);
 
 	/*
+	 * We lie and say that each entry takes up a byte.  This will make
+	 * seeking easier in getdents.
+	 */
+	dirver->attrs.size++;
+
+	/*
 	 * We changed the dir, so we need to up the version.
 	 *
 	 * TODO: do we need to tweak the dentries AVL tree?
@@ -548,6 +554,9 @@ static int mem_obj_unlink(struct objver *dirver, const char *name,
 
 	/* ok, we got the dentry - remove it */
 	__obj_unlink(dirmver, dentry, child);
+
+	/* see comment in mem_obj_create() */
+	dirver->attrs.size--;
 
 	/*
 	 * We changed the dir, so we need to up the version.
