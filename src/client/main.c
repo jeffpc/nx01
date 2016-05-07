@@ -50,8 +50,9 @@ static void connection_acceptor(int fd, void *arg)
 
 	cmn_err(CE_DEBUG, "%s: fd = %d, arg = %p", __func__, fd, arg);
 
-	while (process_connection(&conn))
-		;
+	if (process_handshake(&conn))
+		while (process_connection(&conn))
+			;
 
 	ohandle_close_all(&conn);
 

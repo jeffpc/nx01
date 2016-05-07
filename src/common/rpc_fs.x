@@ -26,6 +26,11 @@
 
 #define HANDLE(n)	uint32_t	n
 
+%/***** HANDSHAKE ******/
+struct rpc_handshake_req {
+	uint32_t	vers;
+};
+
 %/***** RPC header *****/
 struct rpc_header_req {
 	uint16_t	opcode;

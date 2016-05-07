@@ -337,6 +337,29 @@ int fscall_getdent(struct fscall_state *state, const uint32_t handle,
 	return 0;
 }
 
+static int __fscall_handshake(int fd)
+{
+	struct rpc_handshake_req request;
+	XDR xdr;
+	int ret;
+
+	request.vers = NRPC_VERSION;
+
+	xdrfd_create(&xdr, fd, XDR_ENCODE);
+
+	ret = NERR_RPC_ERROR;
+
+	if (!xdr_rpc_handshake_req(&xdr, &request))
+		goto err;
+
+	ret = __fscall_res(fd, NULL, NULL, 0);
+
+err:
+	xdr_destroy(&xdr);
+
+	return ret;
+}
+
 int fscall_connect(const char *host, uint16_t port, const char *vg,
 		   struct fscall_state *state)
 {
@@ -348,6 +371,11 @@ int fscall_connect(const char *host, uint16_t port, const char *vg,
 		return ret;
 
 	state->sock = ret;
+
+	ret = __fscall_handshake(state->sock);
+	cmn_err(CE_DEBUG, "__fscall_handshake() = %d", ret);
+	if (ret)
+		return ret;
 
 	ret = fscall_login(state, "unused", vg);
 	cmn_err(CE_DEBUG, "fscall_login() = %d", ret);

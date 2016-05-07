@@ -103,6 +103,7 @@ struct fsconn {
 	avl_tree_t open_handles;
 };
 
+extern bool process_handshake(struct fsconn *conn);
 extern bool process_connection(struct fsconn *conn);
 
 /* RPC handlers */

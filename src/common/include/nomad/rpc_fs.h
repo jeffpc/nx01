@@ -26,6 +26,8 @@
 #include <nomad/rpc_fs_xdr.h>
 #include <nomad/rpc.h>
 
+#define NRPC_VERSION 0x00000001
+
 #define NRPC_NOP	0x0000
 #define NRPC_LOGIN	0x0001
 #define NRPC_GETATTR	0x0002
