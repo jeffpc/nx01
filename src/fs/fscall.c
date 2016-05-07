@@ -211,6 +211,31 @@ int fscall_lookup(struct fscall_state *state, const uint32_t parent_handle,
 	return 0;
 }
 
+int fscall_create(struct fscall_state *state, const uint32_t parent_handle,
+		  const char *name, const uint16_t mode, struct noid *child)
+{
+	struct rpc_create_req create_req;
+	struct rpc_create_res create_res;
+	int ret;
+
+	create_req.parent = parent_handle;
+	create_req.path = (char *) name;
+	create_req.mode = mode;
+
+	ret = __fscall(state->sock, NRPC_CREATE,
+		       (void *) xdr_rpc_create_req,
+		       (void *) xdr_rpc_create_res,
+		       &create_req,
+		       &create_res,
+		       sizeof(create_res));
+	if (ret)
+		return ret;
+
+	*child = create_res.oid;
+
+	return 0;
+}
+
 int fscall_read(struct fscall_state *state, const uint32_t handle,
 		void *buf, size_t len, uint64_t off)
 {
