@@ -263,6 +263,26 @@ int fscall_read(struct fscall_state *state, const uint32_t handle,
 	return 0;
 }
 
+int fscall_write(struct fscall_state *state, const uint32_t handle,
+		 const void *buf, size_t len, uint64_t off)
+{
+	struct rpc_write_req write_req;
+
+	/* TODO: check for length being too much? */
+
+	write_req.handle = handle;
+	write_req.offset = off;
+	write_req.data.data_len = len;
+	write_req.data.data_val = (void *) buf;
+
+	return __fscall(state->sock, NRPC_WRITE,
+			(void *) xdr_rpc_write_req,
+			NULL,
+			&write_req,
+			NULL,
+			0);
+}
+
 int fscall_getdent(struct fscall_state *state, const uint32_t handle,
 		   const uint64_t off, struct noid *oid, char **name,
 		   uint64_t *entry_size)

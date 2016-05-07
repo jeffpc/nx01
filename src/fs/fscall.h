@@ -46,6 +46,8 @@ extern int fscall_create(struct fscall_state *state, const uint32_t parent_handl
 			 const char *name, const uint16_t mode, struct noid *child);
 extern int fscall_read(struct fscall_state *state, const uint32_t handle,
 		       void *buf, size_t len, uint64_t off);
+extern int fscall_write(struct fscall_state *state, const uint32_t handle,
+			const void *buf, size_t len, uint64_t off);
 extern int fscall_getdent(struct fscall_state *state, const uint32_t handle,
 			  const uint64_t off, struct noid *oid, char **name,
 			  uint64_t *entry_size);
