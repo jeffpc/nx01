@@ -108,7 +108,8 @@ static bool_t xdrfd_putbytes(XDR *xdr, caddr_t addr, int len)
 
 static void xdrfd_destroy(XDR *xdr)
 {
-	fsync(xdr->x_handy);
+	if (xdr->x_op == XDR_ENCODE)
+		fsync(xdr->x_handy);
 }
 
 static bool_t xdrfd_getint32(XDR *xdr, int32_t *p)
