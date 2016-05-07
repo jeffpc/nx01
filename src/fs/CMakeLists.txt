@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,23 @@
 # SOFTWARE.
 #
 
-include(CheckFunctionExists)
-include(CheckIncludeFiles)
-include(CheckCSourceCompiles)
-include(FindPkgConfig)
+add_definitions(
+	-D_FILE_OFFSET_BITS=64
+)
 
-include(cmake/config/xdr.cmake)
+include_directories(
+	${FUSE_INCLUDE_DIRS}
+)
 
-check_include_files(door.h HAVE_DOORS)
+add_executable(nomadfs
+	nomadfs.c
+	fscall.c
+)
 
-set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")
-find_package(umem)
-find_package(avl)
-find_package(jeffpc)
-pkg_search_module(FUSE REQUIRED fuse)
+target_link_libraries(nomadfs
+	${BASE_LIBS}
+	common
+	${FUSE_LIBRARIES}
+)
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/common/include/nomad/config.h.in"
-	"${CMAKE_CURRENT_BINARY_DIR}/src/common/include/nomad/config.h")
-
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/src/common/include")
+# don't bother installing this yet
