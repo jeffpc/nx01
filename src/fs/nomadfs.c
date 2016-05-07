@@ -420,6 +420,19 @@ err:
 	fuse_reply_err(req, -nerr_to_errno(ret));
 }
 
+static void nomadfs_write(fuse_req_t req, fuse_ino_t ino, const char *buf,
+			  size_t size, off_t off, struct fuse_file_info *fi)
+{
+	uint32_t ohandle = fi->fh;
+	int ret;
+
+	ret = fscall_write(&state, ohandle, buf, size, off);
+	if (ret)
+		fuse_reply_err(req, -nerr_to_errno(ret));
+	else
+		fuse_reply_write(req, size);
+}
+
 static struct fuse_lowlevel_ops nomad_ops = {
 	.getattr	= nomadfs_getattr,
 	.lookup		= nomadfs_lookup,
@@ -431,6 +444,7 @@ static struct fuse_lowlevel_ops nomad_ops = {
 	.opendir	= nomadfs_open,
 	.releasedir	= nomadfs_release,
 	.read		= nomadfs_read,
+	.write		= nomadfs_write,
 };
 
 int main(int argc, char *argv[])
