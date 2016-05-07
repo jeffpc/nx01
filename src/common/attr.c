@@ -27,7 +27,7 @@
 
 #define MAP_OR(i, o)		case i: mode |= o; break
 
-static inline mode_t cvt_mode(uint16_t nmode)
+static inline mode_t cvt_nmode(uint16_t nmode)
 {
 	mode_t mode;
 
@@ -55,7 +55,7 @@ static inline mode_t cvt_mode(uint16_t nmode)
 	return mode;
 }
 
-static inline void cvt_time(struct timespec *s, const uint64_t t)
+static inline void cvt_ntime(struct timespec *s, const uint64_t t)
 {
 	s->tv_sec = t / 1000000000;
 	s->tv_nsec = t % 1000000000;
@@ -66,14 +66,14 @@ void nattr_to_stat(const struct nattr *nattr, struct stat *stat)
 	stat->st_dev = 0;
 	stat->st_rdev = 0;
 	stat->st_ino = 0;
-	stat->st_mode = cvt_mode(nattr->mode);
+	stat->st_mode = cvt_nmode(nattr->mode);
 	stat->st_nlink = nattr->nlink;
 	stat->st_uid = 0;
 	stat->st_gid = 0;
 	stat->st_size = nattr->size;
-	cvt_time(&stat->st_atim, nattr->atime);
-	cvt_time(&stat->st_ctim, nattr->ctime);
-	cvt_time(&stat->st_mtim, nattr->mtime);
+	cvt_ntime(&stat->st_atim, nattr->atime);
+	cvt_ntime(&stat->st_ctim, nattr->ctime);
+	cvt_ntime(&stat->st_mtim, nattr->mtime);
 	stat->st_blksize = 4096;
 	stat->st_blocks = (nattr->size + stat->st_blksize - 1) / stat->st_blksize;
 
