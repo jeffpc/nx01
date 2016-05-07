@@ -38,20 +38,13 @@ struct ohandle {
 	avl_node_t node;
 };
 
+extern int ohandle_init(void);
+extern struct ohandle *ohandle_alloc(void);
+extern void ohandle_free(struct ohandle *oh);
 extern int ohandle_cmp(const void *va, const void *vb);
 extern uint32_t ohandle_insert(struct fsconn *conn, struct ohandle *oh);
 extern void ohandle_remove(struct fsconn *conn, struct ohandle *oh);
 extern struct ohandle *ohandle_find(struct fsconn *conn, const uint32_t handle);
 extern void ohandle_close_all(struct fsconn *conn);
-
-static inline struct ohandle *ohandle_alloc(void)
-{
-	return malloc(sizeof(struct ohandle));
-}
-
-static inline void ohandle_free(struct ohandle *oh)
-{
-	free(oh);
-}
 
 #endif
