@@ -87,6 +87,31 @@ err_close:
 	return ret;
 }
 
+static int __create(fuse_req_t req, fuse_ino_t parent, const char *name,
+		    uint16_t mode, struct noid *child_oid)
+{
+	uint32_t dir_ohandle;
+	struct noid dir_oid;
+	int ret;
+
+	make_oid(&dir_oid, parent);
+
+	ret = fscall_open(&state, &dir_oid, &dir_ohandle);
+	if (ret)
+		return ret;
+
+	ret = fscall_create(&state, dir_ohandle, name, mode, child_oid);
+	if (ret)
+		goto err;
+
+	return fscall_close(&state, dir_ohandle);
+
+err:
+	fscall_close(&state, dir_ohandle);
+
+	return ret;
+}
+
 /*
  * Fuse operations
  */
@@ -159,6 +184,36 @@ static void nomadfs_lookup(fuse_req_t req, fuse_ino_t parent, const char *name)
 
 err_close:
 	fscall_close(&state, child_ohandle);
+
+err:
+	fuse_reply_err(req, -nerr_to_errno(ret));
+}
+
+static void nomadfs_mkdir(fuse_req_t req, fuse_ino_t parent, const char *name,
+			mode_t mode)
+{
+	struct fuse_entry_param e;
+	struct noid child_oid;
+	struct nattr nattr;
+	int ret;
+
+	ret = __create(req, parent, name, NATTR_DIR | (mode & 0777), &child_oid);
+	if (ret)
+		goto err;
+
+	ret = __getattr(&child_oid, &nattr);
+	if (ret)
+		goto err;
+
+	memset(&e, 0, sizeof(e));
+	nattr_to_stat(&nattr, &e.attr);
+	e.ino = e.attr.st_ino = make_ino(&child_oid);
+	e.attr_timeout = ATTR_TIMEOUT;
+	e.entry_timeout = ENTRY_TIMEOUT;
+
+	fuse_reply_entry(req, &e);
+
+	return;
 
 err:
 	fuse_reply_err(req, -nerr_to_errno(ret));
@@ -326,6 +381,7 @@ err:
 static struct fuse_lowlevel_ops nomad_ops = {
 	.getattr	= nomadfs_getattr,
 	.lookup		= nomadfs_lookup,
+	.mkdir		= nomadfs_mkdir,
 	.readdir	= nomadfs_readdir,
 	.open		= nomadfs_open,
 	.release	= nomadfs_release,
