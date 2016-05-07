@@ -70,6 +70,13 @@ int main(int argc, char **argv)
 		goto err;
 	}
 
+	ret = ohandle_init();
+	if (ret) {
+		cmn_err(CE_CRIT, "failed to initialize ohandle subsystem: %s",
+			xstrerror(ret));
+		goto err;
+	}
+
 	ret = objstore_init();
 	if (ret) {
 		cmn_err(CE_CRIT, "objstore_init() = %d (%s)", ret,
