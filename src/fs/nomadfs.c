@@ -141,6 +141,58 @@ err:
 	fuse_reply_err(req, -nerr_to_errno(ret));
 }
 
+static void nomadfs_setattr(fuse_req_t req, fuse_ino_t ino, struct stat *attr,
+			    int to_set, struct fuse_file_info *fi)
+{
+	struct stat statbuf;
+	struct nattr nattr;
+	uint32_t ohandle;
+	struct noid oid;
+	int ret;
+
+	make_oid(&oid, ino);
+
+	/*
+	 * If we're not setting the mode (and therefore didn't get one), we
+	 * need to make a fake but valid mode for the benefit of stat_to_nattr
+	 */
+	if (!(to_set & FUSE_SET_ATTR_MODE))
+		attr->st_mode = S_IFREG;
+
+	stat_to_nattr(attr, &nattr);
+
+	ret = fscall_open(&state, &oid, &ohandle);
+	if (ret)
+		goto err;
+
+	ret = fscall_setattr(&state, ohandle, &nattr,
+			     (to_set & FUSE_SET_ATTR_SIZE) ? true : false,
+			     (to_set & FUSE_SET_ATTR_MODE) ? true : false);
+	if (ret)
+		goto err_close;
+
+	ret = fscall_getattr(&state, ohandle, &nattr);
+	if (ret)
+		goto err_close;
+
+	ret = fscall_close(&state, ohandle);
+	if (ret)
+		goto err;
+
+	nattr_to_stat(&nattr, &statbuf);
+	statbuf.st_ino = ino;
+
+	fuse_reply_attr(req, &statbuf, REPLY_TIMEOUT);
+
+	return;
+
+err_close:
+	fscall_close(&state, ohandle);
+
+err:
+	fuse_reply_err(req, -nerr_to_errno(ret));
+}
+
 static void nomadfs_lookup(fuse_req_t req, fuse_ino_t parent, const char *name)
 {
 	struct fuse_entry_param e;
@@ -448,6 +500,7 @@ static void nomadfs_write(fuse_req_t req, fuse_ino_t ino, const char *buf,
 
 static struct fuse_lowlevel_ops nomad_ops = {
 	.getattr	= nomadfs_getattr,
+	.setattr	= nomadfs_setattr,
 	.lookup		= nomadfs_lookup,
 	.mkdir		= nomadfs_mkdir,
 	.readdir	= nomadfs_readdir,
