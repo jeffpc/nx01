@@ -2,6 +2,7 @@
  * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  * Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
+ * Copyright (c) 2016 Steve Dougherty
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
