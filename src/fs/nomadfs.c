@@ -63,26 +63,44 @@ static inline fuse_ino_t make_ino(const struct noid *oid)
 	return oid->uniq;
 }
 
+/*
+ * Helpers to wrap fscall into more high-level operations
+ */
+static int __getattr(const struct noid *oid, struct nattr *nattr)
+{
+	uint32_t ohandle;
+	int ret;
+
+	ret = fscall_open(&state, oid, &ohandle);
+	if (ret)
+		return ret;
+
+	ret = fscall_getattr(&state, ohandle, nattr);
+	if (ret)
+		goto err_close;
+
+	return fscall_close(&state, ohandle);
+
+err_close:
+	fscall_close(&state, ohandle);
+
+	return ret;
+}
+
+/*
+ * Fuse operations
+ */
 static void nomadfs_getattr(fuse_req_t req, fuse_ino_t ino,
 			    struct fuse_file_info *fi)
 {
 	struct nattr nattr;
 	struct stat statbuf;
 	struct noid oid;
-	uint32_t ohandle;
 	int ret;
 
 	make_oid(&oid, ino);
 
-	ret = fscall_open(&state, &oid, &ohandle);
-	if (ret)
-		goto err;
-
-	ret = fscall_getattr(&state, ohandle, &nattr);
-	if (ret)
-		goto err_close;
-
-	ret = fscall_close(&state, ohandle);
+	ret = __getattr(&oid, &nattr);
 	if (ret)
 		goto err;
 
@@ -93,9 +111,6 @@ static void nomadfs_getattr(fuse_req_t req, fuse_ino_t ino,
 	/* XXX: seems to be a 32-bit. vs. 64-bit problem */
 	fuse_reply_attr(req, &statbuf, REPLY_TIMEOUT);
 	return;
-
-err_close:
-	fscall_close(&state, ohandle);
 
 err:
 	fuse_reply_err(req, -nerr_to_errno(ret));
