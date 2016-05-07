@@ -312,6 +312,47 @@ err:
 	fuse_reply_err(req, -nerr_to_errno(ret));
 }
 
+static void nomadfs_create(fuse_req_t req, fuse_ino_t parent, const char *name,
+			   mode_t mode, struct fuse_file_info *fi)
+{
+	struct fuse_entry_param e;
+	struct noid child_oid;
+	struct nattr nattr;
+	uint32_t ohandle;
+	int ret;
+
+	ret = __create(req, parent, name, NATTR_REG | (mode & 0777),
+		       &child_oid);
+	if (ret)
+		goto err;
+
+	ret = fscall_open(&state, &child_oid, &ohandle);
+	if (ret)
+		goto err;
+
+	ret = fscall_getattr(&state, ohandle, &nattr);
+	if (ret)
+		goto err_close;
+
+	fi->fh = ohandle;
+
+	memset(&e, 0, sizeof(e));
+	nattr_to_stat(&nattr, &e.attr);
+	e.ino = e.attr.st_ino = make_ino(&child_oid);
+	e.attr_timeout = ATTR_TIMEOUT;
+	e.entry_timeout = ENTRY_TIMEOUT;
+
+	fuse_reply_create(req, &e, fi);
+
+	return;
+
+err_close:
+	fscall_close(&state, ohandle);
+
+err:
+	fuse_reply_err(req, -nerr_to_errno(ret));
+}
+
 static void nomadfs_open(fuse_req_t req, fuse_ino_t ino,
 			 struct fuse_file_info *fi)
 {
@@ -384,6 +425,7 @@ static struct fuse_lowlevel_ops nomad_ops = {
 	.lookup		= nomadfs_lookup,
 	.mkdir		= nomadfs_mkdir,
 	.readdir	= nomadfs_readdir,
+	.create		= nomadfs_create,
 	.open		= nomadfs_open,
 	.release	= nomadfs_release,
 	.opendir	= nomadfs_open,
