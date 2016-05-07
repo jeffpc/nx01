@@ -106,16 +106,22 @@ static bool send_response(XDR *xdr, int fd, int err)
 	return true; /* all good */
 }
 
-static bool fetch_args(XDR *xdr, const struct cmdtbl *def, void *cmd)
+static bool process_args(XDR *xdr, const struct cmdtbl *def, void *cmd)
 {
+	if (!def->req)
+		return true; /* no args -> return success */
+
 	if (!def->req(xdr, cmd + def->reqoff))
 		return false;
 
 	return true;
 }
 
-static bool send_returns(XDR *xdr, const struct cmdtbl *def, void *cmd)
+static bool process_returns(XDR *xdr, const struct cmdtbl *def, void *cmd)
 {
+	if (!def->res)
+		return true; /* no response -> return success */
+
 	if (!def->res(xdr, cmd + def->resoff))
 		return false;
 
@@ -154,12 +160,10 @@ bool process_connection(struct fsconn *conn)
 		cmn_err(CE_DEBUG, "opcode decoded as: %s", def->name);
 
 		/* fetch arguments */
-		if (def->req) {
-			ok = fetch_args(&xdr, def, &cmd);
-			if (!ok) {
-				cmn_err(CE_ERROR, "failed to fetch args");
-				goto out;
-			}
+		ok = process_args(&xdr, def, &cmd);
+		if (!ok) {
+			cmn_err(CE_ERROR, "failed to fetch args");
+			goto out;
 		}
 
 		/* if login is required, make sure it happened */
@@ -172,12 +176,25 @@ bool process_connection(struct fsconn *conn)
 		/* invoke the handler */
 		ret = def->handler(conn, &cmd);
 
+		/* free the arguments */
+		xdr_destroy(&xdr);
+		xdrfd_create(&xdr, conn->fd, XDR_FREE);
+		process_args(&xdr, def, &cmd);
+		xdr_destroy(&xdr);
+
 		/* send back the response header */
+		xdrfd_create(&xdr, conn->fd, XDR_ENCODE);
 		ok = send_response(&xdr, conn->fd, ret);
 
 		/* send back the response payload */
-		if (ok && !ret && def->res)
-			ok = send_returns(&xdr, def, &cmd);
+		if (ok && !ret) {
+			ok = process_returns(&xdr, def, &cmd);
+
+			/* free the responses */
+			xdr_destroy(&xdr);
+			xdrfd_create(&xdr, conn->fd, XDR_FREE);
+			process_returns(&xdr, def, &cmd);
+		}
 
 		goto out;
 	}
