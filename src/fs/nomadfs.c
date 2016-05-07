@@ -171,10 +171,6 @@ static void nomadfs_setattr(fuse_req_t req, fuse_ino_t ino, struct stat *attr,
 	if (ret)
 		goto err_close;
 
-	ret = fscall_getattr(&state, ohandle, &nattr);
-	if (ret)
-		goto err_close;
-
 	ret = fscall_close(&state, ohandle);
 	if (ret)
 		goto err;

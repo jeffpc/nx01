@@ -188,10 +188,11 @@ int fscall_getattr(struct fscall_state *state, const uint32_t handle,
 }
 
 int fscall_setattr(struct fscall_state *state, const uint32_t handle,
-		   const struct nattr *attr, bool size_is_valid,
+		   struct nattr *attr, bool size_is_valid,
 		   bool mode_is_valid)
 {
 	struct rpc_setattr_req setattr_req;
+	struct rpc_setattr_res setattr_res;
 	int ret;
 
 	setattr_req.handle = handle;
@@ -201,12 +202,14 @@ int fscall_setattr(struct fscall_state *state, const uint32_t handle,
 
 	ret = __fscall(state->sock, NRPC_SETATTR,
 		       (void *) xdr_rpc_setattr_req,
-		       NULL,
+		       (void *) xdr_rpc_setattr_res,
 		       &setattr_req,
-		       NULL,
-		       0);
+		       &setattr_res,
+		       sizeof(setattr_res));
 	if (ret)
 		return ret;
+
+	*attr = setattr_res.attr;
 
 	return 0;
 }

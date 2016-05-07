@@ -75,7 +75,7 @@ extern int objstore_close(struct objstore *vg, void *cookie);
 extern int objstore_getattr(struct objstore *vg, void *cookie,
 			    struct nattr *attr);
 extern int objstore_setattr(struct objstore *vg, void *cookie,
-			    const struct nattr *attr, const unsigned valid);
+			    struct nattr *attr, const unsigned valid);
 extern ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf,
 			     size_t len, uint64_t offset);
 extern ssize_t objstore_write(struct objstore *vg, void *cookie,

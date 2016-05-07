@@ -89,7 +89,7 @@ struct obj_ops {
 	int (*abort)();		/* delete temp object */
 
 	int (*getattr)(struct objver *ver, struct nattr *attr);
-	int (*setattr)(struct objver *ver, const struct nattr *attr,
+	int (*setattr)(struct objver *ver, struct nattr *attr,
 		       const unsigned valid);
 	ssize_t (*read)(struct objver *ver, void *buf, size_t len,
 			uint64_t offset);

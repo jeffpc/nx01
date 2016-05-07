@@ -345,7 +345,7 @@ static int __truncate(struct objver *ver, uint64_t newsize, bool zero)
 	return 0;
 }
 
-static int mem_obj_setattr(struct objver *ver, const struct nattr *attr,
+static int mem_obj_setattr(struct objver *ver, struct nattr *attr,
 			   const unsigned valid)
 {
 	int ret;
@@ -375,9 +375,14 @@ static int mem_obj_setattr(struct objver *ver, const struct nattr *attr,
 		ver->attrs.mode = attr->mode;
 
 	/* TODO: do we need to tweak the versions AVL tree? */
-	nvclock_inc(ver->clock);
+	if (valid)
+		nvclock_inc(ver->clock);
 
 	sync_ver_to_mver(ver);
+
+	/* return the latest attributes */
+	*attr = ver->attrs;
+	attr->nlink = ver->obj->nlink;
 
 	return 0;
 }

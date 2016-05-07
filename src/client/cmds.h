@@ -82,6 +82,7 @@ union cmd {
 	/* setattr */
 	struct {
 		struct rpc_setattr_req req;
+		struct rpc_setattr_res res;
 	} setattr;
 
 	/* unlink */

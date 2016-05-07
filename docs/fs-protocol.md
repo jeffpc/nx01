@@ -266,7 +266,7 @@ Inputs
 
 Outputs
 -------
-None.
+* full set of attributes
 
 Limitations
 -----------

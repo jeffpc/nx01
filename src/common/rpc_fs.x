@@ -129,6 +129,10 @@ struct rpc_setattr_req {
 	bool mode_is_valid;
 };
 
+struct rpc_setattr_res {
+	struct nattr attr;
+};
+
 %/***** GETDENT *****/
 struct rpc_getdent_req {
 	HANDLE(parent);

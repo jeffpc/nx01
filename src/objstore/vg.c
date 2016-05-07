@@ -508,7 +508,7 @@ int objstore_getattr(struct objstore *vg, void *cookie, struct nattr *attr)
 	return ret;
 }
 
-int objstore_setattr(struct objstore *vg, void *cookie, const struct nattr *attr,
+int objstore_setattr(struct objstore *vg, void *cookie, struct nattr *attr,
 		     const unsigned valid)
 {
 	struct objver *objver = cookie;
@@ -525,10 +525,6 @@ int objstore_setattr(struct objstore *vg, void *cookie, const struct nattr *attr
 
 	if (!obj->ops || !obj->ops->setattr)
 		return -ENOTSUP;
-
-	/* nothing to do */
-	if (!valid)
-		return 0;
 
 	mxlock(&obj->lock);
 	ret = obj->ops->setattr(objver, attr, valid);

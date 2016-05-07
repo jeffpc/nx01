@@ -40,7 +40,7 @@ extern int fscall_close(struct fscall_state *state, const uint32_t handle);
 extern int fscall_getattr(struct fscall_state *state, const uint32_t handle,
 			  struct nattr *attr);
 extern int fscall_setattr(struct fscall_state *state, const uint32_t handle,
-			  const struct nattr *attr, bool size_is_valid,
+			  struct nattr *attr, bool size_is_valid,
 			  bool mode_is_valid);
 extern int fscall_lookup(struct fscall_state *state,
 			 const uint32_t parent_handle, const char *name,
