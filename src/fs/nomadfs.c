@@ -197,7 +197,8 @@ static void nomadfs_mkdir(fuse_req_t req, fuse_ino_t parent, const char *name,
 	struct nattr nattr;
 	int ret;
 
-	ret = __create(req, parent, name, NATTR_DIR | (mode & 0777), &child_oid);
+	ret = __create(req, parent, name, NATTR_DIR | (mode & 0777),
+		       &child_oid);
 	if (ret)
 		goto err;
 
