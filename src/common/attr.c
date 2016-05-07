@@ -25,7 +25,8 @@
 
 #include <nomad/types.h>
 
-#define M(i, o)		case i: mode |= o; break
+#define MAP_OR(i, o)		case i: mode |= o; break
+
 static inline mode_t cvt_mode(uint16_t nmode)
 {
 	mode_t mode;
@@ -34,15 +35,15 @@ static inline mode_t cvt_mode(uint16_t nmode)
 	mode = nmode & NATTR_AMASK;
 
 	switch (nmode & NATTR_TMASK) {
-		M(NATTR_REG, S_IFREG);
-		M(NATTR_DIR, S_IFDIR);
-		M(NATTR_FIFO, S_IFIFO);
-		M(NATTR_CHR, S_IFCHR);
-		M(NATTR_BLK, S_IFBLK);
-		M(NATTR_LNK, S_IFLNK);
-		M(NATTR_SOCK, S_IFSOCK);
+		MAP_OR(NATTR_REG, S_IFREG);
+		MAP_OR(NATTR_DIR, S_IFDIR);
+		MAP_OR(NATTR_FIFO, S_IFIFO);
+		MAP_OR(NATTR_CHR, S_IFCHR);
+		MAP_OR(NATTR_BLK, S_IFBLK);
+		MAP_OR(NATTR_LNK, S_IFLNK);
+		MAP_OR(NATTR_SOCK, S_IFSOCK);
 #ifdef HAVE_DOORS
-		M(NATTR_DOOR, S_IFDOOR);
+		MAP_OR(NATTR_DOOR, S_IFDOOR);
 #else
 		case NATTR_DOOR:
 			panic("unable to map NATTR_DOOR");
@@ -53,7 +54,6 @@ static inline mode_t cvt_mode(uint16_t nmode)
 
 	return mode;
 }
-#undef M
 
 static inline void cvt_time(struct timespec *s, const uint64_t t)
 {
