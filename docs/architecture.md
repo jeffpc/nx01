@@ -126,3 +126,17 @@ Note: the protocol is currently not defined.
 A utility used to query files on an `fs` mounted volume group.  It allows
 the user to inspect some of the state that is not visible through POSIX
 APIs.  It uses `ioctls` to get more information from `fs`.
+
+`libnomad_objstore.so`
+----------------------
+
+This shared library implements a generic object storage layer.  It relies of
+backend modules (`libnomad_objstore_*.so`) implement a specific storage
+method.
+
+It is in the form of a library so that both `nomad-client` and
+`nomad-server` can use the same exact code.
+
+Note: Eventually, the backend will be selectable at volume instantiation
+time.  At the moment, this is not implemented and `nomad-client` hardcodes
+the use of the mem backend (`libnomad_objstore_mem.so`).
