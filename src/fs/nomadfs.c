@@ -145,32 +145,41 @@ static void nomadfs_lookup(fuse_req_t req, fuse_ino_t parent, const char *name)
 {
 	struct fuse_entry_param e;
 	uint32_t child_ohandle;
+	uint32_t dir_ohandle;
 	struct noid child_oid;
 	struct nattr nattr;
 	int ret;
 
-	FIXME("%s supports only root dir", __func__);
+	if (parent == FUSE_ROOT_ID) {
+		dir_ohandle = state.root_ohandle;
+	} else {
+		struct noid oid;
 
-	if (parent != FUSE_ROOT_ID) {
-		fuse_reply_err(req, ENOENT);
-		return;
+		make_oid(&oid, parent);
+
+		ret = fscall_open(&state, &oid, &dir_ohandle);
+		if (ret)
+			goto err;
 	}
 
-	ret = fscall_lookup(&state, state.root_ohandle, name, &child_oid);
+	ret = fscall_lookup(&state, dir_ohandle, name, &child_oid);
 	if (ret)
-		goto err;
+		goto err_close_dir;
 
 	ret = fscall_open(&state, &child_oid, &child_ohandle);
 	if (ret)
-		goto err;
+		goto err_close_dir;
 
 	ret = fscall_getattr(&state, child_ohandle, &nattr);
 	if (ret)
-		goto err_close;
+		goto err_close_child;
 
 	ret = fscall_close(&state, child_ohandle);
 	if (ret)
-		goto err;
+		goto err_close_dir;
+
+	if (parent != FUSE_ROOT_ID)
+		fscall_close(&state, dir_ohandle);
 
 	memset(&e, 0, sizeof(e));
 	nattr_to_stat(&nattr, &e.attr);
@@ -182,8 +191,12 @@ static void nomadfs_lookup(fuse_req_t req, fuse_ino_t parent, const char *name)
 
 	return;
 
-err_close:
+err_close_child:
 	fscall_close(&state, child_ohandle);
+
+err_close_dir:
+	if (parent != FUSE_ROOT_ID)
+		fscall_close(&state, dir_ohandle);
 
 err:
 	fuse_reply_err(req, -nerr_to_errno(ret));
