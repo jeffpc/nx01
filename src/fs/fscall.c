@@ -187,6 +187,30 @@ int fscall_getattr(struct fscall_state *state, const uint32_t handle,
 	return 0;
 }
 
+int fscall_setattr(struct fscall_state *state, const uint32_t handle,
+		   const struct nattr *attr, bool size_is_valid,
+		   bool mode_is_valid)
+{
+	struct rpc_setattr_req setattr_req;
+	int ret;
+
+	setattr_req.handle = handle;
+	setattr_req.attr = *attr;
+	setattr_req.size_is_valid = size_is_valid;
+	setattr_req.mode_is_valid = mode_is_valid;
+
+	ret = __fscall(state->sock, NRPC_SETATTR,
+		       (void *) xdr_rpc_setattr_req,
+		       NULL,
+		       &setattr_req,
+		       NULL,
+		       0);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
 int fscall_lookup(struct fscall_state *state, const uint32_t parent_handle,
 		  const char *name, struct noid *child)
 {
