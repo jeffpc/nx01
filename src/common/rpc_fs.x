@@ -2,6 +2,7 @@
  * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  * Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
+ * Copyright (c) 2016 Steve Dougherty
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,11 @@
 %#include <nomad/types.h>
 
 #define HANDLE(n)	uint32_t	n
+
+%/***** HANDSHAKE ******/
+struct rpc_handshake_req {
+	uint32_t	vers;
+};
 
 %/***** RPC header *****/
 struct rpc_header_req {

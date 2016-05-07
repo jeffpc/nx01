@@ -3,6 +3,18 @@ fs component.  It is still a work-in-progress.
 
 Currently, we use `rpcgen(1)` created XDR encoding.
 
+Before RPC requests are accepted the initiator sends a handshake request using
+`struct rpc_handshake_req`. The response uses `struct rpc_header_res` with
+success (status code 0) if the version is supported, at which point the
+initiator may send RPC requests. On error the initiator must close the
+connection without sending more data.
+
+```C
+struct rpc_handshake_req {
+	uint32_t version;
+};
+```
+
 Each RPC request begins with a `struct rpc_header_req`.  It is then followed
 by a variable number of bytes representing the rest of the request.  The
 exact layout of this additional payload depends on the `opcode` in the

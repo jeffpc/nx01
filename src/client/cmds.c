@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
+ * Copyright (c) 2016 Steve Dougherty
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -126,6 +127,35 @@ static bool process_returns(XDR *xdr, const struct cmdtbl *def, void *cmd)
 		return false;
 
 	return true;
+}
+
+bool process_handshake(struct fsconn *conn)
+{
+	struct rpc_handshake_req request;
+	bool ok = false;
+	XDR xdr;
+	int ret;
+
+	memset(&request, 0, sizeof(struct rpc_handshake_req));
+
+	xdrfd_create(&xdr, conn->fd, XDR_DECODE);
+
+	if (!xdr_rpc_handshake_req(&xdr, &request))
+		goto out;
+
+	if (request.vers == NRPC_VERSION) {
+		ok = true;
+		ret = 0;
+	} else {
+		ret = -ENOTSUP;
+	}
+
+	send_response(&xdr, conn->fd, ret);
+
+out:
+	xdr_destroy(&xdr);
+
+	return ok;
 }
 
 bool process_connection(struct fsconn *conn)

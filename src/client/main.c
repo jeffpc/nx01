@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
+ * Copyright (c) 2016 Steve Dougherty
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,8 +51,9 @@ static void connection_acceptor(int fd, void *arg)
 
 	cmn_err(CE_DEBUG, "%s: fd = %d, arg = %p", __func__, fd, arg);
 
-	while (process_connection(&conn))
-		;
+	if (process_handshake(&conn))
+		while (process_connection(&conn))
+			;
 
 	ohandle_close_all(&conn);
 

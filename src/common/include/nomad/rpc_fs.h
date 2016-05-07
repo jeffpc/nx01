@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2016 Steve Dougherty
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,8 @@
 
 #include <nomad/rpc_fs_xdr.h>
 #include <nomad/rpc.h>
+
+#define NRPC_VERSION 0x00000001
 
 #define NRPC_NOP	0x0000
 #define NRPC_LOGIN	0x0001
