@@ -71,6 +71,7 @@ struct nattr {
 };
 
 extern void nattr_to_stat(const struct nattr *nattr, struct stat *stat);
+extern void stat_to_nattr(const struct stat *stat, struct nattr *nattr);
 
 extern bool_t xdr_nattr(XDR *xdrs, struct nattr *attr);
 

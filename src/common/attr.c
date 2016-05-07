@@ -83,6 +83,48 @@ void nattr_to_stat(const struct nattr *nattr, struct stat *stat)
 	 */
 }
 
+static inline uint16_t cvt_mode(mode_t mode)
+{
+	uint16_t nmode;
+
+	/* copy permission bits */
+	nmode = mode & 0777;
+
+	switch (mode & S_IFMT) {
+		MAP_OR(S_IFREG, NATTR_REG);
+		MAP_OR(S_IFDIR, NATTR_DIR);
+		MAP_OR(S_IFIFO, NATTR_FIFO);
+		MAP_OR(S_IFCHR, NATTR_CHR);
+		MAP_OR(S_IFBLK, NATTR_BLK);
+		MAP_OR(S_IFLNK, NATTR_LNK);
+		MAP_OR(S_IFSOCK, NATTR_SOCK);
+#ifdef HAVE_DOORS
+		MAP_OR(S_IFDOOR, NATTR_DOOR);
+#endif
+		default:
+			panic("unknown system mode type: %o", mode);
+	}
+
+	return nmode;
+}
+
+static inline uint64_t cvt_time(const struct timespec *s)
+{
+	return ((uint64_t) s->tv_sec) * 1000000000ull + s->tv_nsec;
+}
+
+void stat_to_nattr(const struct stat *stat, struct nattr *nattr)
+{
+	nattr->_reserved = 0;
+	nattr->mode = cvt_mode(stat->st_mode);
+	nattr->nlink = stat->st_nlink;
+	nattr->size = stat->st_size;
+	nattr->atime = cvt_time(&stat->st_atim);
+	nattr->btime = 0;
+	nattr->ctime = cvt_time(&stat->st_ctim);
+	nattr->mtime = cvt_time(&stat->st_mtim);
+}
+
 bool_t xdr_nattr(XDR *xdrs, struct nattr *attr)
 {
 	if (!xdr_uint16_t(xdrs, &attr->mode))
