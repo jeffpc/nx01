@@ -313,10 +313,11 @@ static int mem_obj_getattr(struct objver *ver, struct nattr *attr)
  * Truncate the blob buffer.
  *
  * The objver's size is updated to the new size, and the memver's blob is
- * reallocated as necessary.  If zero is true, any newly allocated bytes are
- * zeroed.
+ * reallocated as necessary.  safeoff indicates what starting offset is
+ * going to be overwritten anyway.  In other words, we must zero out bytes
+ * [ver->attrs.size, safeoff).
  */
-static int __truncate(struct objver *ver, uint64_t newsize, bool zero)
+static int __truncate(struct objver *ver, uint64_t newsize, uint64_t safeoff)
 {
 	struct memver *mver = ver->private;
 	void *tmp;
@@ -333,10 +334,9 @@ static int __truncate(struct objver *ver, uint64_t newsize, bool zero)
 	if (!tmp)
 		return -ENOMEM;
 
-	/* clear the new bytes */
-	if (zero)
-		memset(tmp + ver->attrs.size, 0,
-		       newsize - ver->attrs.size);
+	/* clear the new bytes up until safeoff */
+	if (ver->attrs.size < safeoff)
+		memset(tmp + ver->attrs.size, 0, safeoff - ver->attrs.size);
 
 	ver->attrs.size = newsize;
 
@@ -366,7 +366,7 @@ static int mem_obj_setattr(struct objver *ver, struct nattr *attr,
 	 */
 	/* must be first since it can fail */
 	if (valid & OBJ_ATTR_SIZE) {
-		ret = __truncate(ver, attr->size, true);
+		ret = __truncate(ver, attr->size, attr->size);
 		if (ret)
 			return ret;
 	}
@@ -414,7 +414,7 @@ static ssize_t mem_obj_write(struct objver *ver, const void *buf, size_t len,
 
 	/* object will grow - need to resize the blob buffer */
 	if ((offset + len) > ver->attrs.size) {
-		ret = __truncate(ver, offset + len, false);
+		ret = __truncate(ver, offset + len, offset);
 		if (ret)
 			return ret;
 	}
