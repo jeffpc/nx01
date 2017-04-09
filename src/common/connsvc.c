@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <sys/select.h>
 
-#include <suntaskq.h>
+#include <jeffpc/taskq.h>
 #include <jeffpc/atomic.h>
 #include <jeffpc/error.h>
 
@@ -55,7 +55,7 @@ union sockaddr_union {
 
 struct state {
 	void *private;
-	taskq_t *taskq;
+	struct taskq *taskq;
 	void (*func)(int, void *);
 	int fds[MAX_SOCK_FDS];
 	int nfds;
@@ -259,9 +259,11 @@ static void accept_conns(struct state *state)
 			cb->state = state;
 			cb->fd = fd;
 
-			if (!taskq_dispatch(state->taskq, wrap_taskq_callback,
-					    cb, 0)) {
-				cmn_err(CE_ERROR, "Failed to dispatch conn");
+			ret = taskq_dispatch(state->taskq, wrap_taskq_callback,
+					     cb);
+			if (ret) {
+				cmn_err(CE_ERROR, "Failed to dispatch conn: %s",
+					xstrerror(ret));
 				free(cb);
 				close(fd);
 			}
@@ -287,10 +289,9 @@ int connsvc(const char *host, uint16_t port, void (*func)(int fd, void *),
 	snprintf(name, sizeof(name), "connsvc: %s:%d", host ? host : "<any>",
 		 port);
 
-	state.taskq = taskq_create(name, CONN_BACKLOG, 1, INT_MAX,
-				   TASKQ_DYNAMIC);
-	if (!state.taskq) {
-		ret = -ENOMEM;
+	state.taskq = taskq_create_fixed(name, -1);
+	if (IS_ERR(state.taskq)) {
+		ret = PTR_ERR(state.taskq);
 		goto err;
 	}
 

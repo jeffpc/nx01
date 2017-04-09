@@ -33,7 +33,6 @@ if(NOT AVL_FOUND)
 endif()
 
 set(LIST_LIBRARY sunlist)
-set(TASKQ_LIBRARY suntaskq)
 
 #
 # From this point on, use these variables instead of hardcoding lib names:
@@ -41,7 +40,6 @@ set(TASKQ_LIBRARY suntaskq)
 #  AVL_LIBRARY
 #  JEFFPC_LIBRARY
 #  LIST_LIBRARY
-#  TASKQ_LIBRARY
 #  UMEM_LIBRARY
 #
 
@@ -57,13 +55,11 @@ include_directories(
 	common/include
 	objstore/include
 	sunlist/include
-	suntaskq/include
 	${JEFFPC_INCLUDE_DIR}
 )
 
 add_subdirectory(common)
 add_subdirectory(sunlist)
-add_subdirectory(suntaskq)
 add_subdirectory(objstore)
 add_subdirectory(server)
 add_subdirectory(client)

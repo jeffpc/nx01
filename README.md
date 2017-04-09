@@ -83,18 +83,17 @@ Internal Dependencies
 =====================
 
 ```text
-             | sunavl | sunlist | fakeumem | suntaskq | common | objstore 
--------------+--------+---------+----------+----------+--------+----------
-sunavl       |   -    |    n    |    n     |     n    |   n    |    n     
-sunlist      |   n    |    -    |    n     |     n    |   n    |    n     
-fakeumem     |   n    |    n    |    -     |     n    |   n    |    n     
-suntaskq     |   n    |    n    |    y     |     -    |   n    |    n     
-common       |   n    |    n    |    y     |     y    |   -    |    n     
-objstore     |   n    |    y    |    y     |     n    |   n    |    -     
-objs. module |   ?    |    ?    |    ?     |     ?    |   ?    |    n     
-client       |   y    |    n    |    y     |     n    |   y    |    y     
-server       |   n    |    n    |    y     |     n    |   n    |    n     
-tool         |   n    |    n    |    y     |     n    |   n    |    n     
+             | sunavl | sunlist | fakeumem | common | objstore 
+-------------+--------+---------+----------+--------+----------
+sunavl       |   -    |    n    |    n     |   n    |    n     
+sunlist      |   n    |    -    |    n     |   n    |    n     
+fakeumem     |   n    |    n    |    -     |   n    |    n     
+common       |   n    |    n    |    y     |   -    |    n     
+objstore     |   n    |    y    |    y     |   n    |    -     
+objs. module |   ?    |    ?    |    ?     |   ?    |    n     
+client       |   y    |    n    |    y     |   y    |    y     
+server       |   n    |    n    |    y     |   n    |    n     
+tool         |   n    |    n    |    y     |   n    |    n     
 
   y = yes, linked against
   n = no, not linked against
