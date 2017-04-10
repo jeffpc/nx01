@@ -21,15 +21,15 @@
  */
 
 #include <stddef.h>
-#include <umem.h>
 
 #include <jeffpc/error.h>
+#include <jeffpc/mem.h>
 
 #include <nomad/iter.h>
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-static umem_cache_t *vg_cache;
+static struct mem_cache *vg_cache;
 
 static struct lock vgs_lock;
 static list_t vgs;
@@ -38,10 +38,9 @@ int vg_init(void)
 {
 	struct objstore *filecache;
 
-	vg_cache = umem_cache_create("vg", sizeof(struct objstore),
-				     0, NULL, NULL, NULL, NULL, NULL, 0);
-	if (!vg_cache)
-		return -ENOMEM;
+	vg_cache = mem_cache_create("vg", sizeof(struct objstore), 0);
+	if (IS_ERR(vg_cache))
+		return PTR_ERR(vg_cache);
 
 	mxinit(&vgs_lock);
 
@@ -50,7 +49,7 @@ int vg_init(void)
 
 	filecache = objstore_vg_create("file$");
 	if (IS_ERR(filecache)) {
-		umem_cache_destroy(vg_cache);
+		mem_cache_destroy(vg_cache);
 		return PTR_ERR(filecache);
 	}
 
@@ -69,13 +68,13 @@ struct objstore *objstore_vg_create(const char *name)
 {
 	struct objstore *vg;
 
-	vg = umem_cache_alloc(vg_cache, 0);
+	vg = mem_cache_alloc(vg_cache);
 	if (!vg)
 		return ERR_PTR(-ENOMEM);
 
 	vg->name = strdup(name);
 	if (!vg->name) {
-		umem_cache_free(vg_cache, vg);
+		mem_cache_free(vg_cache, vg);
 		return ERR_PTR(-ENOMEM);
 	}
 

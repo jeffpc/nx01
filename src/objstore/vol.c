@@ -34,7 +34,7 @@ int objstore_vol_create(struct objstore *vg, const char *path,
 	if (!backend->def->create)
 		return -ENOTSUP;
 
-	vol = umem_cache_alloc(vol_cache, 0);
+	vol = mem_cache_alloc(vol_cache);
 	if (!vol)
 		return -ENOMEM;
 
@@ -62,7 +62,7 @@ err_path:
 	free((char *) vol->path);
 
 err:
-	umem_cache_free(vol_cache, vol);
+	mem_cache_free(vol_cache, vol);
 
 	return ret;
 }
@@ -78,5 +78,5 @@ void vol_free(struct objstore_vol *vol)
 		return;
 
 	free((char *) vol->path);
-	umem_cache_free(vol_cache, vol);
+	mem_cache_free(vol_cache, vol);
 }

@@ -27,8 +27,8 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-umem_cache_t *obj_cache;
-umem_cache_t *objver_cache;
+struct mem_cache *obj_cache;
+struct mem_cache *objver_cache;
 
 static int ver_cmp(const void *va, const void *vb)
 {
@@ -45,7 +45,7 @@ struct obj *allocobj(void)
 {
 	struct obj *obj;
 
-	obj = umem_cache_alloc(obj_cache, 0);
+	obj = mem_cache_alloc(obj_cache);
 	if (!obj)
 		return NULL;
 
@@ -81,7 +81,7 @@ void freeobj(struct obj *obj)
 	mxdestroy(&obj->lock);
 	vol_putref(obj->vol);
 	avl_destroy(&obj->versions);
-	umem_cache_free(obj_cache, obj);
+	mem_cache_free(obj_cache, obj);
 }
 
 /*
@@ -92,7 +92,7 @@ struct objver *allocobjver(void)
 	struct objver *ver;
 	int ret;
 
-	ver = umem_cache_alloc(objver_cache, 0);
+	ver = mem_cache_alloc(objver_cache);
 	if (!ver)
 		return ERR_PTR(-ENOMEM);
 
@@ -111,7 +111,7 @@ struct objver *allocobjver(void)
 	return ver;
 
 err:
-	umem_cache_free(objver_cache, ver);
+	mem_cache_free(objver_cache, ver);
 
 	return ERR_PTR(ret);
 }
@@ -125,5 +125,5 @@ void freeobjver(struct objver *ver)
 		return;
 
 	nvclock_free(ver->clock);
-	umem_cache_free(objver_cache, ver);
+	mem_cache_free(objver_cache, ver);
 }

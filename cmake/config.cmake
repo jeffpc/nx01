@@ -30,7 +30,6 @@ include(cmake/config/xdr.cmake)
 check_include_files(door.h HAVE_DOORS)
 
 set(CMAKE_MODULE_PATH "${CMAKE_DIR}/Modules")
-find_package(umem)
 find_package(avl)
 find_package(jeffpc)
 pkg_search_module(FUSE REQUIRED fuse)

@@ -20,12 +20,6 @@
 # SOFTWARE.
 #
 
-if(NOT UMEM_FOUND)
-	set(UMEM_LIBRARY fakeumem)
-	include_directories(fakeumem/include)
-	add_subdirectory(fakeumem)
-endif()
-
 if(NOT AVL_FOUND)
 	set(AVL_LIBRARY sunavl)
 	include_directories(sunavl/include)
@@ -40,14 +34,12 @@ set(LIST_LIBRARY sunlist)
 #  AVL_LIBRARY
 #  JEFFPC_LIBRARY
 #  LIST_LIBRARY
-#  UMEM_LIBRARY
 #
 
 #
 # We link all the binaries against these libs
 #
 set(BASE_LIBS
-	${UMEM_LIBRARY}
 	pthread
 )
 

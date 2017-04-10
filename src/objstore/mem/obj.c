@@ -22,9 +22,9 @@
  */
 
 #include <stddef.h>
-#include <umem.h>
 
 #include <jeffpc/error.h>
+#include <jeffpc/mem.h>
 
 #include <nomad/time.h>
 #include <nomad/objstore_backend.h>

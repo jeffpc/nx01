@@ -83,17 +83,16 @@ Internal Dependencies
 =====================
 
 ```text
-             | sunavl | sunlist | fakeumem | common | objstore 
--------------+--------+---------+----------+--------+----------
-sunavl       |   -    |    n    |    n     |   n    |    n     
-sunlist      |   n    |    -    |    n     |   n    |    n     
-fakeumem     |   n    |    n    |    -     |   n    |    n     
-common       |   n    |    n    |    y     |   -    |    n     
-objstore     |   n    |    y    |    y     |   n    |    -     
-objs. module |   ?    |    ?    |    ?     |   ?    |    n     
-client       |   y    |    n    |    y     |   y    |    y     
-server       |   n    |    n    |    y     |   n    |    n     
-tool         |   n    |    n    |    y     |   n    |    n     
+             | sunavl | sunlist | common | objstore 
+-------------+--------+---------+--------+----------
+sunavl       |   -    |    n    |   n    |    n     
+sunlist      |   n    |    -    |   n    |    n     
+common       |   n    |    n    |   -    |    n     
+objstore     |   n    |    y    |   n    |    -     
+objs. module |   ?    |    ?    |   ?    |    n     
+client       |   y    |    n    |   y    |    y     
+server       |   n    |    n    |   n    |    n     
+tool         |   n    |    n    |   n    |    n     
 
   y = yes, linked against
   n = no, not linked against
@@ -101,6 +100,5 @@ tool         |   n    |    n    |    y     |   n    |    n
   ? = may be linked against as necessary
 ```
 
-The above table assumes the lack of avl and umem libraries on the system.
-If they are present, they are used instead of sunavl and fakeumem
-respectively.
+The above table assumes the lack of the avl library on the system.
+If it is present, it is used instead of sunavl.

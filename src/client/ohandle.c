@@ -21,27 +21,26 @@
  */
 
 #include <jeffpc/rand.h>
-#include <umem.h>
+#include <jeffpc/mem.h>
 
 #include "ohandle.h"
 
-static umem_cache_t *ohandle_cache;
+static struct mem_cache *ohandle_cache;
 
 int ohandle_init(void)
 {
-	ohandle_cache = umem_cache_create("ohandle", sizeof(struct ohandle),
-					  0, NULL, NULL, NULL, NULL, NULL, 0);
-	return ohandle_cache ? 0 : -ENOMEM;
+	ohandle_cache = mem_cache_create("ohandle", sizeof(struct ohandle), 0);
+	return IS_ERR(ohandle_cache) ? PTR_ERR(ohandle_cache) : 0;
 }
 
 struct ohandle *ohandle_alloc(void)
 {
-	return umem_cache_alloc(ohandle_cache, 0);
+	return mem_cache_alloc(ohandle_cache);
 }
 
 void ohandle_free(struct ohandle *oh)
 {
-	umem_cache_free(ohandle_cache, oh);
+	mem_cache_free(ohandle_cache, oh);
 }
 
 int ohandle_cmp(const void *va, const void *vb)

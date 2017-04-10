@@ -37,7 +37,7 @@
 static struct backend mem_backend;
 struct backend *backend;
 
-umem_cache_t *vol_cache;
+struct mem_cache *vol_cache;
 
 static int load_backend(struct backend *backend, const char *name)
 {
@@ -62,22 +62,19 @@ int objstore_init(void)
 {
 	int ret;
 
-	vol_cache = umem_cache_create("vol", sizeof(struct objstore_vol),
-				      0, NULL, NULL, NULL, NULL, NULL, 0);
-	if (!vol_cache)
-		return -ENOMEM;
+	vol_cache = mem_cache_create("vol", sizeof(struct objstore_vol), 0);
+	if (IS_ERR(vol_cache))
+		return PTR_ERR(vol_cache);
 
-	obj_cache = umem_cache_create("obj", sizeof(struct obj),
-				      0, NULL, NULL, NULL, NULL, NULL, 0);
-	if (!obj_cache) {
-		ret = -ENOMEM;
+	obj_cache = mem_cache_create("obj", sizeof(struct obj), 0);
+	if (IS_ERR(obj_cache)) {
+		ret = PTR_ERR(obj_cache);
 		goto err;
 	}
 
-	objver_cache = umem_cache_create("objver", sizeof(struct objver),
-					 0, NULL, NULL, NULL, NULL, NULL, 0);
-	if (!objver_cache) {
-		ret = -ENOMEM;
+	objver_cache = mem_cache_create("objver", sizeof(struct objver), 0);
+	if (IS_ERR(objver_cache)) {
+		ret = PTR_ERR(objver_cache);
 		goto err_obj;
 	}
 
@@ -94,13 +91,13 @@ int objstore_init(void)
 	return 0;
 
 err_objver:
-	umem_cache_destroy(objver_cache);
+	mem_cache_destroy(objver_cache);
 
 err_obj:
-	umem_cache_destroy(obj_cache);
+	mem_cache_destroy(obj_cache);
 
 err:
-	umem_cache_destroy(vol_cache);
+	mem_cache_destroy(vol_cache);
 
 	return ret;
 }

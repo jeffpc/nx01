@@ -32,7 +32,7 @@
  * (3) If you are developing objstore itself, include <nomad/objstore_impl.h>.
  */
 
-#include <umem.h>
+#include <jeffpc/mem.h>
 
 #include <nomad/objstore.h>
 #include <nomad/objstore_backend.h>
@@ -50,14 +50,14 @@ extern int vg_init(void);
 extern void vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
 
 /* internal volume management */
-extern umem_cache_t *vol_cache;
+extern struct mem_cache *vol_cache;
 extern void vol_free(struct objstore_vol *vol);
 
 REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, vol_free)
 
 /* internal object management */
-extern umem_cache_t *obj_cache;
-extern umem_cache_t *objver_cache;
+extern struct mem_cache *obj_cache;
+extern struct mem_cache *objver_cache;
 extern struct obj *allocobj(void);
 extern void freeobj(struct obj *obj);
 extern struct objver *allocobjver(void);
