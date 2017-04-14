@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 static struct mem_cache *vg_cache;
 
 static struct lock vgs_lock;
-static list_t vgs;
+static struct list vgs;
 
 int vg_init(void)
 {
@@ -104,7 +104,7 @@ struct objstore *objstore_vg_lookup(const char *name)
 	struct objstore *vg;
 
 	mxlock(&vgs_lock);
-	list_for_each(&vgs, vg)
+	list_for_each(vg, &vgs)
 		if (!strcmp(name, vg->name))
 			break;
 	mxunlock(&vgs_lock);

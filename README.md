@@ -83,16 +83,15 @@ Internal Dependencies
 =====================
 
 ```text
-             | sunavl | sunlist | common | objstore 
--------------+--------+---------+--------+----------
-sunavl       |   -    |    n    |   n    |    n     
-sunlist      |   n    |    -    |   n    |    n     
-common       |   n    |    n    |   -    |    n     
-objstore     |   n    |    y    |   n    |    -     
-objs. module |   ?    |    ?    |   ?    |    n     
-client       |   y    |    n    |   y    |    y     
-server       |   n    |    n    |   n    |    n     
-tool         |   n    |    n    |   n    |    n     
+             | sunavl | common | objstore 
+-------------+--------+--------+----------
+sunavl       |   -    |   n    |    n     
+common       |   n    |   -    |    n     
+objstore     |   n    |   n    |    -     
+objs. module |   ?    |   ?    |    n     
+client       |   y    |   y    |    y     
+server       |   n    |   n    |    n     
+tool         |   n    |   n    |    n     
 
   y = yes, linked against
   n = no, not linked against

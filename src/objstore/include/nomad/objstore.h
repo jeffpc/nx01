@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,11 @@
 #ifndef __NOMAD_OBJSTORE_H
 #define __NOMAD_OBJSTORE_H
 
-#include <sys/list.h>
 #include <sys/avl.h>
 
 #include <jeffpc/refcnt.h>
 #include <jeffpc/synch.h>
+#include <jeffpc/list.h>
 
 #include <nomad/types.h>
 
@@ -44,7 +44,7 @@ enum {
 struct objstore_vol;
 
 struct objstore {
-	list_node_t node;
+	struct list_node node;
 
 	struct lock lock;
 	const char *name;

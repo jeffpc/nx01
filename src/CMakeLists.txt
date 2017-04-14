@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,11 @@ if(NOT AVL_FOUND)
 	add_subdirectory(sunavl)
 endif()
 
-set(LIST_LIBRARY sunlist)
-
 #
 # From this point on, use these variables instead of hardcoding lib names:
 #
 #  AVL_LIBRARY
 #  JEFFPC_LIBRARY
-#  LIST_LIBRARY
 #
 
 #
@@ -46,12 +43,10 @@ set(BASE_LIBS
 include_directories(
 	common/include
 	objstore/include
-	sunlist/include
 	${JEFFPC_INCLUDE_DIR}
 )
 
 add_subdirectory(common)
-add_subdirectory(sunlist)
 add_subdirectory(objstore)
 add_subdirectory(server)
 add_subdirectory(client)

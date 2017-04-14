@@ -29,7 +29,6 @@ add_library(nomad_objstore SHARED
 
 target_link_libraries(nomad_objstore
 	${BASE_LIBS}
-	${LIST_LIBRARY}
 	dl
 )
 
