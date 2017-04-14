@@ -127,6 +127,6 @@ extern struct memobj *newmemobj(struct memstore *ms, uint16_t mode);
 extern void freememobj(struct memobj *obj);
 extern struct memobj *findmemobj(struct memstore *store, const struct noid *oid);
 
-REFCNT_INLINE_FXNS(struct memobj, memobj, refcnt, freememobj);
+REFCNT_INLINE_FXNS(struct memobj, memobj, refcnt, freememobj, NULL);
 
 #endif

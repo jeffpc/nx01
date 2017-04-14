@@ -53,7 +53,7 @@ extern void vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
 extern struct mem_cache *vol_cache;
 extern void vol_free(struct objstore_vol *vol);
 
-REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, vol_free)
+REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, vol_free, NULL)
 
 /* internal object management */
 extern struct mem_cache *obj_cache;
@@ -63,6 +63,6 @@ extern void freeobj(struct obj *obj);
 extern struct objver *allocobjver(void);
 extern void freeobjver(struct objver *ver);
 
-REFCNT_INLINE_FXNS(struct obj, obj, refcnt, freeobj);
+REFCNT_INLINE_FXNS(struct obj, obj, refcnt, freeobj, NULL);
 
 #endif
