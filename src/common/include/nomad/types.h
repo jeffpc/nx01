@@ -31,8 +31,8 @@
 
 #include <nomad/attr.h>
 #include <nomad/vclock.h>
-#include <nomad/malloc.h>
 
+#include <jeffpc/mem.h>
 #include <jeffpc/uuid.h>
 #include <jeffpc/types.h>
 

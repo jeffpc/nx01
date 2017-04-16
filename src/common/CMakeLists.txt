@@ -46,7 +46,6 @@ install(TARGETS nomad_common DESTINATION lib
 install(FILES	include/nomad/attr.h
 		include/nomad/init.h
 		include/nomad/iter.h
-		include/nomad/malloc.h
 		include/nomad/types.h
 		include/nomad/vclock.h
 		${CMAKE_CURRENT_BINARY_DIR}/include/nomad/config.h
