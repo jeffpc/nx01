@@ -98,8 +98,6 @@ int common_init(void)
 {
 	int ret;
 
-	jeffpc_init(NULL);
-
 	ret = load_config();
 	if (ret)
 		return ret;
