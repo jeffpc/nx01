@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2016-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,17 +76,9 @@ static void usage(char *msg)
 
 int main(int argc, char **argv)
 {
-	int ret;
 	int i;
 
 	prog = argv[0];
-
-	ret = common_init();
-	if (ret) {
-		fprintf(stderr, "common_init() = %d (%s)", ret,
-			xstrerror(ret));
-		return 2;
-	}
 
 	if (argc < 2)
 		usage(NULL);

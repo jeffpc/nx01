@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,13 +94,17 @@ err:
 	return ret;
 }
 
-int common_init(void)
+static void __attribute__((constructor)) common_init(void)
 {
 	int ret;
 
 	ret = load_config();
 	if (ret)
-		return ret;
+		cmn_err(CE_PANIC, "Failed to load nomad config: %s",
+			xstrerror(ret));
 
-	return nvclock_init_subsys();
+	ret = nvclock_init_subsys();
+	if (ret)
+		cmn_err(CE_PANIC, "Failed to initialize nvclock subsystem: %s",
+			xstrerror(ret));
 }

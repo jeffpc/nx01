@@ -65,13 +65,6 @@ int main(int argc, char **argv)
 	struct objstore *vg;
 	int ret;
 
-	ret = common_init();
-	if (ret) {
-		cmn_err(CE_CRIT, "common_init() = %d (%s)", ret,
-			xstrerror(ret));
-		goto err;
-	}
-
 	ret = ohandle_init();
 	if (ret) {
 		cmn_err(CE_CRIT, "failed to initialize ohandle subsystem: %s",

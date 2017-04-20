@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,6 @@
 
 #ifndef __NOMAD_INIT_H
 #define __NOMAD_INIT_H
-
-extern int common_init(void);
 
 extern int nvclock_init_subsys(void);
 
