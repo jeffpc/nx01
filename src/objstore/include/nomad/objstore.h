@@ -60,8 +60,8 @@ extern struct objstore *objstore_vg_create(const char *name);
 extern struct objstore *objstore_vg_lookup(const char *name);
 
 /* volume management */
-extern int objstore_vol_create(struct objstore *vg, const char *path,
-			       enum objstore_mode mode);
+extern int objstore_vol_create(struct objstore *vg, const char *type,
+			       const char *path, enum objstore_mode mode);
 extern int objstore_vol_load(struct objstore *vg, struct xuuid *uuid,
 			     const char *path);
 

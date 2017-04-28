@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  * Copyright (c) 2016 Steve Dougherty
  *
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 		goto err_init;
 	}
 
-	ret = objstore_vol_create(vg, "fauxpath", OS_MODE_STORE);
+	ret = objstore_vol_create(vg, "mem", "fauxpath", OS_MODE_STORE);
 	cmn_err(CE_DEBUG, "vol create = %d", ret);
 
 	if (ret) {

@@ -25,14 +25,14 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-int objstore_vol_create(struct objstore *vg, const char *path,
-			enum objstore_mode mode)
+int objstore_vol_create(struct objstore *vg, const char *type,
+			const char *path, enum objstore_mode mode)
 {
 	struct objstore_vol *vol;
 	struct backend *backend;
 	int ret;
 
-	backend = backend_lookup("mem");
+	backend = backend_lookup(type);
 	if (!backend || !backend->def->create)
 		return -ENOTSUP;
 
