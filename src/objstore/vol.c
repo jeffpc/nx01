@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,11 @@ int objstore_vol_create(struct objstore *vg, const char *path,
 			enum objstore_mode mode)
 {
 	struct objstore_vol *vol;
+	struct backend *backend;
 	int ret;
 
-	if (!backend->def->create)
+	backend = backend_lookup("mem");
+	if (!backend || !backend->def->create)
 		return -ENOTSUP;
 
 	vol = mem_cache_alloc(vol_cache);

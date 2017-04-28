@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,14 +30,19 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-/*
- * TODO: eventually turn this into something that can support multiple
- * backends.
- */
 static struct backend mem_backend;
-struct backend *backend;
+static struct backend posix_backend;
 
 struct mem_cache *vol_cache;
+
+struct backend *backend_lookup(const char *name)
+{
+	if (!strcmp(name, "mem"))
+		return &mem_backend;
+	if (!strcmp(name, "posix"))
+		return &posix_backend;
+	return NULL;
+}
 
 static int load_backend(struct backend *backend, const char *name)
 {
@@ -86,7 +91,9 @@ int objstore_init(void)
 	if (ret)
 		goto err_objver;
 
-	backend = &mem_backend;
+	ret = load_backend(&posix_backend, "posix");
+	if (ret)
+		goto err_objver;
 
 	return 0;
 
