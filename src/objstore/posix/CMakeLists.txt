@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 add_library(nomad_objstore_posix MODULE
 	main.c
+	oidbmap.c
 )
 
 target_link_libraries(nomad_objstore_posix
