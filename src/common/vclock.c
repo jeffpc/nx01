@@ -58,14 +58,18 @@ int nvclock_init_subsys(void)
 	return IS_ERR(vclock_cache) ? PTR_ERR(vclock_cache) : 0;
 }
 
-struct nvclock *nvclock_alloc(void)
+struct nvclock *nvclock_alloc(bool autoset)
 {
 	struct nvclock *clock;
 
 	clock = mem_cache_alloc(vclock_cache);
 
-	if (clock)
+	if (clock) {
 		memset(clock, 0, sizeof(struct nvclock));
+
+		if (autoset)
+			nvclock_set(clock, 1);
+	}
 
 	return clock;
 }
@@ -74,7 +78,7 @@ struct nvclock *nvclock_dup(const struct nvclock *clock)
 {
 	struct nvclock *ret;
 
-	ret = nvclock_alloc();
+	ret = nvclock_alloc(false);
 	if (!ret)
 		return NULL;
 

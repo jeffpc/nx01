@@ -90,15 +90,11 @@ static struct memver *newobjver(uint16_t mode)
 		goto err;
 	}
 
-	ver->clock = nvclock_alloc();
+	ver->clock = nvclock_alloc(true);
 	if (!ver->clock) {
 		ret = -ENOMEM;
 		goto err_free;
 	}
-
-	ret = nvclock_set(ver->clock, 1);
-	if (ret)
-		goto err_free;
 
 	avl_create(&ver->dentries, dentry_cmp, sizeof(struct memdentry),
 	           offsetof(struct memdentry, node));

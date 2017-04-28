@@ -69,13 +69,9 @@ static int create_obj(struct posixvol *pv, uint64_t *uniq_r)
 	int ret;
 	int fd;
 
-	clock = nvclock_alloc();
+	clock = nvclock_alloc(true);
 	if (!clock)
 		return -ENOMEM;
-
-	ret = nvclock_inc(clock);
-	if (ret)
-		goto err_free_clock;
 
 	ret = nvclock_to_str(clock, vername, sizeof(vername));
 	if (ret)

@@ -45,7 +45,7 @@ struct nvclock {
 	struct nvclockent ent[NVCLOCK_NUM_NODES];
 };
 
-extern struct nvclock *nvclock_alloc(void);
+extern struct nvclock *nvclock_alloc(bool autoset);
 extern struct nvclock *nvclock_dup(const struct nvclock *clock);
 extern void nvclock_copy(struct nvclock *dst, const struct nvclock *src);
 extern void nvclock_free(struct nvclock *clock);

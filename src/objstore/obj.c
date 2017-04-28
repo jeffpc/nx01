@@ -96,7 +96,7 @@ struct objver *allocobjver(void)
 	if (!ver)
 		return ERR_PTR(-ENOMEM);
 
-	ver->clock = nvclock_alloc();
+	ver->clock = nvclock_alloc(false);
 	if (!ver->clock) {
 		ret = -ENOMEM;
 		goto err;
