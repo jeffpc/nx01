@@ -36,12 +36,10 @@
  * /data/vol               - a file with volume information (root OID, uuid, etc.)
  * /data/oid-bmap          - OID bitmap (0 = free, 1 = used)
  * /data/<oid>             - everything related to the object
- * /data/<oid>/vers        - information about versions and obj-level metadata
- * /data/<oid>/<seq#>      - one version of the object
- * /data/<oid>/<seq#>.attr - the attributes of the version
+ * /data/<oid>/<clock>     - one version of the object
  *
- * The seq# is really just a token that the 'vers' file uses to map a vector
- * clock to something that can be used as a file name.
+ * Each /data/<oid>/<clock> file contains a header (containing attributes,
+ * etc.) followed by the object contents.
  */
 
 struct posixvol {

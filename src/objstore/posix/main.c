@@ -62,40 +62,65 @@ static const struct vol_ops vol_ops = {
 
 static int create_obj(struct posixvol *pv, uint64_t *uniq_r)
 {
-	char name[20];
+	struct nvclock *clock;
+	char vername[PATH_MAX];
+	char dirname[20];
 	uint64_t uniq;
 	int ret;
 	int fd;
 
+	clock = nvclock_alloc();
+	if (!clock)
+		return -ENOMEM;
+
+	ret = nvclock_inc(clock);
+	if (ret)
+		goto err_free_clock;
+
+	ret = nvclock_to_str(clock, vername, sizeof(vername));
+	if (ret)
+		goto err_free_clock;
+
 	ret = oidbmap_get_new(pv, &uniq);
 	if (ret)
-		return ret;
+		goto err_free_clock;
 
-	snprintf(name, sizeof(name), OIDFMT, uniq);
+	snprintf(dirname, sizeof(dirname), OIDFMT, uniq);
 
-	ret = xmkdirat(pv->basefd, name, 0700);
+	ret = xmkdirat(pv->basefd, dirname, 0700);
 	if (ret)
 		goto err_free_uniq;
 
-	fd = xopenat(pv->basefd, name, O_RDONLY, 0);
+	fd = xopenat(pv->basefd, dirname, O_RDONLY, 0);
 	if (fd < 0) {
 		ret = fd;
 		goto err_unlink_dir;
 	}
 
-	FIXME("create obj files");
+	ret = xopenat(fd, vername, O_RDWR | O_CREAT, 0600);
+	if (ret < 0)
+		goto err_close;
 
+	xclose(ret);
 	xclose(fd);
+
+	nvclock_free(clock);
 
 	*uniq_r = uniq;
 
 	return 0;
 
+err_close:
+	xclose(fd);
+
 err_unlink_dir:
-	xunlinkat(pv->basefd, name, 0);
+	xunlinkat(pv->basefd, dirname, 0);
 
 err_free_uniq:
 	oidbmap_put(pv, uniq);
+
+err_free_clock:
+	nvclock_free(clock);
 
 	return ret;
 }
