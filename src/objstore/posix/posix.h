@@ -25,6 +25,9 @@
 
 #include <nomad/types.h>
 
+#include <nomad/objstore.h>
+#include <nomad/objstore_backend.h>
+
 /*
  * This is an objstore backend that uses a POSIX file system for storage of
  * objects.
@@ -50,6 +53,10 @@ struct posixvol {
 	uint32_t ds;
 	struct noid root;
 };
+
+extern const struct vol_ops posix_vol_ops;
+
+extern int posix_new_obj(struct posixvol *pv, uint16_t mode, struct noid *oid);
 
 extern int oidbmap_create(struct posixvol *pv);
 extern int oidbmap_set(struct posixvol *pv, uint64_t uniq);

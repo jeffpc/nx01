@@ -23,6 +23,7 @@
 add_library(nomad_objstore_posix MODULE
 	main.c
 	oidbmap.c
+	vol.c
 )
 
 target_link_libraries(nomad_objstore_posix

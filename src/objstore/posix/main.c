@@ -24,116 +24,7 @@
 #include <jeffpc/io.h>
 #include <jeffpc/rand.h>
 
-#include <nomad/objstore_backend.h>
-
 #include "posix.h"
-
-#define OIDFMT	"%016"PRIx64
-
-static int posix_getroot(struct objstore_vol *vol, struct noid *root)
-{
-	struct posixvol *pv = vol->private;
-
-	*root = pv->root;
-
-	return 0;
-}
-
-static int posix_allocobj(struct obj *obj)
-{
-	struct posixvol *pv = obj->vol->private;
-	char oidstr[32];
-	int objfd;
-
-	snprintf(oidstr, sizeof(oidstr), OIDFMT, obj->oid.uniq);
-
-	objfd = xopenat(pv->basefd, oidstr, O_RDONLY, 0);
-	ASSERT3S(objfd, >=, 0);
-
-	FIXME("allocobj not fully implemented");
-
-	return 0;
-}
-
-static const struct vol_ops vol_ops = {
-	.getroot	= posix_getroot,
-	.allocobj	= posix_allocobj,
-};
-
-static int create_obj(struct posixvol *pv, uint64_t *uniq_r)
-{
-	struct nvclock *clock;
-	char vername[PATH_MAX];
-	char dirname[20];
-	uint64_t uniq;
-	int ret;
-	int fd;
-
-	clock = nvclock_alloc(true);
-	if (!clock)
-		return -ENOMEM;
-
-	ret = nvclock_to_str(clock, vername, sizeof(vername));
-	if (ret)
-		goto err_free_clock;
-
-	ret = oidbmap_get_new(pv, &uniq);
-	if (ret)
-		goto err_free_clock;
-
-	snprintf(dirname, sizeof(dirname), OIDFMT, uniq);
-
-	ret = xmkdirat(pv->basefd, dirname, 0700);
-	if (ret)
-		goto err_free_uniq;
-
-	fd = xopenat(pv->basefd, dirname, O_RDONLY, 0);
-	if (fd < 0) {
-		ret = fd;
-		goto err_unlink_dir;
-	}
-
-	ret = xopenat(fd, vername, O_RDWR | O_CREAT, 0600);
-	if (ret < 0)
-		goto err_close;
-
-	xclose(ret);
-	xclose(fd);
-
-	nvclock_free(clock);
-
-	*uniq_r = uniq;
-
-	return 0;
-
-err_close:
-	xclose(fd);
-
-err_unlink_dir:
-	xunlinkat(pv->basefd, dirname, 0);
-
-err_free_uniq:
-	oidbmap_put(pv, uniq);
-
-err_free_clock:
-	nvclock_free(clock);
-
-	return ret;
-}
-
-static int create_root_obj(struct posixvol *pv)
-{
-	uint64_t uniq;
-	int ret;
-
-	ret = create_obj(pv, &uniq);
-	if (ret)
-		return ret;
-
-	noid_set(&pv->root, pv->ds, uniq);
-
-	return 0;
-}
 
 static int prep_paths(const char *base, struct posixvol *pv)
 {
@@ -192,14 +83,15 @@ static int posix_create(struct objstore_vol *vol)
 	if (ret)
 		goto err_free;
 
-	ret = create_root_obj(pv);
+	/* create root object */
+	ret = posix_new_obj(pv, NATTR_DIR | 0777, &pv->root);
 	if (ret)
 		goto err_paths;
 
 	FIXME("flush vol info");
 
 	vol->private = pv;
-	vol->ops = &vol_ops;
+	vol->ops = &posix_vol_ops;
 
 	return 0;
 
