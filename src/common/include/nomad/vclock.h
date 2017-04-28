@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,5 +65,7 @@ extern int nvclock_inc(struct nvclock *clock);
 extern bool nvclock_is_null(const struct nvclock *clock);
 
 extern bool_t xdr_nvclock(XDR *xdrs, struct nvclock *clock);
+
+extern int nvclock_to_str(struct nvclock *clock, char *str, size_t len);
 
 #endif

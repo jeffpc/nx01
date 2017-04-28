@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -511,4 +511,38 @@ bool_t xdr_nvclock(XDR *xdrs, struct nvclock *clock)
 	}
 
 	return TRUE;
+}
+
+int nvclock_to_str(struct nvclock *clock, char *str, size_t len)
+{
+	uint32_t num_nodes;
+	int ret;
+	int i;
+
+	num_nodes = 0;
+	for (i = 0; i < NVCLOCK_NUM_NODES; i++)
+		if (clock->ent[i].node)
+			num_nodes++;
+
+	ret = snprintf(str, len, "%u-", num_nodes);
+	if ((ret < 0) || (ret > len))
+		goto err;
+
+	str += ret;
+	len -= ret;
+
+	for (i = 0; i < num_nodes; i++) {
+		ret = snprintf(str, len, "%"PRIx64"_%"PRIx64"-",
+			 clock->ent[i].node,  clock->ent[i].seq);
+		if ((ret < 0) || (ret > len))
+			goto err;
+
+		str += ret;
+		len -= ret;
+	}
+
+	return 0;
+
+err:
+	return -EOVERFLOW;
 }
