@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +20,17 @@
 # SOFTWARE.
 #
 
-if(NOT AVL_FOUND)
-	set(AVL_LIBRARY sunavl)
-	include_directories(sunavl/include)
-	add_subdirectory(sunavl)
-endif()
-
-#
-# From this point on, use these variables instead of hardcoding lib names:
-#
-#  AVL_LIBRARY
-#  JEFFPC_LIBRARY
-#
-
-#
-# We link all the binaries against these libs
-#
-set(BASE_LIBS
-	pthread
+add_executable(nomad-format
+	main.c
 )
 
-include_directories(
-	common/include
-	objstore/include
-	${JEFFPC_INCLUDE_DIR}
+target_link_libraries(nomad-format
+	${BASE_LIBS}
+	common
+	nomad_objstore
 )
 
-add_subdirectory(common)
-add_subdirectory(objstore)
-add_subdirectory(server)
-add_subdirectory(client)
-add_subdirectory(admin)
-add_subdirectory(tool)
-add_subdirectory(fs)
-add_subdirectory(format)
+install(TARGETS nomad-format DESTINATION sbin
+	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+	            GROUP_READ GROUP_EXECUTE
+		    WORLD_READ GROUP_EXECUTE)
