@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 # Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +25,6 @@ rpcgen(rpc_fs)
 
 add_library(nomad_common SHARED
 	attr.c
-	connsvc.c
 	error.c
 	init.c
 	node.c

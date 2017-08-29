@@ -28,10 +28,10 @@
 #include <unistd.h>
 
 #include <jeffpc/error.h>
+#include <jeffpc/socksvc.h>
 
 #include <nomad/types.h>
 #include <nomad/objstore.h>
-#include <nomad/connsvc.h>
 #include <nomad/init.h>
 
 #include "cmds.h"
@@ -39,7 +39,7 @@
 
 #define CLIENT_DAEMON_PORT	2323
 
-static void connection_acceptor(int fd, void *arg)
+static void connection_acceptor(int fd, struct socksvc_stats *stats, void *arg)
 {
 	struct fsconn conn;
 
@@ -100,9 +100,9 @@ int main(int argc, char **argv)
 		goto err_vg;
 	}
 
-	ret = connsvc(NULL, CLIENT_DAEMON_PORT, connection_acceptor, NULL);
+	ret = socksvc(NULL, CLIENT_DAEMON_PORT, -1, connection_acceptor, NULL);
 
-	cmn_err(CE_DEBUG, "connsvc() = %d (%s)", ret, xstrerror(ret));
+	cmn_err(CE_DEBUG, "socksvc() = %d (%s)", ret, xstrerror(ret));
 
 	/* XXX: undo objstore_vol_create() */
 
