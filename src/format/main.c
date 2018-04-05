@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2017-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,13 +40,13 @@ static int usage(const char *prog)
 
 static int do_format(const char *type, const char *path)
 {
-	struct objstore *vg;
+	struct objstore *pool;
 
-	vg = objstore_vg_create("temp");
-	if (IS_ERR(vg))
-		return PTR_ERR(vg);
+	pool = objstore_pool_create("temp");
+	if (IS_ERR(pool))
+		return PTR_ERR(pool);
 
-	return objstore_vol_create(vg, type, path, OS_MODE_STORE);
+	return objstore_vol_create(pool, type, path, OS_MODE_STORE);
 }
 
 int main(int argc, char **argv)

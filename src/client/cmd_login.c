@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,21 +32,22 @@ int cmd_login(struct fsconn *conn, union cmd *cmd)
 {
 	struct rpc_login_req *req = &cmd->login.req;
 	struct rpc_login_res *res = &cmd->login.res;
-	struct objstore *vg;
+	struct objstore *pool;
 
-	cmn_err(CE_DEBUG, "LOGIN: conn = '%s', vg = '%s'", req->conn, req->vg);
+	cmn_err(CE_DEBUG, "LOGIN: conn = '%s', pool = '%s'", req->conn,
+		req->pool);
 
-	if (conn->vg) {
+	if (conn->pool) {
 		cmn_err(CE_INFO, "LOGIN: error: this connection "
 			"already logged in.");
 		return -EALREADY;
 	}
 
-	vg = objstore_vg_lookup(req->vg);
-	if (!vg)
+	pool = objstore_pool_lookup(req->pool);
+	if (!pool)
 		return -ENOENT;
 
-	conn->vg = vg;
+	conn->pool = pool;
 
-	return objstore_getroot(vg, &res->root);
+	return objstore_getroot(pool, &res->root);
 }

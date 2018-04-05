@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,9 +46,9 @@ struct backend {
 /* internal backend management */
 extern struct backend *backend_lookup(const char *name);
 
-/* internal volume group management */
-extern int vg_init(void);
-extern void vg_add_vol(struct objstore *vg, struct objstore_vol *vol);
+/* internal pool management */
+extern int pool_init(void);
+extern void pool_add_vol(struct objstore *pool, struct objstore_vol *vol);
 
 /* internal volume management */
 extern struct mem_cache *vol_cache;

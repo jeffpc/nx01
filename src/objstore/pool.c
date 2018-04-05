@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,27 +29,27 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-static struct mem_cache *vg_cache;
+static struct mem_cache *pool_cache;
 
-static struct lock vgs_lock;
-static struct list vgs;
+static struct lock pools_lock;
+static struct list pools;
 
-int vg_init(void)
+int pool_init(void)
 {
 	struct objstore *filecache;
 
-	vg_cache = mem_cache_create("vg", sizeof(struct objstore), 0);
-	if (IS_ERR(vg_cache))
-		return PTR_ERR(vg_cache);
+	pool_cache = mem_cache_create("pool", sizeof(struct objstore), 0);
+	if (IS_ERR(pool_cache))
+		return PTR_ERR(pool_cache);
 
-	mxinit(&vgs_lock);
+	mxinit(&pools_lock);
 
-	list_create(&vgs, sizeof(struct objstore),
+	list_create(&pools, sizeof(struct objstore),
 		    offsetof(struct objstore, node));
 
-	filecache = objstore_vg_create("file$");
+	filecache = objstore_pool_create("file$");
 	if (IS_ERR(filecache)) {
-		mem_cache_destroy(vg_cache);
+		mem_cache_destroy(pool_cache);
 		return PTR_ERR(filecache);
 	}
 
@@ -64,73 +64,73 @@ static int objcmp(const void *va, const void *vb)
 	return noid_cmp(&a->oid, &b->oid);
 }
 
-struct objstore *objstore_vg_create(const char *name)
+struct objstore *objstore_pool_create(const char *name)
 {
-	struct objstore *vg;
+	struct objstore *pool;
 
-	vg = mem_cache_alloc(vg_cache);
-	if (!vg)
+	pool = mem_cache_alloc(pool_cache);
+	if (!pool)
 		return ERR_PTR(-ENOMEM);
 
-	vg->name = strdup(name);
-	if (!vg->name) {
-		mem_cache_free(vg_cache, vg);
+	pool->name = strdup(name);
+	if (!pool->name) {
+		mem_cache_free(pool_cache, pool);
 		return ERR_PTR(-ENOMEM);
 	}
 
-	vg->vol = NULL;
+	pool->vol = NULL;
 
-	mxinit(&vg->lock);
-	avl_create(&vg->objs, objcmp, sizeof(struct obj),
+	mxinit(&pool->lock);
+	avl_create(&pool->objs, objcmp, sizeof(struct obj),
 		   offsetof(struct obj, node));
 
-	mxlock(&vgs_lock);
-	list_insert_tail(&vgs, vg);
-	mxunlock(&vgs_lock);
+	mxlock(&pools_lock);
+	list_insert_tail(&pools, pool);
+	mxunlock(&pools_lock);
 
-	return vg;
+	return pool;
 }
 
-void vg_add_vol(struct objstore *vg, struct objstore_vol *vol)
+void pool_add_vol(struct objstore *pool, struct objstore_vol *vol)
 {
-	mxlock(&vg->lock);
-	ASSERT3P(vg->vol, ==, NULL);
-	vg->vol = vol;
-	mxunlock(&vg->lock);
+	mxlock(&pool->lock);
+	ASSERT3P(pool->vol, ==, NULL);
+	pool->vol = vol;
+	mxunlock(&pool->lock);
 }
 
-struct objstore *objstore_vg_lookup(const char *name)
+struct objstore *objstore_pool_lookup(const char *name)
 {
-	struct objstore *vg;
+	struct objstore *pool;
 
-	mxlock(&vgs_lock);
-	list_for_each(vg, &vgs)
-		if (!strcmp(name, vg->name))
+	mxlock(&pools_lock);
+	list_for_each(pool, &pools)
+		if (!strcmp(name, pool->name))
 			break;
-	mxunlock(&vgs_lock);
+	mxunlock(&pools_lock);
 
-	return vg;
+	return pool;
 }
 
-static struct objstore_vol *findvol(struct objstore *vg)
+static struct objstore_vol *findvol(struct objstore *pool)
 {
 	struct objstore_vol *vol;
 
-	mxlock(&vg->lock);
-	vol = vol_getref(vg->vol);
-	mxunlock(&vg->lock);
+	mxlock(&pool->lock);
+	vol = vol_getref(pool->vol);
+	mxunlock(&pool->lock);
 
 	return vol;
 }
 
 /*
  * Find the object with oid, if there isn't one, allocate one and add it to
- * the vg's list of objects.
+ * the pool's list of objects.
  *
  * Returns obj (locked and referenced) on success, negated errno on failure.
  */
-static struct obj *__find_or_alloc(struct objstore *vg, struct objstore_vol *vol,
-				   const struct noid *oid)
+static struct obj *__find_or_alloc(struct objstore *pool, struct
+				   objstore_vol *vol, const struct noid *oid)
 {
 	struct obj key = {
 		.oid = *oid,
@@ -143,20 +143,20 @@ static struct obj *__find_or_alloc(struct objstore *vg, struct objstore_vol *vol
 	newobj = NULL;
 
 	for (;;) {
-		mxlock(&vg->lock);
+		mxlock(&pool->lock);
 
 		/* try to find the object */
-		obj = obj_getref(avl_find(&vg->objs, &key, &where));
+		obj = obj_getref(avl_find(&pool->objs, &key, &where));
 
 		/* not found and this is the second attempt -> insert it */
 		if (!obj && newobj) {
-			avl_insert(&vg->objs, obj_getref(newobj), where);
+			avl_insert(&pool->objs, obj_getref(newobj), where);
 			obj = newobj;
 			newobj = NULL;
 			inserted = true;
 		}
 
-		mxunlock(&vg->lock);
+		mxunlock(&pool->lock);
 
 		/* found or inserted -> we're done */
 		if (obj) {
@@ -196,21 +196,21 @@ static struct obj *__find_or_alloc(struct objstore *vg, struct objstore_vol *vol
 }
 
 /*
- * Given a vg and an oid, find the corresponding object structure.
+ * Given a pool and an oid, find the corresponding object structure.
  *
  * Return with the object locked and referenced.
  */
-static struct obj *getobj(struct objstore *vg, const struct noid *oid)
+static struct obj *getobj(struct objstore *pool, const struct noid *oid)
 {
 	struct objstore_vol *vol;
 	struct obj *obj;
 	int ret;
 
-	vol = findvol(vg);
+	vol = findvol(pool);
 	if (!vol)
 		return ERR_PTR(-ENXIO);
 
-	obj = __find_or_alloc(vg, vol, oid);
+	obj = __find_or_alloc(pool, vol, oid);
 	if (IS_ERR(obj)) {
 		ret = PTR_ERR(obj);
 		goto err;
@@ -224,9 +224,9 @@ static struct obj *getobj(struct objstore *vg, const struct noid *oid)
 				obj->state = OBJ_STATE_DEAD;
 
 				/* remove the object from the objs list */
-				mxlock(&vg->lock);
-				avl_remove(&vg->objs, obj);
-				mxunlock(&vg->lock);
+				mxlock(&pool->lock);
+				avl_remove(&pool->objs, obj);
+				mxunlock(&pool->lock);
 				goto err_obj;
 			}
 
@@ -285,12 +285,12 @@ static struct objver *__fetch_ver(struct obj *obj, const struct nvclock *clock)
 }
 
 /*
- * Given a vg, an oid, and a vector clock, find the corresponding object
+ * Given a pool, an oid, and a vector clock, find the corresponding object
  * version structure.
  *
  * Return the found version, with the object referenced and locked.
  */
-static struct objver *getver(struct objstore *vg, const struct noid *oid,
+static struct objver *getver(struct objstore *pool, const struct noid *oid,
 			     const struct nvclock *clock)
 {
 	struct objver *ver;
@@ -299,7 +299,7 @@ static struct objver *getver(struct objstore *vg, const struct noid *oid,
 	/*
 	 * First, find the object based on the oid.
 	 */
-	obj = getobj(vg, oid);
+	obj = getobj(pool, oid);
 	if (IS_ERR(obj))
 		return ERR_CAST(obj);
 
@@ -363,15 +363,15 @@ static struct objver *getver(struct objstore *vg, const struct noid *oid,
 	return ver;
 }
 
-int objstore_getroot(struct objstore *vg, struct noid *root)
+int objstore_getroot(struct objstore *pool, struct noid *root)
 {
 	struct objstore_vol *vol;
 	int ret;
 
-	if (!vg || !root)
+	if (!pool || !root)
 		return -EINVAL;
 
-	vol = findvol(vg);
+	vol = findvol(pool);
 	if (!vol)
 		return -ENXIO;
 
@@ -385,17 +385,17 @@ int objstore_getroot(struct objstore *vg, struct noid *root)
 	return ret;
 }
 
-void *objstore_open(struct objstore *vg, const struct noid *oid,
+void *objstore_open(struct objstore *pool, const struct noid *oid,
 		    const struct nvclock *clock)
 {
 	struct objver *objver;
 	struct obj *obj;
 	int ret;
 
-	if (!vg || !oid || !clock)
+	if (!pool || !oid || !clock)
 		return ERR_PTR(-EINVAL);
 
-	objver = getver(vg, oid, clock);
+	objver = getver(pool, oid, clock);
 	if (IS_ERR(objver))
 		return objver;
 
@@ -435,17 +435,17 @@ void *objstore_open(struct objstore *vg, const struct noid *oid,
 	return objver;
 }
 
-int objstore_close(struct objstore *vg, void *cookie)
+int objstore_close(struct objstore *pool, void *cookie)
 {
 	struct objver *objver = cookie;
 	struct obj *obj;
 	bool putref;
 	int ret;
 
-	if (!vg || !objver)
+	if (!pool || !objver)
 		return -EINVAL;
 
-	if (vg != objver->obj->vol->vg)
+	if (pool != objver->obj->vol->pool)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -483,16 +483,16 @@ int objstore_close(struct objstore *vg, void *cookie)
 	return ret;
 }
 
-int objstore_getattr(struct objstore *vg, void *cookie, struct nattr *attr)
+int objstore_getattr(struct objstore *pool, void *cookie, struct nattr *attr)
 {
 	struct objver *objver = cookie;
 	struct obj *obj;
 	int ret;
 
-	if (!vg || !objver || !attr)
+	if (!pool || !objver || !attr)
 		return -EINVAL;
 
-	if (vg != objver->obj->vol->vg)
+	if (pool != objver->obj->vol->pool)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -507,17 +507,17 @@ int objstore_getattr(struct objstore *vg, void *cookie, struct nattr *attr)
 	return ret;
 }
 
-int objstore_setattr(struct objstore *vg, void *cookie, struct nattr *attr,
+int objstore_setattr(struct objstore *pool, void *cookie, struct nattr *attr,
 		     const unsigned valid)
 {
 	struct objver *objver = cookie;
 	struct obj *obj;
 	int ret;
 
-	if (!vg || !objver || !attr)
+	if (!pool || !objver || !attr)
 		return -EINVAL;
 
-	if (vg != objver->obj->vol->vg)
+	if (pool != objver->obj->vol->pool)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -532,20 +532,20 @@ int objstore_setattr(struct objstore *vg, void *cookie, struct nattr *attr,
 	return ret;
 }
 
-ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf, size_t len,
+ssize_t objstore_read(struct objstore *pool, void *cookie, void *buf, size_t len,
 		      uint64_t offset)
 {
 	struct objver *objver = cookie;
 	struct obj *obj;
 	ssize_t ret;
 
-	if (!vg || !objver || !buf)
+	if (!pool || !objver || !buf)
 		return -EINVAL;
 
 	if (len > (SIZE_MAX / 2))
 		return -EOVERFLOW;
 
-	if (vg != objver->obj->vol->vg)
+	if (pool != objver->obj->vol->pool)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -568,20 +568,20 @@ ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf, size_t len,
 	return ret;
 }
 
-ssize_t objstore_write(struct objstore *vg, void *cookie, const void *buf,
+ssize_t objstore_write(struct objstore *pool, void *cookie, const void *buf,
 		       size_t len, uint64_t offset)
 {
 	struct objver *objver = cookie;
 	struct obj *obj;
 	ssize_t ret;
 
-	if (!vg || !objver || !buf)
+	if (!pool || !objver || !buf)
 		return -EINVAL;
 
 	if (len > (SIZE_MAX / 2))
 		return -EOVERFLOW;
 
-	if (vg != objver->obj->vol->vg)
+	if (pool != objver->obj->vol->pool)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -604,17 +604,17 @@ ssize_t objstore_write(struct objstore *vg, void *cookie, const void *buf,
 	return ret;
 }
 
-int objstore_lookup(struct objstore *vg, void *dircookie, const char *name,
+int objstore_lookup(struct objstore *pool, void *dircookie, const char *name,
 		    struct noid *child)
 {
 	struct objver *dirver = dircookie;
 	struct obj *dir;
 	int ret;
 
-	if (!vg || !dirver || !name || !child)
+	if (!pool || !dirver || !name || !child)
 		return -EINVAL;
 
-	if (vg != dirver->obj->vol->vg)
+	if (pool != dirver->obj->vol->pool)
 		return -ENXIO;
 
 	dir = dirver->obj;
@@ -632,17 +632,17 @@ int objstore_lookup(struct objstore *vg, void *dircookie, const char *name,
 	return ret;
 }
 
-int objstore_create(struct objstore *vg, void *dircookie, const char *name,
+int objstore_create(struct objstore *pool, void *dircookie, const char *name,
 		    uint16_t mode, struct noid *child)
 {
 	struct objver *dirver = dircookie;
 	struct obj *dir;
 	int ret;
 
-	if (!vg || !dirver || !name || !child)
+	if (!pool || !dirver || !name || !child)
 		return -EINVAL;
 
-	if (vg != dirver->obj->vol->vg)
+	if (pool != dirver->obj->vol->pool)
 		return -ENXIO;
 
 	dir = dirver->obj;
@@ -669,19 +669,19 @@ static struct obj *getobj_in_dir(struct objver *dirver, const char *name)
 	if (ret)
 		return ERR_PTR(ret);
 
-	return getobj(dirver->obj->vol->vg, &child_oid);
+	return getobj(dirver->obj->vol->pool, &child_oid);
 }
 
-int objstore_unlink(struct objstore *vg, void *dircookie, const char *name)
+int objstore_unlink(struct objstore *pool, void *dircookie, const char *name)
 {
 	struct objver *dirver = dircookie;
 	struct obj *dir;
 	int ret;
 
-	if (!vg || !dirver || !name)
+	if (!pool || !dirver || !name)
 		return -EINVAL;
 
-	if (vg != dirver->obj->vol->vg)
+	if (pool != dirver->obj->vol->pool)
 		return -ENXIO;
 
 	dir = dirver->obj;
@@ -710,7 +710,7 @@ int objstore_unlink(struct objstore *vg, void *dircookie, const char *name)
 	return ret;
 }
 
-int objstore_getdent(struct objstore *vg, void *dircookie,
+int objstore_getdent(struct objstore *pool, void *dircookie,
 		     const uint64_t offset, struct noid *child,
 		     char **childname, uint64_t *entry_size)
 {
@@ -718,10 +718,10 @@ int objstore_getdent(struct objstore *vg, void *dircookie,
 	struct obj *dir;
 	int ret;
 
-	if (!vg || !dirver)
+	if (!pool || !dirver)
 		return -EINVAL;
 
-	if (vg != dirver->obj->vol->vg)
+	if (pool != dirver->obj->vol->pool)
 		return -ENXIO;
 
 	dir = dirver->obj;

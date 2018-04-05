@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  * Copyright (c) 2016 Steve Dougherty
  *
@@ -99,7 +99,7 @@ union cmd {
 
 struct fsconn {
 	int fd;
-	struct objstore *vg;
+	struct objstore *pool;
 
 	avl_tree_t open_handles;
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  * Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
  * Copyright (c) 2016 Steve Dougherty
@@ -44,7 +44,7 @@ struct rpc_header_res {
 %/***** LOGIN *****/
 struct rpc_login_req {
 	string		conn<>;
-	string		vg<>;
+	string		pool<>;
 };
 
 struct rpc_login_res {

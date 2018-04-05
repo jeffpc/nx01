@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,13 +40,13 @@
  *
  * Each object has a unique ID - the object ID (`struct noid').  This
  * uniquely identifies it not just within the volume, but also within the
- * volume group (thanks to the dataset ID within it).  There can be more
- * than one version of an object.  If there is more than one version of an
- * object, they should be divergent (nvclock_cmp() would return NVC_DIV)
- * since given non-divergent versions we would simply take the newer one
- * (NVC_GT) and discard the older (NVC_LT).  `struct memobj' keeps track of
- * all the versions of that object via the `versions' AVL tree.  Each
- * version of an object is represented by a `struct memver'.
+ * pool (thanks to the dataset ID within it).  There can be more than one
+ * version of an object.  If there is more than one version of an object,
+ * they should be divergent (nvclock_cmp() would return NVC_DIV) since given
+ * non-divergent versions we would simply take the newer one (NVC_GT) and
+ * discard the older (NVC_LT).  `struct memobj' keeps track of all the
+ * versions of that object via the `versions' AVL tree.  Each version of an
+ * object is represented by a `struct memver'.
  *
  * Each version has a vector clock.  Unlike the object ID, the clock may
  * change over time as the object is modified.  The only modifications

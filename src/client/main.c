@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  * Copyright (c) 2016 Steve Dougherty
  *
@@ -44,7 +44,7 @@ static void connection_acceptor(int fd, struct socksvc_stats *stats, void *arg)
 	struct fsconn conn;
 
 	conn.fd = fd;
-	conn.vg = NULL;
+	conn.pool = NULL;
 
 	avl_create(&conn.open_handles, ohandle_cmp, sizeof(struct ohandle),
 		   offsetof(struct ohandle, node));
@@ -62,7 +62,7 @@ static void connection_acceptor(int fd, struct socksvc_stats *stats, void *arg)
 
 int main(int argc, char **argv)
 {
-	struct objstore *vg;
+	struct objstore *pool;
 	int ret;
 
 	ret = ohandle_init();
@@ -83,21 +83,21 @@ int main(int argc, char **argv)
 		goto err;
 	}
 
-	vg = objstore_vg_create("myfiles");
-	cmn_err(CE_DEBUG, "vg = %p", vg);
+	pool = objstore_pool_create("myfiles");
+	cmn_err(CE_DEBUG, "pool = %p", pool);
 
-	if (IS_ERR(vg)) {
-		ret = PTR_ERR(vg);
+	if (IS_ERR(pool)) {
+		ret = PTR_ERR(pool);
 		cmn_err(CE_CRIT, "error: %s", xstrerror(ret));
 		goto err_init;
 	}
 
-	ret = objstore_vol_create(vg, "mem", "fauxpath", OS_MODE_STORE);
+	ret = objstore_vol_create(pool, "mem", "fauxpath", OS_MODE_STORE);
 	cmn_err(CE_DEBUG, "vol create = %d", ret);
 
 	if (ret) {
 		cmn_err(CE_CRIT, "error: %s", xstrerror(ret));
-		goto err_vg;
+		goto err_pool;
 	}
 
 	ret = socksvc(NULL, CLIENT_DAEMON_PORT, -1, connection_acceptor, NULL);
@@ -106,8 +106,8 @@ int main(int argc, char **argv)
 
 	/* XXX: undo objstore_vol_create() */
 
-err_vg:
-	/* XXX: undo objstore_vg_create() */
+err_pool:
+	/* XXX: undo objstore_pool_create() */
 
 err_init:
 	/* XXX: undo objstore_init() */

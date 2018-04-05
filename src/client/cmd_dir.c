@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,7 +36,7 @@ int cmd_create(struct fsconn *conn, union cmd *cmd)
 	if (!oh)
 		return -EINVAL;
 
-	return objstore_create(conn->vg, oh->cookie, req->path, req->mode,
+	return objstore_create(conn->pool, oh->cookie, req->path, req->mode,
 			       &res->oid);
 }
 
@@ -50,7 +50,7 @@ int cmd_lookup(struct fsconn *conn, union cmd *cmd)
 	if (!oh)
 		return -EINVAL;
 
-	return objstore_lookup(conn->vg, oh->cookie, req->path, &res->child);
+	return objstore_lookup(conn->pool, oh->cookie, req->path, &res->child);
 }
 
 int cmd_unlink(struct fsconn *conn, union cmd *cmd)
@@ -62,7 +62,7 @@ int cmd_unlink(struct fsconn *conn, union cmd *cmd)
 	if (!oh)
 		return -EINVAL;
 
-	return objstore_unlink(conn->vg, oh->cookie, req->path);
+	return objstore_unlink(conn->pool, oh->cookie, req->path);
 }
 
 int cmd_getdent(struct fsconn *conn, union cmd *cmd)
@@ -75,6 +75,6 @@ int cmd_getdent(struct fsconn *conn, union cmd *cmd)
 	if (!oh)
 		return -EINVAL;
 
-	return objstore_getdent(conn->vg, oh->cookie, req->offset,
+	return objstore_getdent(conn->pool, oh->cookie, req->offset,
 				&res->oid, &res->name, &res->entry_size);
 }

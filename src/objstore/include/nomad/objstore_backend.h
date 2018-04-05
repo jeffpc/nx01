@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -126,7 +126,7 @@ struct objstore_vol_def {
 };
 
 struct objstore_vol {
-	struct objstore *vg;
+	struct objstore *pool;
 
 	const struct vol_ops *ops;
 	const struct objstore_vol_def *def;

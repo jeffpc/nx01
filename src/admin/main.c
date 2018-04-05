@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2016-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,14 +48,14 @@ static struct cmd {
 	const char *name;
 	int (*fxn)(int argc, char **argv);
 } cmdtbl[] = {
-	{ .name = "conn-add",   .fxn = not_implemented, },
-	{ .name = "conn-list",  .fxn = not_implemented, },
-	{ .name = "host-id",    .fxn = cmd_host_id, },
-	{ .name = "vg-create",  .fxn = not_implemented, },
-	{ .name = "vg-import",  .fxn = not_implemented, },
-	{ .name = "vg-list",    .fxn = not_implemented, },
-	{ .name = "vol-create", .fxn = not_implemented, },
-	{ .name = "vol-list",   .fxn = not_implemented, },
+	{ .name = "conn-add",    .fxn = not_implemented, },
+	{ .name = "conn-list",   .fxn = not_implemented, },
+	{ .name = "host-id",     .fxn = cmd_host_id, },
+	{ .name = "pool-create", .fxn = not_implemented, },
+	{ .name = "pool-import", .fxn = not_implemented, },
+	{ .name = "pool-list",   .fxn = not_implemented, },
+	{ .name = "vol-create",  .fxn = not_implemented, },
+	{ .name = "vol-list",    .fxn = not_implemented, },
 };
 
 static void usage(char *msg)

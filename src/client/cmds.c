@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  * Copyright (c) 2016 Steve Dougherty
  *
@@ -197,7 +197,7 @@ bool process_connection(struct fsconn *conn)
 		}
 
 		/* if login is required, make sure it happened */
-		if (def->requires_login && !conn->vg) {
+		if (def->requires_login && !conn->pool) {
 			ret = -EPROTO;
 			cmn_err(CE_ERROR, "must do LOGIN before this operation");
 			break;

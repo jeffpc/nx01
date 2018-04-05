@@ -67,16 +67,16 @@ objects are store is abstracted away by the backend modules API.  For
 example, a backend can use a raw disk device or directory on a
 POSIX-compliant file system.
 
-Volume Groups
--------------
+Pools
+-----
 
-A volume group is a set of volumes grouped by the administrator to serve a
-single purpose.  More than one volume group can be present on a system.  For
-example, two teams can use the same system but each can use its own volume
-group to separate disk I/O and capacity.
+A pool is a set of volumes grouped by the administrator to serve a single
+purpose.  More than one pool can be present on a system.  For example, two
+teams can use the same system but each can use its own pool to separate disk
+I/O and capacity.
 
-Note: For prototyping reasons, a volume group is limited to only one volume.
-Therefore, a volume group will have either zero or one volume.
+Note: For prototyping reasons, a pool is limited to only one volume.
+Therefore, a pool will have either zero or one volume.
 
 
 Components
@@ -107,8 +107,8 @@ fulfills them with data stored locally in the cache as well as remotely.
 `nomad-server`
 --------------
 
-A daemon that runs on server systems.  It manages the volumes and volume
-groups exposed to `nomad-client` clients.
+A daemon that runs on server systems.  It manages the volumes and pools
+exposed to `nomad-client` clients.
 
 Note: the protocol is currently not defined.
 
@@ -123,9 +123,9 @@ Note: the protocol is currently not defined.
 `nomad`
 -------
 
-A utility used to query files on an `fs` mounted volume group.  It allows
-the user to inspect some of the state that is not visible through POSIX
-APIs.  It uses `ioctls` to get more information from `fs`.
+A utility used to query files on an `fs` mounted pool.  It allows the user
+to inspect some of the state that is not visible through POSIX APIs.  It
+uses `ioctls` to get more information from `fs`.
 
 `libnomad_objstore.so`
 ----------------------

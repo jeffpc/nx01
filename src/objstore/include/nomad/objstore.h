@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,38 +55,38 @@ struct objstore {
 
 extern int objstore_init(void);
 
-/* volume group management */
-extern struct objstore *objstore_vg_create(const char *name);
-extern struct objstore *objstore_vg_lookup(const char *name);
+/* pool management */
+extern struct objstore *objstore_pool_create(const char *name);
+extern struct objstore *objstore_pool_lookup(const char *name);
 
 /* volume management */
-extern int objstore_vol_create(struct objstore *vg, const char *type,
+extern int objstore_vol_create(struct objstore *pool, const char *type,
 			       const char *path, enum objstore_mode mode);
-extern int objstore_vol_load(struct objstore *vg, struct xuuid *uuid,
+extern int objstore_vol_load(struct objstore *pool, struct xuuid *uuid,
 			     const char *path);
 
 /* volume operations */
-extern int objstore_getroot(struct objstore *vg, struct noid *root);
+extern int objstore_getroot(struct objstore *pool, struct noid *root);
 
 /* object operations */
-extern void *objstore_open(struct objstore *vg, const struct noid *oid,
+extern void *objstore_open(struct objstore *pool, const struct noid *oid,
 			   const struct nvclock *clock);
-extern int objstore_close(struct objstore *vg, void *cookie);
-extern int objstore_getattr(struct objstore *vg, void *cookie,
+extern int objstore_close(struct objstore *pool, void *cookie);
+extern int objstore_getattr(struct objstore *pool, void *cookie,
 			    struct nattr *attr);
-extern int objstore_setattr(struct objstore *vg, void *cookie,
+extern int objstore_setattr(struct objstore *pool, void *cookie,
 			    struct nattr *attr, const unsigned valid);
-extern ssize_t objstore_read(struct objstore *vg, void *cookie, void *buf,
+extern ssize_t objstore_read(struct objstore *pool, void *cookie, void *buf,
 			     size_t len, uint64_t offset);
-extern ssize_t objstore_write(struct objstore *vg, void *cookie,
+extern ssize_t objstore_write(struct objstore *pool, void *cookie,
 			      const void *buf, size_t len, uint64_t offset);
-extern int objstore_lookup(struct objstore *vg, void *dircookie,
+extern int objstore_lookup(struct objstore *pool, void *dircookie,
 			   const char *name, struct noid *child);
-extern int objstore_create(struct objstore *vg, void *dircookie,
+extern int objstore_create(struct objstore *pool, void *dircookie,
 			   const char *name, uint16_t mode, struct noid *child);
-extern int objstore_unlink(struct objstore *vg, void *dircookie,
+extern int objstore_unlink(struct objstore *pool, void *dircookie,
 			   const char *name);
-extern int objstore_getdent(struct objstore *vg, void *dircookie,
+extern int objstore_getdent(struct objstore *pool, void *dircookie,
 			    const uint64_t offset, struct noid *child,
 			    char **childname, uint64_t *entry_size);
 

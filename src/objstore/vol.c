@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-int objstore_vol_create(struct objstore *vg, const char *type,
+int objstore_vol_create(struct objstore *pool, const char *type,
 			const char *path, enum objstore_mode mode)
 {
 	struct objstore_vol *vol;
@@ -42,7 +42,7 @@ int objstore_vol_create(struct objstore *vg, const char *type,
 
 	refcnt_init(&vol->refcnt, 1);
 
-	vol->vg = vg;
+	vol->pool = pool;
 	vol->def = backend->def;
 	vol->mode = mode;
 	vol->path = strdup(path);
@@ -56,7 +56,7 @@ int objstore_vol_create(struct objstore *vg, const char *type,
 		goto err_path;
 
 	/* hand off our reference */
-	vg_add_vol(vg, vol);
+	pool_add_vol(pool, vol);
 
 	return 0;
 
@@ -69,7 +69,8 @@ err:
 	return ret;
 }
 
-int objstore_vol_load(struct objstore *vg, struct xuuid *uuid, const char *path)
+int objstore_vol_load(struct objstore *pool, struct xuuid *uuid,
+		      const char *path)
 {
 	return -ENOTSUP;
 }

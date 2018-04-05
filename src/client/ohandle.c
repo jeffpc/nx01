@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2016-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,13 +104,13 @@ void ohandle_close_all(struct fsconn *conn)
 	while ((oh = avl_destroy_nodes(&conn->open_handles, &cookie))) {
 		int ret;
 
-		ASSERT3P(conn->vg, !=, NULL);
+		ASSERT3P(conn->pool, !=, NULL);
 
-		ret = objstore_close(conn->vg, oh->cookie);
+		ret = objstore_close(conn->pool, oh->cookie);
 		if (ret)
 			cmn_err(CE_WARN, "conn %p failed to close_all cookie "
-				"%p on vg %p: %s", conn, oh->cookie, conn->vg,
-				xstrerror(ret));
+				"%p on pool %p: %s", conn, oh->cookie,
+				conn->pool, xstrerror(ret));
 
 		ohandle_free(oh);
 	}

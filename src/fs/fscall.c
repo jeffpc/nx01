@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2016-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2016 Steve Dougherty
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -104,14 +104,14 @@ static int __fscall(int fd, uint32_t opcode,
 	return __fscall_res(fd, resxmit, res, ressize);
 }
 
-int fscall_login(struct fscall_state *state, const char *conn, const char *vg)
+int fscall_login(struct fscall_state *state, const char *conn, const char *pool)
 {
 	struct rpc_login_req login_req;
 	struct rpc_login_res login_res;
 	int ret;
 
 	login_req.conn = (char *) conn;
-	login_req.vg = (char *) vg;
+	login_req.pool = (char *) pool;
 
 	ret = __fscall(state->sock, NRPC_LOGIN,
 		       (void *) xdr_rpc_login_req,
@@ -361,7 +361,7 @@ err:
 	return ret;
 }
 
-int fscall_connect(const char *host, uint16_t port, const char *vg,
+int fscall_connect(const char *host, uint16_t port, const char *pool,
 		   struct fscall_state *state)
 {
 	int ret;
@@ -378,7 +378,7 @@ int fscall_connect(const char *host, uint16_t port, const char *vg,
 	if (ret)
 		return ret;
 
-	ret = fscall_login(state, "unused", vg);
+	ret = fscall_login(state, "unused", pool);
 	cmn_err(CE_DEBUG, "fscall_login() = %d", ret);
 	if (ret)
 		return ret;
