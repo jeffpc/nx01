@@ -56,13 +56,6 @@ int main(int argc, char **argv)
 	if (argc != 3)
 		return usage(argv[0]);
 
-	ret = common_init();
-	if (ret) {
-		cmn_err(CE_CRIT, "common_init() = %d (%s)", ret,
-			xstrerror(ret));
-		goto err;
-	}
-
 	ret = objstore_init();
 	if (ret) {
 		cmn_err(CE_CRIT, "objstore_init() = %d (%s)", ret,
