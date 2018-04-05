@@ -33,12 +33,14 @@
  */
 
 #include <jeffpc/mem.h>
+#include <jeffpc/list.h>
 
 #include <nomad/objstore.h>
 #include <nomad/objstore_backend.h>
 
 /* backend support */
 struct backend {
+	struct list_node node;
 	const struct objstore_vol_def *def;
 	void *module;
 };

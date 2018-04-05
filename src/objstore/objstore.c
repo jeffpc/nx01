@@ -30,42 +30,56 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-static struct backend mem_backend;
-static struct backend posix_backend;
+static struct list backends;
 
 struct mem_cache *vol_cache;
 
 struct backend *backend_lookup(const char *name)
 {
-	if (!strcmp(name, "mem"))
-		return &mem_backend;
-	if (!strcmp(name, "posix"))
-		return &posix_backend;
+	struct backend *backend;
+
+	list_for_each(backend, &backends) {
+		if (!strcmp(name, backend->def->name))
+			return backend;
+	}
+
 	return NULL;
 }
 
-static int load_backend(struct backend *backend, const char *name)
+static struct backend *load_backend(const char *name)
 {
 	char path[FILENAME_MAX];
+	struct backend *backend;
 
 	snprintf(path, sizeof(path), "libnomad_objstore_%s.so", name);
 
+	backend = malloc(sizeof(struct backend));
+	if (!backend)
+		return ERR_PTR(-ENOMEM);
+
 	backend->module = dlopen(path, RTLD_NOW | RTLD_LOCAL);
-	if (!backend->module)
-		return -ENOENT;
+	if (!backend->module) {
+		free(backend);
+		return ERR_PTR(-ENOENT);
+	}
 
 	backend->def = dlsym(backend->module, "objvol");
 	if (!backend->def) {
 		dlclose(backend->module);
-		return -ENOENT;
+		free(backend);
+		return ERR_PTR(-ENOENT);
 	}
 
-	return 0;
+	return backend;
 }
 
 int objstore_init(void)
 {
+	struct backend *backend;
 	int ret;
+
+	list_create(&backends, sizeof(struct backend),
+		    offsetof(struct backend, node));
 
 	vol_cache = mem_cache_create("vol", sizeof(struct objstore_vol), 0);
 	if (IS_ERR(vol_cache))
@@ -87,15 +101,24 @@ int objstore_init(void)
 	if (ret)
 		goto err_objver;
 
-	ret = load_backend(&mem_backend, "mem");
-	if (ret)
-		goto err_objver;
+	backend = load_backend("mem");
+	if (IS_ERR(backend)) {
+		ret = PTR_ERR(backend);
+		goto err_backends;
+	}
+	list_insert_tail(&backends, backend);
 
-	ret = load_backend(&posix_backend, "posix");
-	if (ret)
-		goto err_objver;
+	backend = load_backend("posix");
+	if (IS_ERR(backend)) {
+		ret = PTR_ERR(backend);
+		goto err_backends;
+	}
+	list_insert_tail(&backends, backend);
 
 	return 0;
+
+err_backends:
+	/* XXX: remove & free all backends */
 
 err_objver:
 	mem_cache_destroy(objver_cache);
