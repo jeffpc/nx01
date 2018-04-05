@@ -26,7 +26,9 @@
 #include <string.h>
 
 #include <jeffpc/error.h>
+#include <jeffpc/sexpr.h>
 
+#include <nomad/config.h>
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
@@ -51,6 +53,8 @@ static struct backend *load_backend(const char *name)
 	char path[FILENAME_MAX];
 	struct backend *backend;
 
+	cmn_err(CE_DEBUG, "Loading '%s' backend...", name);
+
 	snprintf(path, sizeof(path), "libnomad_objstore_%s.so", name);
 
 	backend = malloc(sizeof(struct backend));
@@ -73,9 +77,44 @@ static struct backend *load_backend(const char *name)
 	return backend;
 }
 
+static int __load_backends(void)
+{
+	struct val *backends_sexpr;
+	struct val *cur, *tmp;
+	int ret;
+
+	backends_sexpr = config_get_backends();
+
+	ret = 0;
+
+	sexpr_for_each(cur, tmp, backends_sexpr) {
+		struct backend *backend;
+		struct sym *name;
+
+		ASSERT3U(cur->type, ==, VT_SYM);
+
+		name = val_cast_to_sym(cur);
+
+		backend = load_backend(sym_cstr(name));
+		if (IS_ERR(backend)) {
+			ret = PTR_ERR(backend);
+			break;
+		}
+
+		list_insert_tail(&backends, backend);
+	}
+
+	val_putref(backends_sexpr);
+
+	if (ret) {
+		/* TODO: remove & free all backends */
+	}
+
+	return ret;
+}
+
 int objstore_init(void)
 {
-	struct backend *backend;
 	int ret;
 
 	list_create(&backends, sizeof(struct backend),
@@ -101,24 +140,14 @@ int objstore_init(void)
 	if (ret)
 		goto err_objver;
 
-	backend = load_backend("mem");
-	if (IS_ERR(backend)) {
-		ret = PTR_ERR(backend);
-		goto err_backends;
-	}
-	list_insert_tail(&backends, backend);
-
-	backend = load_backend("posix");
-	if (IS_ERR(backend)) {
-		ret = PTR_ERR(backend);
-		goto err_backends;
-	}
-	list_insert_tail(&backends, backend);
+	ret = __load_backends();
+	if (ret)
+		goto err_pool;
 
 	return 0;
 
-err_backends:
-	/* XXX: remove & free all backends */
+err_pool:
+	/* TODO: undo pool_init() */
 
 err_objver:
 	mem_cache_destroy(objver_cache);
