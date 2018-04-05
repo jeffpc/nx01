@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@
 #define DEFAULT_CFG_FILENAME	"/etc/nomad.conf"
 #define CFG_ENV_NAME		"NOMAD_CONFIG"
 
+static struct val *backends_list;
+
 /*
  * Extract the "host-id" value from the config and start using it.
  */
@@ -60,6 +62,41 @@ static int __set_host_id(struct val *cfg)
 	return ret;
 }
 
+/*
+ * Extract the "backends" value from the config and stash the resulting list
+ * for later use.
+ */
+static int __set_backends_list(struct val *cfg)
+{
+	struct val *backends;
+	struct val *cur, *tmp;
+
+	backends = sexpr_alist_lookup_val(cfg, "backends");
+	if (!backends) {
+		cmn_err(CE_CRIT, "config is missing list of backends to load");
+		return -EINVAL;
+	}
+
+	if (backends->type != VT_CONS) {
+		cmn_err(CE_CRIT, "config has a non-list backend list");
+		val_putref(backends);
+		return -EINVAL;
+	}
+
+	sexpr_for_each_noref(cur, tmp, backends) {
+		if (cur->type != VT_SYM) {
+			cmn_err(CE_CRIT, "config backend list contains a "
+				"non-symbol entry");
+			val_putref(backends);
+			return -EINVAL;
+		}
+	}
+
+	backends_list = backends;
+
+	return 0;
+}
+
 static int load_config(void)
 {
 	struct val *cfg;
@@ -83,6 +120,10 @@ static int load_config(void)
 	}
 
 	ret = __set_host_id(cfg);
+	if (ret)
+		goto err;
+
+	ret = __set_backends_list(cfg);
 
 err:
 	/*
