@@ -36,8 +36,6 @@ static struct list pools;
 
 int pool_init(void)
 {
-	struct objstore *filecache;
-
 	pool_cache = mem_cache_create("pool", sizeof(struct objstore), 0);
 	if (IS_ERR(pool_cache))
 		return PTR_ERR(pool_cache);
@@ -46,12 +44,6 @@ int pool_init(void)
 
 	list_create(&pools, sizeof(struct objstore),
 		    offsetof(struct objstore, node));
-
-	filecache = objstore_pool_create("file$");
-	if (IS_ERR(filecache)) {
-		mem_cache_destroy(pool_cache);
-		return PTR_ERR(filecache);
-	}
 
 	return 0;
 }
