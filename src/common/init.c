@@ -33,6 +33,11 @@
 
 static struct val *backends_list;
 
+struct val *config_get_backends(void)
+{
+	return val_getref(backends_list);
+}
+
 /*
  * Extract the "host-id" value from the config and start using it.
  */
