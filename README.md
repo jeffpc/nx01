@@ -87,7 +87,7 @@ Internal Dependencies
 -------------+--------+--------+----------
 sunavl       |   -    |   n    |    n     
 common       |   n    |   -    |    n     
-objstore     |   n    |   n    |    -     
+objstore     |   y    |   n    |    -     
 objs. module |   ?    |   ?    |    n     
 client       |   y    |   y    |    y     
 server       |   n    |   n    |    n     
