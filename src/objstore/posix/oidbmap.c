@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,45 +27,35 @@
 
 #define MAX_OID_UNIQ	(1ull << 32)
 #define OID_BMAP_SIZE	(MAX_OID_UNIQ / 8)
+#define OID_BMAP_OFFSET	4096
 
 int oidbmap_create(struct posixvol *pv)
 {
 	int ret;
 
-	ret = xopenat(pv->basefd, "oid-bmap", O_RDWR | O_CREAT, 0600);
-	if (ret < 0)
+	ret = xftruncate(pv->volfd, OID_BMAP_SIZE + OID_BMAP_OFFSET);
+	if (ret)
 		return ret;
 
-	pv->oidbmap = ret;
-
-	ret = xftruncate(pv->oidbmap, OID_BMAP_SIZE);
-	if (!ret)
-		ret = oidbmap_set(pv, 0); /* reserve 0 - it is illegal */
-
-	if (ret) {
-		xclose(pv->oidbmap);
-		xunlinkat(pv->basefd, "oid-bmap", 0);
-	}
-
-	return ret;
+	return oidbmap_set(pv, 0); /* reserve 0 - it is illegal */
 }
 
 int oidbmap_set(struct posixvol *pv, uint64_t uniq)
 {
-	const off_t off = uniq / 8;
+	const off_t off = (uniq / 8) + OID_BMAP_OFFSET;
 	const uint8_t bit = 1 << (uniq % 8);
 	uint8_t tmp;
 	int ret;
 
 	/* TODO: locking */
 
-	ret = xpread(pv->oidbmap, &tmp, sizeof(tmp), off);
+	ret = xpread(pv->volfd, &tmp, sizeof(tmp), off);
 	if (ret)
 		return ret;
 
 	tmp |= bit;
 
-	return xpwrite(pv->oidbmap, &tmp, sizeof(tmp), off);
+	return xpwrite(pv->volfd, &tmp, sizeof(tmp), off);
 }
 
 int oidbmap_get_new(struct posixvol *pv, uint64_t *new)
@@ -79,10 +69,11 @@ int oidbmap_get_new(struct posixvol *pv, uint64_t *new)
 	 */
 
 	for (off = 0; off < OID_BMAP_SIZE; off++) {
+		off_t file_off = off + OID_BMAP_SIZE;
 		uint8_t tmp;
 		int bitno;
 
-		ret = xpread(pv->oidbmap, &tmp, sizeof(tmp), off);
+		ret = xpread(pv->volfd, &tmp, sizeof(tmp), file_off);
 		if (ret)
 			return ret;
 
@@ -96,7 +87,7 @@ int oidbmap_get_new(struct posixvol *pv, uint64_t *new)
 
 		tmp |= 1 << bitno;
 
-		ret = xpwrite(pv->oidbmap, &tmp, sizeof(tmp), off);
+		ret = xpwrite(pv->volfd, &tmp, sizeof(tmp), file_off);
 		if (ret)
 			return ret;
 
@@ -110,18 +101,18 @@ int oidbmap_get_new(struct posixvol *pv, uint64_t *new)
 
 int oidbmap_put(struct posixvol *pv, uint64_t uniq)
 {
-	const off_t off = uniq / 8;
+	const off_t off = (uniq / 8) + OID_BMAP_OFFSET;
 	const uint8_t bit = 1 << (uniq % 8);
 	uint8_t tmp;
 	int ret;
 
 	/* TODO: locking */
 
-	ret = xpread(pv->oidbmap, &tmp, sizeof(tmp), off);
+	ret = xpread(pv->volfd, &tmp, sizeof(tmp), off);
 	if (ret)
 		return ret;
 
 	tmp &= ~bit;
 
-	return xpwrite(pv->oidbmap, &tmp, sizeof(tmp), off);
+	return xpwrite(pv->volfd, &tmp, sizeof(tmp), off);
 }

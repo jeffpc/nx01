@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,7 @@
  * volume, we find:
  *
  * /data                   - the data dir
- * /data/vol               - a file with volume information (root OID, uuid, etc.)
- * /data/oid-bmap          - OID bitmap (0 = free, 1 = used)
+ * /data/vol               - volume info (root OID, uuid, OID bmap, etc.)
  * /data/<oid>             - everything related to the object
  * /data/<oid>/<clock>     - one version of the object
  *
@@ -48,7 +47,6 @@
 struct posixvol {
 	int basefd;	/* base directory */
 	int volfd;	/* volume info fd */
-	int oidbmap;	/* in-use uniq vals from oids */
 
 	uint32_t ds;
 	struct noid root;
