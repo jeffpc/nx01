@@ -32,6 +32,7 @@
 #define CFG_ENV_NAME		"NOMAD_CONFIG"
 
 static struct val *backends_list;
+static struct val *pools_list;
 
 struct val *config_get_backends(void)
 {
@@ -102,6 +103,75 @@ static int __set_backends_list(struct val *cfg)
 	return 0;
 }
 
+static int __set_pools_list(struct val *cfg)
+{
+	struct sym *name = NULL;
+	struct val *args = NULL;
+	struct val *pools;
+	struct val *pool, *pool_tmp;
+	struct val *vdev, *vdev_tmp;
+
+	pools = sexpr_alist_lookup_val(cfg, "pools");
+	if (!pools) {
+		cmn_err(CE_CRIT, "config is missing list of pools to load");
+		goto err;
+	}
+
+	if (pools->type != VT_CONS) {
+		cmn_err(CE_CRIT, "config has a non-list pool list");
+		goto err;
+	}
+
+	sexpr_for_each_noref(pool, pool_tmp, pools) {
+		if (pool->type != VT_CONS) {
+			cmn_err(CE_CRIT, "pool definition must be a list");
+			goto err;
+		}
+
+		args = sexpr_car(val_getref(pool));
+		if (args->type != VT_SYM) {
+			cmn_err(CE_CRIT, "pool name must by a symbol");
+			goto err;
+		}
+
+		name = val_cast_to_sym(args);
+
+		args = sexpr_cdr(val_getref(pool));
+		if (args->type != VT_CONS) {
+			cmn_err(CE_CRIT, "pool configuration for '%s' must be "
+				"a list: found %s", sym_cstr(name),
+				val_typename(args->type));
+			goto err;
+		}
+
+		sexpr_for_each_noref(vdev, vdev_tmp, args) {
+			struct val *tmp;
+
+			tmp = sexpr_car(val_getref(vdev));
+			if (tmp->type != VT_SYM) {
+				cmn_err(CE_CRIT, "pool backend type for '%s' must be a "
+					"symbol: found %s", sym_cstr(name),
+					val_typename(tmp->type));
+				val_putref(tmp);
+				goto err;
+			}
+		}
+
+		sym_putref(name);
+		val_putref(args);
+	}
+
+	pools_list = pools;
+
+	return 0;
+
+err:
+	sym_putref(name);
+	val_putref(args);
+	val_putref(pools);
+	return -EINVAL;
+}
+
 static int load_config(void)
 {
 	struct val *cfg;
@@ -129,6 +199,10 @@ static int load_config(void)
 		goto err;
 
 	ret = __set_backends_list(cfg);
+	if (ret)
+		goto err;
+
+	ret = __set_pools_list(cfg);
 
 err:
 	/*
