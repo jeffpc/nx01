@@ -49,6 +49,7 @@ struct objstore {
 	refcnt_t refcnt;
 	const char *name;
 	struct objstore_vdev *vdev;
+	struct xuuid id;
 };
 
 extern int objstore_init(void);

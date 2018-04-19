@@ -86,6 +86,9 @@ struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
 	avl_create(&vol->objs, objcmp, sizeof(struct obj),
 		   offsetof(struct obj, node));
 
+	/* TODO: to be overwritten by the backend code */
+	xuuid_clear(&vol->id);
+
 	mxlock(&vols_lock);
 	list_insert_tail(&vols, vol_getref(vol));
 	mxunlock(&vols_lock);
