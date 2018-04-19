@@ -45,6 +45,8 @@
  */
 
 struct posixvdev {
+	struct objstore_vdev *vdev;
+
 	int basefd;	/* base directory */
 	int vdevfd;	/* vdev info fd */
 
