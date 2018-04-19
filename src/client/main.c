@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 		goto err_init;
 	}
 
-	ret = objstore_vol_create(pool, "mem", "fauxpath", OS_MODE_STORE);
+	ret = objstore_vol_create(pool, "mem", "fauxpath");
 	cmn_err(CE_DEBUG, "vol create = %d", ret);
 
 	if (ret) {

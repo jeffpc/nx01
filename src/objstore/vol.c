@@ -26,7 +26,7 @@
 #include <nomad/objstore_impl.h>
 
 int objstore_vol_create(struct objstore *pool, const char *type,
-			const char *path, enum objstore_mode mode)
+			const char *path)
 {
 	struct objstore_vol *vol;
 	struct backend *backend;
@@ -44,7 +44,6 @@ int objstore_vol_create(struct objstore *pool, const char *type,
 
 	vol->pool = pool;
 	vol->def = backend->def;
-	vol->mode = mode;
 	vol->path = strdup(path);
 	if (!vol->path) {
 		ret = -ENOMEM;

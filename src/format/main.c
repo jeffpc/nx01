@@ -46,7 +46,7 @@ static int do_format(const char *type, const char *path)
 	if (IS_ERR(pool))
 		return PTR_ERR(pool);
 
-	return objstore_vol_create(pool, type, path, OS_MODE_STORE);
+	return objstore_vol_create(pool, type, path);
 }
 
 int main(int argc, char **argv)

@@ -31,11 +31,6 @@
 
 #include <nomad/types.h>
 
-enum objstore_mode {
-	OS_MODE_CACHE,
-	OS_MODE_STORE,
-};
-
 enum {
 	OBJ_ATTR_MODE	= 0x01,
 	OBJ_ATTR_SIZE	= 0x02,
@@ -61,7 +56,7 @@ extern struct objstore *objstore_pool_lookup(const char *name);
 
 /* volume management */
 extern int objstore_vol_create(struct objstore *pool, const char *type,
-			       const char *path, enum objstore_mode mode);
+			       const char *path);
 extern int objstore_vol_load(struct objstore *pool, struct xuuid *uuid,
 			     const char *path);
 

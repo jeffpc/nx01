@@ -133,7 +133,6 @@ struct objstore_vol {
 
 	struct xuuid uuid;
 	const char *path;
-	enum objstore_mode mode;
 
 	refcnt_t refcnt;
 
