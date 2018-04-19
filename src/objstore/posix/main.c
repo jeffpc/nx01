@@ -26,7 +26,31 @@
 
 #include "posix.h"
 
-static int prep_paths(const char *base, struct posixvdev *pv)
+#define VDEV_FILENAME	"vdev"
+
+static int store_vdevid(struct posixvdev *pv)
+{
+	char vdevid[XUUID_PRINTABLE_STRING_LENGTH];
+	int fd;
+	int ret;
+
+	xuuid_unparse(&pv->vdev->uuid, vdevid);
+
+	fd = xopenat(pv->basefd, VDEV_FILENAME, O_RDWR | O_CREAT, 0600);
+	if (fd < 0)
+		return fd;
+
+	ret = xwrite_str(fd, vdevid);
+
+	xclose(fd);
+
+	if (ret)
+		xunlinkat(pv->basefd, VDEV_FILENAME, 0);
+
+	return ret;
+}
+
+static int prep_vdev(const char *base, struct posixvdev *pv)
 {
 	int ret;
 
@@ -40,23 +64,15 @@ static int prep_paths(const char *base, struct posixvdev *pv)
 		goto err_mkdir;
 	}
 
-	pv->vdevfd = xopenat(pv->basefd, "vdev", O_RDWR | O_CREAT, 0600);
-	if (pv->vdevfd < 0) {
-		ret = pv->vdevfd;
+	ret = store_vdevid(pv);
+	if (ret)
 		goto err_basefd;
-	}
-
-	ret = oidbmap_create(pv);
-	if (ret < 0)
-		goto err_vdevfd;
 
 	return 0;
 
-err_vdevfd:
-	xclose(pv->vdevfd);
-	xunlinkat(pv->basefd, "vdev", 0);
-
 err_basefd:
+	xunlinkat(pv->basefd, VDEV_FILENAME, 0);
+
 	xclose(pv->basefd);
 
 err_mkdir:
@@ -78,25 +94,16 @@ static int posix_create(struct objstore_vdev *vdev)
 		return -ENOMEM;
 
 	pv->vdev = vdev;
+	pv->vdevfd = -1;
 
-	ret = prep_paths(vdev->path, pv);
+	ret = prep_vdev(vdev->path, pv);
 	if (ret)
 		goto err_free;
-
-	/* create root object */
-	ret = posix_new_obj(pv, NATTR_DIR | 0777, &pv->root);
-	if (ret)
-		goto err_paths;
-
-	FIXME("flush vdev info");
 
 	vdev->private = pv;
 	vdev->ops = &posix_vdev_ops;
 
 	return 0;
-
-err_paths:
-	FIXME("path cleanup is not yet implemented");
 
 err_free:
 	free(pv);
