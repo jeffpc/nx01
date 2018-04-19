@@ -39,14 +39,13 @@
  * a `struct memobj'.
  *
  * Each object has a unique ID - the object ID (`struct noid').  This
- * uniquely identifies it not just within the vdev, but also within the
- * volume (thanks to the dataset ID within it).  There can be more than one
- * version of an object.  If there is more than one version of an object,
- * they should be divergent (nvclock_cmp() would return NVC_DIV) since given
- * non-divergent versions we would simply take the newer one (NVC_GT) and
- * discard the older (NVC_LT).  `struct memobj' keeps track of all the
- * versions of that object via the `versions' AVL tree.  Each version of an
- * object is represented by a `struct memver'.
+ * uniquely identifies it not just within the vdev, but also globally.
+ * There can be more than one version of an object.  If there is more than
+ * one version of an object, they should be divergent (nvclock_cmp() would
+ * return NVC_DIV) since given non-divergent versions we would simply take
+ * the newer one (NVC_GT) and discard the older (NVC_LT).  `struct memobj'
+ * keeps track of all the versions of that object via the `versions' AVL
+ * tree.  Each version of an object is represented by a `struct memver'.
  *
  * Each version has a vector clock.  Unlike the object ID, the clock may
  * change over time as the object is modified.  The only modifications
@@ -113,7 +112,7 @@ struct memstore {
 	avl_tree_t objs;
 	struct memobj *root;
 
-	uint32_t ds; /* our dataset id */
+	struct xuuid volid; /* our volume id */
 	atomic64_t next_oid_uniq; /* the next unique part of noid */
 
 	struct lock lock;

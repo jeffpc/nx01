@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,15 +46,14 @@
 
 /* object id */
 struct noid {
-	uint32_t ds;		/* dataset id */
-	uint32_t _reserved;	/* must be zero */
-	uint64_t uniq;		/* dataset-local id */
+	struct xuuid vol;	/* volume id */
+	uint64_t uniq;		/* volume-local id */
 };
 
 extern int nomad_set_local_node_id(uint64_t newid);
 extern uint64_t nomad_local_node_id(void);
 
-extern void noid_set(struct noid *n1, uint32_t ds, uint64_t uniq);
+extern void noid_set(struct noid *n1, const struct xuuid *vol, uint64_t uniq);
 extern int noid_cmp(const struct noid *n1, const struct noid *n2);
 extern bool_t xdr_noid(XDR *xdrs, struct noid *oid);
 

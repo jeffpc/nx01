@@ -48,7 +48,7 @@ struct posixvdev {
 	int basefd;	/* base directory */
 	int vdevfd;	/* vdev info fd */
 
-	uint32_t ds;
+	struct xuuid volid;
 	struct noid root;
 };
 

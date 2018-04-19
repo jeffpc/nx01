@@ -77,7 +77,7 @@ static int posix_create(struct objstore_vdev *vdev)
 	if (!pv)
 		return -ENOMEM;
 
-	pv->ds = rand32();
+	xuuid_generate(&pv->volid);
 
 	ret = prep_paths(vdev->path, pv);
 	if (ret)

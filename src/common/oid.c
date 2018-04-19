@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,12 @@
 
 int noid_cmp(const struct noid *n1, const struct noid *n2)
 {
-	if (n1->ds < n2->ds)
+	int ret;
+
+	ret = xuuid_compare(&n1->vol, &n2->vol);
+	if (ret < 0)
 		return -1;
-	if (n1->ds > n2->ds)
+	if (ret > 0)
 		return 1;
 
 	if (n1->uniq < n2->uniq)
@@ -39,16 +42,15 @@ int noid_cmp(const struct noid *n1, const struct noid *n2)
 	return 0;
 }
 
-void noid_set(struct noid *oid, uint32_t ds, uint64_t uniq)
+void noid_set(struct noid *oid, const struct xuuid *vol, uint64_t uniq)
 {
-	oid->ds = ds;
+	oid->vol = *vol;
 	oid->uniq = uniq;
-	oid->_reserved = 0;
 }
 
 bool_t xdr_noid(XDR *xdrs, struct noid *oid)
 {
-	if (!xdr_uint32_t(xdrs, &oid->ds))
+	if (!xdr_xuuid(xdrs, &oid->vol))
 		return FALSE;
 	if (!xdr_uint64_t(xdrs, &oid->uniq))
 		return FALSE;

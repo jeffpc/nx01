@@ -143,7 +143,7 @@ struct memobj *newmemobj(struct memstore *ms, uint16_t mode)
 	avl_create(&obj->versions, ver_cmp, sizeof(struct memver),
 		   offsetof(struct memver, node));
 
-	noid_set(&obj->oid, ms->ds, atomic_inc(&ms->next_oid_uniq));
+	noid_set(&obj->oid, &ms->volid, atomic_inc(&ms->next_oid_uniq));
 
 	avl_add(&obj->versions, ver);
 	ver->obj = obj;

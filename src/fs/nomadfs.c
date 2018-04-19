@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2016-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ static inline void make_oid(struct noid *oid, fuse_ino_t ino)
 		ino = FUSE_ROOT_ID;
 
 	// XXX: use accessors
-	noid_set(oid, state.root_oid.ds, ino);
+	noid_set(oid, &state.root_oid.vol, ino);
 }
 
 static inline fuse_ino_t make_ino(const struct noid *oid)
