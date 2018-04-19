@@ -83,6 +83,15 @@ struct objstore *objstore_vol_create(const char *name)
 	return vol;
 }
 
+void vol_free(struct objstore *vol)
+{
+	ASSERT0(avl_numnodes(&vol->objs));
+	avl_destroy(&vol->objs);
+
+	free((char *) vol->name);
+	mem_cache_free(vol_cache, vol);
+}
+
 void vol_add_vdev(struct objstore *vol, struct objstore_vdev *vdev)
 {
 	mxlock(&vol->lock);

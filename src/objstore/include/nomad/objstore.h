@@ -40,6 +40,7 @@ struct objstore_vdev;
 
 struct objstore {
 	struct list_node node;
+	refcnt_t refcnt;
 
 	struct lock lock;
 	const char *name;
