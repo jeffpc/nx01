@@ -82,6 +82,37 @@ err_mkdir:
 	return ret;
 }
 
+static int open_vdev(struct posixvdev *pvdev)
+{
+	char *tmp;
+	int ret;
+
+	pvdev->basefd = xopen(pvdev->vdev->path, O_RDONLY, 0);
+	if (pvdev->basefd < 0)
+		return pvdev->basefd;
+
+	tmp = read_file_at(pvdev->basefd, VDEV_FILENAME);
+	if (IS_ERR(tmp)) {
+		ret = PTR_ERR(tmp);
+		goto err;
+	}
+
+	if (!xuuid_parse(&pvdev->vdev->uuid, tmp)) {
+		ret = -EINVAL;
+		goto err_free;
+	}
+
+	return 0;
+
+err_free:
+	free(tmp);
+
+err:
+	xclose(pvdev->basefd);
+
+	return ret;
+}
+
 static int posix_create(struct objstore_vdev *vdev)
 {
 	struct posixvdev *pv;
@@ -201,9 +232,38 @@ err_free:
 	return ret;
 }
 
+static int posix_load(struct objstore_vdev *vdev)
+{
+	struct posixvdev *pv;
+	int ret;
+
+	cmn_err(CE_WARN, "The POSIX objstore backend is still experimental");
+	cmn_err(CE_WARN, "Do not expect compatibility from version to version");
+
+	pv = malloc(sizeof(struct posixvdev));
+	if (!pv)
+		return -ENOMEM;
+
+	pv->vdev = vdev;
+
+	ret = open_vdev(pv);
+	if (ret)
+		goto err_free;
+
+	vdev->private = pv;
+
+	return 0;
+
+err_free:
+	free(pv);
+
+	return ret;
+}
+
 const struct objstore_vdev_def objvdev = {
 	.name = "posix",
 
 	.create = posix_create,
 	.create_vol = posix_create_vol,
+	.load = posix_load,
 };
