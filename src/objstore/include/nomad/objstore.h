@@ -37,7 +37,6 @@ enum {
 };
 
 struct objstore_vdev {
-	const struct vol_ops *ops;
 	const struct objstore_vdev_def *def;
 
 	struct xuuid uuid;
@@ -60,6 +59,7 @@ struct objstore {
 	/* the following can be read without locking the volume */
 	refcnt_t refcnt;
 	const char *name;
+	const struct vol_ops *ops;
 	struct objstore_vdev *vdev;
 	struct xuuid id;
 };

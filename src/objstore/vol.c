@@ -80,6 +80,7 @@ struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
 		return ERR_PTR(-ENOMEM);
 	}
 
+	vol->ops = NULL;
 	vol->vdev = vdev_getref(vdev);
 
 	mxinit(&vol->lock);
@@ -212,8 +213,8 @@ static struct obj *getobj(struct objstore *vol, const struct noid *oid)
 
 	switch (obj->state) {
 		case OBJ_STATE_NEW:
-			if (vol->vdev->ops && vol->vdev->ops->allocobj &&
-			    (ret = vol->vdev->ops->allocobj(obj))) {
+			if (vol->ops && vol->ops->allocobj &&
+			    (ret = vol->ops->allocobj(obj))) {
 				/* the allocobj op failed, mark the obj dead */
 				obj->state = OBJ_STATE_DEAD;
 
@@ -360,8 +361,8 @@ int objstore_getroot(struct objstore *vol, struct noid *root)
 	if (!vol || !root)
 		return -EINVAL;
 
-	if (vol->vdev->ops && vol->vdev->ops->getroot)
-		ret = vol->vdev->ops->getroot(vol->vdev, root);
+	if (vol->ops && vol->ops->getroot)
+		ret = vol->ops->getroot(vol->vdev, root);
 	else
 		ret = -ENOTSUP;
 

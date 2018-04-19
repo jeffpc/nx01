@@ -99,8 +99,6 @@ static int mem_create(struct objstore_vdev *vdev)
 	struct memstore *ms;
 	struct memobj *obj;
 
-	vdev->ops = &vol_ops;
-
 	ms = malloc(sizeof(struct memstore));
 	if (!ms)
 		return -ENOMEM;

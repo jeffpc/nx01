@@ -70,7 +70,6 @@ struct objstore_vdev *objstore_vdev_create(const char *type, const char *path)
 	refcnt_init(&vdev->refcnt, 1);
 	xuuid_generate(&vdev->uuid);
 
-	vdev->ops = NULL;
 	vdev->def = backend->def;
 	vdev->private = NULL;
 
