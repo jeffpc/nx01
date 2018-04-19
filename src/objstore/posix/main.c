@@ -51,15 +51,15 @@ static int store_vdevid(struct posixvdev *pv)
 	return ret;
 }
 
-static int prep_vdev(const char *base, struct posixvdev *pv)
+static int prep_vdev(struct posixvdev *pv)
 {
 	int ret;
 
-	ret = xmkdir(base, 0700);
+	ret = xmkdir(pv->vdev->path, 0700);
 	if (ret)
 		return ret;
 
-	pv->basefd = xopen(base, O_RDONLY, 0);
+	pv->basefd = xopen(pv->vdev->path, O_RDONLY, 0);
 	if (pv->basefd < 0) {
 		ret = pv->basefd;
 		goto err_mkdir;
@@ -77,7 +77,7 @@ err_basefd:
 	xclose(pv->basefd);
 
 err_mkdir:
-	xunlink(base);
+	xunlink(pv->vdev->path);
 
 	return ret;
 }
@@ -96,7 +96,7 @@ static int posix_create(struct objstore_vdev *vdev)
 
 	pv->vdev = vdev;
 
-	ret = prep_vdev(vdev->path, pv);
+	ret = prep_vdev(pv);
 	if (ret)
 		goto err_free;
 
