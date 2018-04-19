@@ -121,17 +121,6 @@ void vol_free(struct objstore *vol)
 	mem_cache_free(vol_cache, vol);
 }
 
-static struct objstore_vdev *findvdev(struct objstore *vol)
-{
-	struct objstore_vdev *vdev;
-
-	mxlock(&vol->lock);
-	vdev = vdev_getref(vol->vdev);
-	mxunlock(&vol->lock);
-
-	return vdev;
-}
-
 /*
  * Find the object with oid, if there isn't one, allocate one and add it to
  * the vol's list of objects.
@@ -211,15 +200,10 @@ static struct obj *__find_or_alloc(struct objstore *vol, struct
  */
 static struct obj *getobj(struct objstore *vol, const struct noid *oid)
 {
-	struct objstore_vdev *vdev;
 	struct obj *obj;
 	int ret;
 
-	vdev = findvdev(vol);
-	if (!vdev)
-		return ERR_PTR(-ENXIO);
-
-	obj = __find_or_alloc(vol, vdev, oid);
+	obj = __find_or_alloc(vol, vol->vdev, oid);
 	if (IS_ERR(obj)) {
 		ret = PTR_ERR(obj);
 		goto err;
@@ -227,8 +211,8 @@ static struct obj *getobj(struct objstore *vol, const struct noid *oid)
 
 	switch (obj->state) {
 		case OBJ_STATE_NEW:
-			if (vdev->ops && vdev->ops->allocobj &&
-			    (ret = vdev->ops->allocobj(obj))) {
+			if (vol->vdev->ops && vol->vdev->ops->allocobj &&
+			    (ret = vol->vdev->ops->allocobj(obj))) {
 				/* the allocobj op failed, mark the obj dead */
 				obj->state = OBJ_STATE_DEAD;
 
@@ -248,8 +232,6 @@ static struct obj *getobj(struct objstore *vol, const struct noid *oid)
 			goto err_obj;
 	}
 
-	vdev_putref(vdev);
-
 	return obj;
 
 err_obj:
@@ -257,8 +239,6 @@ err_obj:
 	obj_putref(obj);
 
 err:
-	vdev_putref(vdev);
-
 	return ERR_PTR(ret);
 }
 
@@ -374,22 +354,15 @@ static struct objver *getver(struct objstore *vol, const struct noid *oid,
 
 int objstore_getroot(struct objstore *vol, struct noid *root)
 {
-	struct objstore_vdev *vdev;
 	int ret;
 
 	if (!vol || !root)
 		return -EINVAL;
 
-	vdev = findvdev(vol);
-	if (!vdev)
-		return -ENXIO;
-
-	if (vdev->ops && vdev->ops->getroot)
-		ret = vdev->ops->getroot(vdev, root);
+	if (vol->vdev->ops && vol->vdev->ops->getroot)
+		ret = vol->vdev->ops->getroot(vol->vdev, root);
 	else
 		ret = -ENOTSUP;
-
-	vdev_putref(vdev);
 
 	return ret;
 }
