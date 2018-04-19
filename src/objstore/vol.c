@@ -96,14 +96,13 @@ struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
 	return vol;
 }
 
-struct objstore *objstore_vol_lookup(struct objstore_vdev *vdev,
-				     const char *name)
+struct objstore *objstore_vol_lookup(const struct xuuid *volid)
 {
 	struct objstore *vol;
 
 	mxlock(&vols_lock);
 	list_for_each(vol, &vols) {
-		if ((vol->vdev == vdev) && !strcmp(name, vol->name))
+		if (!xuuid_compare(volid, &vol->id))
 			break;
 	}
 

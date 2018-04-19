@@ -32,10 +32,13 @@ int cmd_login(struct fsconn *conn, union cmd *cmd)
 {
 	struct rpc_login_req *req = &cmd->login.req;
 	struct rpc_login_res *res = &cmd->login.res;
+	char volid[XUUID_PRINTABLE_STRING_LENGTH];
 	struct objstore *vol;
 
-	cmn_err(CE_DEBUG, "LOGIN: conn = '%s', volname = '%s'", req->conn,
-		req->volname);
+	xuuid_unparse(&req->volid, volid);
+
+	cmn_err(CE_DEBUG, "LOGIN: conn = '%s', volid = %s", req->conn,
+		volid);
 
 	if (conn->vol) {
 		cmn_err(CE_INFO, "LOGIN: error: this connection "
@@ -43,7 +46,7 @@ int cmd_login(struct fsconn *conn, union cmd *cmd)
 		return -EALREADY;
 	}
 
-	vol = objstore_vol_lookup(NULL, req->volname);
+	vol = objstore_vol_lookup(&req->volid);
 	if (IS_ERR(vol))
 		return PTR_ERR(vol);
 

@@ -63,8 +63,7 @@ extern struct objstore_vdev *objstore_vdev_load(const char *type,
 /* volume management */
 extern struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
 					    const char *name);
-extern struct objstore *objstore_vol_lookup(struct objstore_vdev *vdev,
-					    const char *name);
+extern struct objstore *objstore_vol_lookup(const struct xuuid *volid);
 
 /* volume operations */
 extern int objstore_getroot(struct objstore *vol, struct noid *root);

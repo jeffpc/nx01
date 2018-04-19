@@ -21,6 +21,7 @@
  */
 
 #include <jeffpc/int.h>
+#include <jeffpc/uuid.h>
 
 #include <nomad/types.h>
 
@@ -33,7 +34,7 @@ struct fscall_state {
 };
 
 extern int fscall_login(struct fscall_state *state, const char *conn,
-			const char *volname);
+			const struct xuuid *volid);
 extern int fscall_open(struct fscall_state *state, const struct noid *oid,
 		       uint32_t *handle);
 extern int fscall_close(struct fscall_state *state, const uint32_t handle);
@@ -55,5 +56,6 @@ extern int fscall_getdent(struct fscall_state *state, const uint32_t handle,
 			  const uint64_t off, struct noid *oid, char **name,
 			  uint64_t *entry_size);
 
-extern int fscall_connect(const char *host, uint16_t port, const char *volname,
+extern int fscall_connect(const char *host, uint16_t port,
+			  const struct xuuid *volid,
 			  struct fscall_state *state);

@@ -69,7 +69,7 @@ credentials checking, etc. (hence the name).
 Inputs
 ------
 * conn name
-* volume name
+* volume id (uuid)
 
 Outputs
 -------

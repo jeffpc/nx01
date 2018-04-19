@@ -514,10 +514,14 @@ int main(int argc, char *argv[])
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	struct fuse_session *se;
 	struct fuse_chan *ch;
+	struct xuuid tmp;
 	char *mountpoint;
 	int ret;
 
-	ret = fscall_connect("localhost", 2323, "myfiles", &state);
+	/* FIXME: parse from mount args */
+	xuuid_generate(&tmp);
+
+	ret = fscall_connect("localhost", 2323, &tmp, &state);
 	if (ret)
 		panic("failed to connect to nomad-client");
 

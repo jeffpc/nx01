@@ -105,14 +105,14 @@ static int __fscall(int fd, uint32_t opcode,
 }
 
 int fscall_login(struct fscall_state *state, const char *conn,
-		 const char *volname)
+		 const struct xuuid *volid)
 {
 	struct rpc_login_req login_req;
 	struct rpc_login_res login_res;
 	int ret;
 
 	login_req.conn = (char *) conn;
-	login_req.volname = (char *) volname;
+	login_req.volid = *volid;
 
 	ret = __fscall(state->sock, NRPC_LOGIN,
 		       (void *) xdr_rpc_login_req,
@@ -362,7 +362,7 @@ err:
 	return ret;
 }
 
-int fscall_connect(const char *host, uint16_t port, const char *volname,
+int fscall_connect(const char *host, uint16_t port, const struct xuuid *volid,
 		   struct fscall_state *state)
 {
 	int ret;
@@ -379,7 +379,7 @@ int fscall_connect(const char *host, uint16_t port, const char *volname,
 	if (ret)
 		return ret;
 
-	ret = fscall_login(state, "unused", volname);
+	ret = fscall_login(state, "unused", volid);
 	cmn_err(CE_DEBUG, "fscall_login() = %d", ret);
 	if (ret)
 		return ret;

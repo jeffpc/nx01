@@ -44,7 +44,7 @@ struct rpc_header_res {
 %/***** LOGIN *****/
 struct rpc_login_req {
 	string		conn<>;
-	string		volname<>;
+	struct xuuid	volid;
 };
 
 struct rpc_login_res {
