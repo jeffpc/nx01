@@ -50,6 +50,7 @@ extern struct backend *backend_lookup(const char *name);
 
 /* internal volume management */
 extern int vol_init(void);
+extern void vol_fini(void);
 extern void vol_free(struct objstore *vol);
 extern void vol_add_vdev(struct objstore *vol, struct objstore_vdev *vdev);
 

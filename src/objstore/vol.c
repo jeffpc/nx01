@@ -48,6 +48,11 @@ int vol_init(void)
 	return 0;
 }
 
+void vol_fini(void)
+{
+	mem_cache_destroy(vol_cache);
+}
+
 static int objcmp(const void *va, const void *vb)
 {
 	const struct obj *a = va;

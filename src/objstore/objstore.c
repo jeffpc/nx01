@@ -145,7 +145,7 @@ int objstore_init(void)
 	return 0;
 
 err_vol:
-	/* TODO: undo vol_init() */
+	vol_fini();
 
 err_objver:
 	mem_cache_destroy(objver_cache);
