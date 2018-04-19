@@ -40,7 +40,7 @@
  *
  * Each object has a unique ID - the object ID (`struct noid').  This
  * uniquely identifies it not just within the vdev, but also within the
- * pool (thanks to the dataset ID within it).  There can be more than one
+ * volume (thanks to the dataset ID within it).  There can be more than one
  * version of an object.  If there is more than one version of an object,
  * they should be divergent (nvclock_cmp() would return NVC_DIV) since given
  * non-divergent versions we would simply take the newer one (NVC_GT) and

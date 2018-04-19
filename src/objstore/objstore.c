@@ -136,18 +136,18 @@ int objstore_init(void)
 		goto err_obj;
 	}
 
-	ret = pool_init();
+	ret = vol_init();
 	if (ret)
 		goto err_objver;
 
 	ret = __load_backends();
 	if (ret)
-		goto err_pool;
+		goto err_vol;
 
 	return 0;
 
-err_pool:
-	/* TODO: undo pool_init() */
+err_vol:
+	/* TODO: undo vol_init() */
 
 err_objver:
 	mem_cache_destroy(objver_cache);

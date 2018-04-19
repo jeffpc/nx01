@@ -32,22 +32,22 @@ int cmd_login(struct fsconn *conn, union cmd *cmd)
 {
 	struct rpc_login_req *req = &cmd->login.req;
 	struct rpc_login_res *res = &cmd->login.res;
-	struct objstore *pool;
+	struct objstore *vol;
 
-	cmn_err(CE_DEBUG, "LOGIN: conn = '%s', pool = '%s'", req->conn,
-		req->pool);
+	cmn_err(CE_DEBUG, "LOGIN: conn = '%s', volname = '%s'", req->conn,
+		req->volname);
 
-	if (conn->pool) {
+	if (conn->vol) {
 		cmn_err(CE_INFO, "LOGIN: error: this connection "
 			"already logged in.");
 		return -EALREADY;
 	}
 
-	pool = objstore_pool_lookup(req->pool);
-	if (!pool)
+	vol = objstore_vol_lookup(req->volname);
+	if (!vol)
 		return -ENOENT;
 
-	conn->pool = pool;
+	conn->vol = vol;
 
-	return objstore_getroot(pool, &res->root);
+	return objstore_getroot(vol, &res->root);
 }

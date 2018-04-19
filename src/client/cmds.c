@@ -197,7 +197,7 @@ bool process_connection(struct fsconn *conn)
 		}
 
 		/* if login is required, make sure it happened */
-		if (def->requires_login && !conn->pool) {
+		if (def->requires_login && !conn->vol) {
 			ret = -EPROTO;
 			cmn_err(CE_ERROR, "must do LOGIN before this operation");
 			break;

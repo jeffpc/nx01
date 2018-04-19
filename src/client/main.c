@@ -44,7 +44,7 @@ static void connection_acceptor(int fd, struct socksvc_stats *stats, void *arg)
 	struct fsconn conn;
 
 	conn.fd = fd;
-	conn.pool = NULL;
+	conn.vol = NULL;
 
 	avl_create(&conn.open_handles, ohandle_cmp, sizeof(struct ohandle),
 		   offsetof(struct ohandle, node));
@@ -62,7 +62,7 @@ static void connection_acceptor(int fd, struct socksvc_stats *stats, void *arg)
 
 int main(int argc, char **argv)
 {
-	struct objstore *pool;
+	struct objstore *vol;
 	int ret;
 
 	ret = ohandle_init();
@@ -83,21 +83,21 @@ int main(int argc, char **argv)
 		goto err;
 	}
 
-	pool = objstore_pool_create("myfiles");
-	cmn_err(CE_DEBUG, "pool = %p", pool);
+	vol = objstore_vol_create("myfiles");
+	cmn_err(CE_DEBUG, "vol = %p", vol);
 
-	if (IS_ERR(pool)) {
-		ret = PTR_ERR(pool);
+	if (IS_ERR(vol)) {
+		ret = PTR_ERR(vol);
 		cmn_err(CE_CRIT, "error: %s", xstrerror(ret));
 		goto err_init;
 	}
 
-	ret = objstore_vdev_create(pool, "mem", "fauxpath");
+	ret = objstore_vdev_create(vol, "mem", "fauxpath");
 	cmn_err(CE_DEBUG, "vdev create = %d", ret);
 
 	if (ret) {
 		cmn_err(CE_CRIT, "error: %s", xstrerror(ret));
-		goto err_pool;
+		goto err_vol;
 	}
 
 	ret = socksvc(NULL, CLIENT_DAEMON_PORT, -1, connection_acceptor, NULL);
@@ -106,8 +106,8 @@ int main(int argc, char **argv)
 
 	/* XXX: undo objstore_vdev_create() */
 
-err_pool:
-	/* XXX: undo objstore_pool_create() */
+err_vol:
+	/* XXX: undo objstore_vol_create() */
 
 err_init:
 	/* XXX: undo objstore_init() */

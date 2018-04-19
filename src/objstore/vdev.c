@@ -25,7 +25,7 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-int objstore_vdev_create(struct objstore *pool, const char *type,
+int objstore_vdev_create(struct objstore *vol, const char *type,
 			const char *path)
 {
 	struct objstore_vdev *vdev;
@@ -42,7 +42,7 @@ int objstore_vdev_create(struct objstore *pool, const char *type,
 
 	refcnt_init(&vdev->refcnt, 1);
 
-	vdev->pool = pool;
+	vdev->vol = vol;
 	vdev->def = backend->def;
 	vdev->path = strdup(path);
 	if (!vdev->path) {
@@ -55,7 +55,7 @@ int objstore_vdev_create(struct objstore *pool, const char *type,
 		goto err_path;
 
 	/* hand off our reference */
-	pool_add_vdev(pool, vdev);
+	vol_add_vdev(vol, vdev);
 
 	return 0;
 
@@ -68,7 +68,7 @@ err:
 	return ret;
 }
 
-int objstore_vdev_load(struct objstore *pool, struct xuuid *uuid,
+int objstore_vdev_load(struct objstore *vol, struct xuuid *uuid,
 		      const char *path)
 {
 	return -ENOTSUP;

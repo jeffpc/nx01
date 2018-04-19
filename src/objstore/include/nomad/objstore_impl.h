@@ -48,9 +48,9 @@ struct backend {
 /* internal backend management */
 extern struct backend *backend_lookup(const char *name);
 
-/* internal pool management */
-extern int pool_init(void);
-extern void pool_add_vdev(struct objstore *pool, struct objstore_vdev *vdev);
+/* internal volume management */
+extern int vol_init(void);
+extern void vol_add_vdev(struct objstore *vol, struct objstore_vdev *vdev);
 
 /* internal vdev management */
 extern struct mem_cache *vdev_cache;

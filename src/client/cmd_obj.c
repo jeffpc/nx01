@@ -37,7 +37,7 @@ int cmd_open(struct fsconn *conn, union cmd *cmd)
 	if (!oh)
 		return -ENOMEM;
 
-	oh->cookie = objstore_open(conn->pool, &req->oid, &req->clock);
+	oh->cookie = objstore_open(conn->vol, &req->oid, &req->clock);
 	if (IS_ERR(oh->cookie))
 		goto err;
 
@@ -63,7 +63,7 @@ int cmd_close(struct fsconn *conn, union cmd *cmd)
 	if (!oh)
 		return -EINVAL;
 
-	ret = objstore_close(conn->pool, oh->cookie);
+	ret = objstore_close(conn->vol, oh->cookie);
 
 	if (!ret) {
 		ohandle_remove(conn, oh);
@@ -91,7 +91,7 @@ int cmd_read(struct fsconn *conn, union cmd *cmd)
 	if (!buf)
 		return -ENOMEM;
 
-	ret = objstore_read(conn->pool, oh->cookie, buf, req->length,
+	ret = objstore_read(conn->vol, oh->cookie, buf, req->length,
 			    req->offset);
 	if (ret < 0) {
 		free(buf);
@@ -116,7 +116,7 @@ int cmd_write(struct fsconn *conn, union cmd *cmd)
 
 	/* TODO: should we limit the requested write size? */
 
-	ret = objstore_write(conn->pool, oh->cookie, req->data.data_val,
+	ret = objstore_write(conn->vol, oh->cookie, req->data.data_val,
 			     req->data.data_len, req->offset);
 
 	VERIFY3S(ret, ==, req->data.data_len);
@@ -134,7 +134,7 @@ int cmd_getattr(struct fsconn *conn, union cmd *cmd)
 	if (!oh)
 		return -EINVAL;
 
-	return objstore_getattr(conn->pool, oh->cookie, &res->attr);
+	return objstore_getattr(conn->vol, oh->cookie, &res->attr);
 }
 
 int cmd_setattr(struct fsconn *conn, union cmd *cmd)
@@ -155,5 +155,5 @@ int cmd_setattr(struct fsconn *conn, union cmd *cmd)
 	/* we use the same struct for input and output */
 	res->attr = req->attr;
 
-	return objstore_setattr(conn->pool, oh->cookie, &res->attr, valid);
+	return objstore_setattr(conn->vol, oh->cookie, &res->attr, valid);
 }

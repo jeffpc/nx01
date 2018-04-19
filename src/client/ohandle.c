@@ -104,13 +104,13 @@ void ohandle_close_all(struct fsconn *conn)
 	while ((oh = avl_destroy_nodes(&conn->open_handles, &cookie))) {
 		int ret;
 
-		ASSERT3P(conn->pool, !=, NULL);
+		ASSERT3P(conn->vol, !=, NULL);
 
-		ret = objstore_close(conn->pool, oh->cookie);
+		ret = objstore_close(conn->vol, oh->cookie);
 		if (ret)
 			cmn_err(CE_WARN, "conn %p failed to close_all cookie "
-				"%p on pool %p: %s", conn, oh->cookie,
-				conn->pool, xstrerror(ret));
+				"%p on vol %p: %s", conn, oh->cookie,
+				conn->vol, xstrerror(ret));
 
 		ohandle_free(oh);
 	}

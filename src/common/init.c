@@ -32,7 +32,7 @@
 #define CFG_ENV_NAME		"NOMAD_CONFIG"
 
 static struct val *backends_list;
-static struct val *pools_list;
+static struct val *vols_list;
 
 struct val *config_get_backends(void)
 {
@@ -103,42 +103,42 @@ static int __set_backends_list(struct val *cfg)
 	return 0;
 }
 
-static int __set_pools_list(struct val *cfg)
+static int __set_vols_list(struct val *cfg)
 {
 	struct sym *name = NULL;
 	struct val *args = NULL;
-	struct val *pools;
-	struct val *pool, *pool_tmp;
+	struct val *vols;
+	struct val *vol, *vol_tmp;
 	struct val *vdev, *vdev_tmp;
 
-	pools = sexpr_alist_lookup_val(cfg, "pools");
-	if (!pools) {
-		cmn_err(CE_CRIT, "config is missing list of pools to load");
+	vols = sexpr_alist_lookup_val(cfg, "vols");
+	if (!vols) {
+		cmn_err(CE_CRIT, "config is missing list of vols to load");
 		goto err;
 	}
 
-	if (pools->type != VT_CONS) {
-		cmn_err(CE_CRIT, "config has a non-list pool list");
+	if (vols->type != VT_CONS) {
+		cmn_err(CE_CRIT, "config has a non-list vol list");
 		goto err;
 	}
 
-	sexpr_for_each_noref(pool, pool_tmp, pools) {
-		if (pool->type != VT_CONS) {
-			cmn_err(CE_CRIT, "pool definition must be a list");
+	sexpr_for_each_noref(vol, vol_tmp, vols) {
+		if (vol->type != VT_CONS) {
+			cmn_err(CE_CRIT, "vol definition must be a list");
 			goto err;
 		}
 
-		args = sexpr_car(val_getref(pool));
+		args = sexpr_car(val_getref(vol));
 		if (args->type != VT_SYM) {
-			cmn_err(CE_CRIT, "pool name must by a symbol");
+			cmn_err(CE_CRIT, "vol name must by a symbol");
 			goto err;
 		}
 
 		name = val_cast_to_sym(args);
 
-		args = sexpr_cdr(val_getref(pool));
+		args = sexpr_cdr(val_getref(vol));
 		if (args->type != VT_CONS) {
-			cmn_err(CE_CRIT, "pool configuration for '%s' must be "
+			cmn_err(CE_CRIT, "vol configuration for '%s' must be "
 				"a list: found %s", sym_cstr(name),
 				val_typename(args->type));
 			goto err;
@@ -149,7 +149,7 @@ static int __set_pools_list(struct val *cfg)
 
 			tmp = sexpr_car(val_getref(vdev));
 			if (tmp->type != VT_SYM) {
-				cmn_err(CE_CRIT, "pool backend type for '%s' must be a "
+				cmn_err(CE_CRIT, "vol backend type for '%s' must be a "
 					"symbol: found %s", sym_cstr(name),
 					val_typename(tmp->type));
 				val_putref(tmp);
@@ -161,14 +161,14 @@ static int __set_pools_list(struct val *cfg)
 		val_putref(args);
 	}
 
-	pools_list = pools;
+	vols_list = vols;
 
 	return 0;
 
 err:
 	sym_putref(name);
 	val_putref(args);
-	val_putref(pools);
+	val_putref(vols);
 	return -EINVAL;
 }
 
@@ -202,7 +202,7 @@ static int load_config(void)
 	if (ret)
 		goto err;
 
-	ret = __set_pools_list(cfg);
+	ret = __set_vols_list(cfg);
 
 err:
 	/*

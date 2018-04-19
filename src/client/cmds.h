@@ -99,7 +99,7 @@ union cmd {
 
 struct fsconn {
 	int fd;
-	struct objstore *pool;
+	struct objstore *vol;
 
 	avl_tree_t open_handles;
 };

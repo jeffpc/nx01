@@ -51,11 +51,10 @@ static struct cmd {
 	{ .name = "conn-add",    .fxn = not_implemented, },
 	{ .name = "conn-list",   .fxn = not_implemented, },
 	{ .name = "host-id",     .fxn = cmd_host_id, },
-	{ .name = "pool-create", .fxn = not_implemented, },
-	{ .name = "pool-import", .fxn = not_implemented, },
-	{ .name = "pool-list",   .fxn = not_implemented, },
 	{ .name = "vdev-create", .fxn = not_implemented, },
 	{ .name = "vdev-list",   .fxn = not_implemented, },
+	{ .name = "vol-create",  .fxn = not_implemented, },
+	{ .name = "vol-list",    .fxn = not_implemented, },
 };
 
 static void usage(char *msg)

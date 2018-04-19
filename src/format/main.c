@@ -40,13 +40,13 @@ static int usage(const char *prog)
 
 static int do_format(const char *type, const char *path)
 {
-	struct objstore *pool;
+	struct objstore *vol;
 
-	pool = objstore_pool_create("temp");
-	if (IS_ERR(pool))
-		return PTR_ERR(pool);
+	vol = objstore_vol_create("temp");
+	if (IS_ERR(vol))
+		return PTR_ERR(vol);
 
-	return objstore_vdev_create(pool, type, path);
+	return objstore_vdev_create(vol, type, path);
 }
 
 int main(int argc, char **argv)
