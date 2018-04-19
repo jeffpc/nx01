@@ -40,8 +40,19 @@ static int usage(const char *prog)
 
 static int do_format(const char *type, const char *path)
 {
-	FIXME("not yet implemented");
-	return -ENOTSUP;
+	struct objstore_vdev *vdev;
+	char vdevid[XUUID_PRINTABLE_STRING_LENGTH];
+
+	vdev = objstore_vdev_create(type, path);
+	if (IS_ERR(vdev))
+		return PTR_ERR(vdev);
+
+	xuuid_unparse(&vdev->uuid, vdevid);
+	printf("%s\n", vdevid);
+
+	vdev_putref(vdev);
+
+	return 0;
 }
 
 int main(int argc, char **argv)
