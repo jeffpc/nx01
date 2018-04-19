@@ -29,7 +29,6 @@
 
 #include <nomad/types.h>
 #include <nomad/objstore.h>
-#include <nomad/init.h>
 
 static int usage(const char *prog)
 {
