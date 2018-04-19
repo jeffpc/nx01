@@ -378,7 +378,7 @@ int objstore_getroot(struct objstore *vol, struct noid *root)
 		return -EINVAL;
 
 	if (vol->ops && vol->ops->getroot)
-		ret = vol->ops->getroot(vol->vdev, root);
+		ret = vol->ops->getroot(vol, root);
 	else
 		ret = -ENOTSUP;
 

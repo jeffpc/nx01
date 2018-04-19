@@ -90,9 +90,9 @@ err_free_clock:
 	return ret;
 }
 
-static int posix_getroot(struct objstore_vdev *vdev, struct noid *root)
+static int posix_getroot(struct objstore *vol, struct noid *root)
 {
-	struct posixvdev *pv = vdev->private;
+	struct posixvdev *pv = vol->vdev->private;
 
 	*root = pv->root;
 

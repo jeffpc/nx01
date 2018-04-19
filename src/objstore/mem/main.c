@@ -31,14 +31,9 @@
 
 #include "mem.h"
 
-static int mem_vdev_getroot(struct objstore_vdev *store, struct noid *root)
+static int mem_vdev_getroot(struct objstore *vol, struct noid *root)
 {
-	struct memstore *ms;
-
-	if (!store || !store->private || !root)
-		return -EINVAL;
-
-	ms = store->private;
+	struct memstore *ms = vol->vdev->private;
 
 	mxlock(&ms->lock);
 	*root = ms->root->oid;

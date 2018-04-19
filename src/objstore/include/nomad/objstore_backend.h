@@ -114,7 +114,7 @@ struct obj_ops {
 };
 
 struct vol_ops {
-	int (*getroot)(struct objstore_vdev *store, struct noid *root);
+	int (*getroot)(struct objstore *vol, struct noid *root);
 	int (*allocobj)(struct obj *obj);
 };
 
