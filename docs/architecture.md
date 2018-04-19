@@ -62,21 +62,22 @@ layer users.
 Volumes
 -------
 
-A volume is device which can store objects.  The exact details how the
-objects are store is abstracted away by the backend modules API.  For
-example, a backend can use a raw disk device or directory on a
-POSIX-compliant file system.
+A volume is container which stores objects.  It is much like the upper layer
+of a file system in a traditional storage stack.
 
-Pools
------
+Note: Currently, volumes support is not implemented.  Instead, we assume
+that there is a 1:1 mapping between volumes and virtual devices (see below).
 
-A pool is a set of volumes grouped by the administrator to serve a single
-purpose.  More than one pool can be present on a system.  For example, two
-teams can use the same system but each can use its own pool to separate disk
-I/O and capacity.
+Virtual Devices
+---------------
 
-Note: For prototyping reasons, a pool is limited to only one volume.
-Therefore, a pool will have either zero or one volume.
+A virtual device (aka. vdev) is a device (virtual or physical) that stores
+one or more volumes (including their objects).  A vdev is much like the
+lower layer of a file system in a traditional storage stack.
+
+The exact details how the objects are stored is abstracted away by the
+backend modules API.  For example, a backend can use a raw disk device or
+directory on a POSIX-compliant file system.
 
 
 Components
@@ -107,8 +108,8 @@ fulfills them with data stored locally in the cache as well as remotely.
 `nomad-server`
 --------------
 
-A daemon that runs on server systems.  It manages the volumes and pools
-exposed to `nomad-client` clients.
+A daemon that runs on server systems.  It manages the volumes exposed to
+`nomad-client` clients.
 
 Note: the protocol is currently not defined.
 
@@ -123,7 +124,7 @@ Note: the protocol is currently not defined.
 `nomad`
 -------
 
-A utility used to query files on an `fs` mounted pool.  It allows the user
+A utility used to query files on an `fs` mounted volume.  It allows the user
 to inspect some of the state that is not visible through POSIX APIs.  It
 uses `ioctls` to get more information from `fs`.
 
@@ -137,6 +138,6 @@ method.
 It is in the form of a library so that both `nomad-client` and
 `nomad-server` can use the same exact code.
 
-Note: Eventually, the backend will be selectable at volume instantiation
+Note: Eventually, the backend will be selectable at vdev instantiation
 time.  At the moment, this is not implemented and `nomad-client` hardcodes
 the use of the mem backend (`libnomad_objstore_mem.so`).
