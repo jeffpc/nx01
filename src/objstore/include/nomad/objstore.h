@@ -40,13 +40,15 @@ struct objstore_vdev;
 
 struct objstore {
 	struct list_node node;
-	refcnt_t refcnt;
 
 	struct lock lock;
-	const char *name;
-	struct objstore_vdev *vdev;
 
 	avl_tree_t objs;
+
+	/* the following can be read without locking the volume */
+	refcnt_t refcnt;
+	const char *name;
+	struct objstore_vdev *vdev;
 };
 
 extern int objstore_init(void);
