@@ -127,8 +127,7 @@ void vol_free(struct objstore *vol)
  *
  * Returns obj (locked and referenced) on success, negated errno on failure.
  */
-static struct obj *__find_or_alloc(struct objstore *vol, struct
-				   objstore_vdev *vdev, const struct noid *oid)
+static struct obj *__find_or_alloc(struct objstore *vol, const struct noid *oid)
 {
 	struct obj key = {
 		.oid = *oid,
@@ -203,7 +202,7 @@ static struct obj *getobj(struct objstore *vol, const struct noid *oid)
 	struct obj *obj;
 	int ret;
 
-	obj = __find_or_alloc(vol, vol->vdev, oid);
+	obj = __find_or_alloc(vol, oid);
 	if (IS_ERR(obj)) {
 		ret = PTR_ERR(obj);
 		goto err;
