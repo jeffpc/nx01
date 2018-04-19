@@ -20,12 +20,7 @@
  * SOFTWARE.
  */
 
-#include <stdio.h>
-
-#include <jeffpc/error.h>
-
-#include <nomad/init.h>
-#include <nomad/types.h>
+#include "admin.h"
 
 const char *prog;
 
