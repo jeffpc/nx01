@@ -53,7 +53,7 @@ void vdev_fini(void)
 	mem_cache_destroy(vdev_cache);
 }
 
-struct objstore_vdev *objstore_vdev_create(const char *type, const char *path)
+static struct objstore_vdev *vdev_alloc(const char *type, const char *path)
 {
 	struct objstore_vdev *vdev;
 	struct backend *backend;
@@ -68,7 +68,6 @@ struct objstore_vdev *objstore_vdev_create(const char *type, const char *path)
 		return ERR_PTR(-ENOMEM);
 
 	refcnt_init(&vdev->refcnt, 1);
-	xuuid_generate(&vdev->uuid);
 
 	vdev->def = backend->def;
 	vdev->private = NULL;
@@ -79,28 +78,12 @@ struct objstore_vdev *objstore_vdev_create(const char *type, const char *path)
 		goto err;
 	}
 
-	ret = vdev->def->create(vdev);
-	if (ret)
-		goto err_path;
-
-	mxlock(&vdevs_lock);
-	list_insert_tail(&vdevs, vdev_getref(vdev));
-	mxunlock(&vdevs_lock);
-
 	return vdev;
 
-err_path:
-	free((char *) vdev->path);
-
 err:
-	mem_cache_free(vdev_cache, vdev);
+	vdev_putref(vdev);
 
 	return ERR_PTR(ret);
-}
-
-struct objstore_vdev *objstore_vdev_load(const char *type, const char *path)
-{
-	return ERR_PTR(-ENOTSUP);
 }
 
 void objstore_vdev_free(struct objstore_vdev *vdev)
@@ -110,4 +93,36 @@ void objstore_vdev_free(struct objstore_vdev *vdev)
 
 	free((char *) vdev->path);
 	mem_cache_free(vdev_cache, vdev);
+}
+
+struct objstore_vdev *objstore_vdev_create(const char *type, const char *path)
+{
+	struct objstore_vdev *vdev;
+	int ret;
+
+	vdev = vdev_alloc(type, path);
+	if (IS_ERR(vdev))
+		return vdev;
+
+	xuuid_generate(&vdev->uuid);
+
+	ret = vdev->def->create(vdev);
+	if (ret)
+		goto err;
+
+	mxlock(&vdevs_lock);
+	list_insert_tail(&vdevs, vdev_getref(vdev));
+	mxunlock(&vdevs_lock);
+
+	return vdev;
+
+err:
+	vdev_putref(vdev);
+
+	return ERR_PTR(ret);
+}
+
+struct objstore_vdev *objstore_vdev_load(const char *type, const char *path)
+{
+	return ERR_PTR(-ENOTSUP);
 }
