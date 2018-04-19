@@ -125,18 +125,4 @@ struct objstore_vdev_def {
 	int (*load)(struct objstore_vdev *vdev);
 };
 
-struct objstore_vdev {
-	const struct vdev_ops *ops;
-	const struct objstore_vdev_def *def;
-
-	struct xuuid uuid;
-	const char *path;
-
-	refcnt_t refcnt;
-
-	struct list_node node;
-
-	void *private;
-};
-
 #endif

@@ -112,7 +112,7 @@ struct objstore *objstore_vol_lookup(const struct xuuid *volid)
 	return vol ? vol : ERR_PTR(-ENOENT);
 }
 
-void vol_free(struct objstore *vol)
+void objstore_vol_free(struct objstore *vol)
 {
 	ASSERT0(avl_numnodes(&vol->objs));
 	avl_destroy(&vol->objs);

@@ -101,7 +101,7 @@ struct objstore_vdev *objstore_vdev_load(const char *type, const char *path)
 	return ERR_PTR(-ENOTSUP);
 }
 
-void vdev_free(struct objstore_vdev *vdev)
+void objstore_vdev_free(struct objstore_vdev *vdev)
 {
 	if (!vdev)
 		return;

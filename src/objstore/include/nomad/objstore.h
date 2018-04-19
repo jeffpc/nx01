@@ -36,7 +36,19 @@ enum {
 	OBJ_ATTR_SIZE	= 0x02,
 };
 
-struct objstore_vdev;
+struct objstore_vdev {
+	const struct vdev_ops *ops;
+	const struct objstore_vdev_def *def;
+
+	struct xuuid uuid;
+	const char *path;
+
+	refcnt_t refcnt;
+
+	struct list_node node;
+
+	void *private;
+};
 
 struct objstore {
 	struct list_node node;
@@ -59,11 +71,17 @@ extern struct objstore_vdev *objstore_vdev_create(const char *type,
 						  const char *path);
 extern struct objstore_vdev *objstore_vdev_load(const char *type,
 						const char *path);
+extern void objstore_vdev_free(struct objstore_vdev *vdev);
+
+REFCNT_INLINE_FXNS(struct objstore_vdev, vdev, refcnt, objstore_vdev_free, NULL)
 
 /* volume management */
 extern struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
 					    const char *name);
 extern struct objstore *objstore_vol_lookup(const struct xuuid *volid);
+extern void objstore_vol_free(struct objstore *vol);
+
+REFCNT_INLINE_FXNS(struct objstore, vol, refcnt, objstore_vol_free, NULL)
 
 /* volume operations */
 extern int objstore_getroot(struct objstore *vol, struct noid *root);
