@@ -95,8 +95,10 @@ void objstore_vdev_free(struct objstore_vdev *vdev)
 	mem_cache_free(vdev_cache, vdev);
 }
 
-struct objstore_vdev *objstore_vdev_create(const char *type, const char *path)
+static struct objstore_vdev *vdev_load(const char *type, const char *path,
+				       bool create)
 {
+	int (*fxn)(struct objstore_vdev *vdev);
 	struct objstore_vdev *vdev;
 	int ret;
 
@@ -104,9 +106,15 @@ struct objstore_vdev *objstore_vdev_create(const char *type, const char *path)
 	if (IS_ERR(vdev))
 		return vdev;
 
-	xuuid_generate(&vdev->uuid);
+	if (create) {
+		fxn = vdev->def->create;
+		xuuid_generate(&vdev->uuid);
+	} else {
+		fxn = vdev->def->load;
+		xuuid_clear(&vdev->uuid);
+	}
 
-	ret = vdev->def->create(vdev);
+	ret = fxn(vdev);
 	if (ret)
 		goto err;
 
@@ -122,7 +130,12 @@ err:
 	return ERR_PTR(ret);
 }
 
+struct objstore_vdev *objstore_vdev_create(const char *type, const char *path)
+{
+	return vdev_load(type, path, true);
+}
+
 struct objstore_vdev *objstore_vdev_load(const char *type, const char *path)
 {
-	return ERR_PTR(-ENOTSUP);
+	return vdev_load(type, path, false);
 }
