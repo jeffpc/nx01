@@ -50,7 +50,6 @@ struct posixvdev {
 	int basefd;	/* base directory */
 	int vdevfd;	/* vdev info fd */
 
-	struct xuuid volid;
 	struct noid root;
 };
 
