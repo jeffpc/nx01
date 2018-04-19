@@ -36,12 +36,14 @@
  * vdev, we find:
  *
  * /data                   - the data dir
- * /data/vdev              - vdev info (root OID, uuid, OID bmap, etc.)
- * /data/<oid>             - everything related to the object
- * /data/<oid>/<clock>     - one version of the object
+ * /data/vdev              - vdev info (uuid)
+ * /data/<volid>           - volume
+ * /data/<volid>/vol       - volume info (root OID, uuid, OID bmap, etc.)
+ * /data/<volid>/<oid>     - everything related to the object
+ * /data/<volid>/<oid>/<clock> - one version of the object
  *
- * Each /data/<oid>/<clock> file contains a header (containing attributes,
- * etc.) followed by the object contents.
+ * Each /data/<volid>/<oid>/<clock> file contains a header (containing
+ * attributes, etc.) followed by the object contents.
  */
 
 struct posixvdev {
