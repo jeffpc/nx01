@@ -114,7 +114,6 @@ struct memstore {
 	avl_tree_t objs;
 	struct memobj *root;
 
-	struct xuuid volid; /* our volume id */
 	atomic64_t next_oid_uniq; /* the next unique part of noid */
 
 	struct lock lock;

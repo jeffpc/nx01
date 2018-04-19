@@ -113,8 +113,6 @@ static int mem_create(struct objstore_vdev *vdev)
 
 	mxinit(&ms->lock);
 
-	xuuid_generate(&ms->volid);
-
 	obj = newmemobj(ms, NATTR_DIR | 0777);
 	if (IS_ERR(obj)) {
 		free(ms);
