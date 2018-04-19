@@ -109,6 +109,8 @@ struct memdentry {
 
 /* the whole store */
 struct memstore {
+	struct objstore_vdev *vdev;
+
 	avl_tree_t objs;
 	struct memobj *root;
 

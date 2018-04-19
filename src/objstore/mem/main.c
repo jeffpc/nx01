@@ -105,6 +105,8 @@ static int mem_create(struct objstore_vdev *vdev)
 	if (!ms)
 		return -ENOMEM;
 
+	ms->vdev = vdev;
+
 	atomic_set(&ms->next_oid_uniq, 1);
 	avl_create(&ms->objs, objcmp, sizeof(struct memobj),
 		   offsetof(struct memobj, node));
