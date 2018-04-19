@@ -126,8 +126,6 @@ struct objstore_vdev_def {
 };
 
 struct objstore_vdev {
-	struct objstore *vol;
-
 	const struct vdev_ops *ops;
 	const struct objstore_vdev_def *def;
 

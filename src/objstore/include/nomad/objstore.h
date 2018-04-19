@@ -52,14 +52,16 @@ struct objstore {
 extern int objstore_init(void);
 
 /* vdev management */
-extern int objstore_vdev_create(struct objstore *vol, const char *type,
-				const char *path);
-extern int objstore_vdev_load(struct objstore *vol, struct xuuid *uuid,
-			      const char *path);
+extern struct objstore_vdev *objstore_vdev_create(const char *type,
+						  const char *path);
+extern struct objstore_vdev *objstore_vdev_load(const char *type,
+						const char *path);
 
 /* volume management */
-extern struct objstore *objstore_vol_create(const char *name);
-extern struct objstore *objstore_vol_lookup(const char *name);
+extern struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
+					    const char *name);
+extern struct objstore *objstore_vol_lookup(struct objstore_vdev *vdev,
+					    const char *name);
 
 /* volume operations */
 extern int objstore_getroot(struct objstore *vol, struct noid *root);

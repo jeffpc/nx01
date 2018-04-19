@@ -50,6 +50,10 @@ int vol_init(void)
 
 void vol_fini(void)
 {
+	list_destroy(&vols);
+
+	mxdestroy(&vols_lock);
+
 	mem_cache_destroy(vol_cache);
 }
 
@@ -61,7 +65,8 @@ static int objcmp(const void *va, const void *vb)
 	return noid_cmp(&a->oid, &b->oid);
 }
 
-struct objstore *objstore_vol_create(const char *name)
+struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
+				     const char *name)
 {
 	struct objstore *vol;
 
@@ -75,17 +80,34 @@ struct objstore *objstore_vol_create(const char *name)
 		return ERR_PTR(-ENOMEM);
 	}
 
-	vol->vdev = NULL;
+	vol->vdev = vdev_getref(vdev);
 
 	mxinit(&vol->lock);
 	avl_create(&vol->objs, objcmp, sizeof(struct obj),
 		   offsetof(struct obj, node));
 
 	mxlock(&vols_lock);
-	list_insert_tail(&vols, vol);
+	list_insert_tail(&vols, vol_getref(vol));
 	mxunlock(&vols_lock);
 
 	return vol;
+}
+
+struct objstore *objstore_vol_lookup(struct objstore_vdev *vdev,
+				     const char *name)
+{
+	struct objstore *vol;
+
+	mxlock(&vols_lock);
+	list_for_each(vol, &vols) {
+		if ((vol->vdev == vdev) && !strcmp(name, vol->name))
+			break;
+	}
+
+	vol = vol_getref(vol);
+	mxunlock(&vols_lock);
+
+	return vol ? vol : ERR_PTR(-ENOENT);
 }
 
 void vol_free(struct objstore *vol)
@@ -93,29 +115,10 @@ void vol_free(struct objstore *vol)
 	ASSERT0(avl_numnodes(&vol->objs));
 	avl_destroy(&vol->objs);
 
+	vdev_putref(vol->vdev);
+
 	free((char *) vol->name);
 	mem_cache_free(vol_cache, vol);
-}
-
-void vol_add_vdev(struct objstore *vol, struct objstore_vdev *vdev)
-{
-	mxlock(&vol->lock);
-	ASSERT3P(vol->vdev, ==, NULL);
-	vol->vdev = vdev;
-	mxunlock(&vol->lock);
-}
-
-struct objstore *objstore_vol_lookup(const char *name)
-{
-	struct objstore *vol;
-
-	mxlock(&vols_lock);
-	list_for_each(vol, &vols)
-		if (!strcmp(name, vol->name))
-			break;
-	mxunlock(&vols_lock);
-
-	return vol;
 }
 
 static struct objstore_vdev *findvdev(struct objstore *vol)

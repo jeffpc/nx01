@@ -43,9 +43,9 @@ int cmd_login(struct fsconn *conn, union cmd *cmd)
 		return -EALREADY;
 	}
 
-	vol = objstore_vol_lookup(req->volname);
-	if (!vol)
-		return -ENOENT;
+	vol = objstore_vol_lookup(NULL, req->volname);
+	if (IS_ERR(vol))
+		return PTR_ERR(vol);
 
 	conn->vol = vol;
 
