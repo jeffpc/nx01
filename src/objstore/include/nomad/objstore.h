@@ -62,6 +62,8 @@ struct objstore {
 	const struct vol_ops *ops;
 	struct objstore_vdev *vdev;
 	struct xuuid id;
+
+	void *private;
 };
 
 extern int objstore_init(void);

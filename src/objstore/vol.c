@@ -86,6 +86,7 @@ struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
 
 	vol->ops = NULL;
 	vol->vdev = vdev_getref(vdev);
+	vol->private = NULL;
 
 	mxinit(&vol->lock);
 	avl_create(&vol->objs, objcmp, sizeof(struct obj),
