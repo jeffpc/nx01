@@ -122,6 +122,7 @@ struct objstore_vdev_def {
 	const char *name;
 
 	int (*create)(struct objstore_vdev *vdev);
+	int (*create_vol)(struct objstore *vol);
 	int (*load)(struct objstore_vdev *vdev);
 };
 

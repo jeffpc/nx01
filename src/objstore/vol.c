@@ -69,6 +69,10 @@ struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
 				     const char *name)
 {
 	struct objstore *vol;
+	int ret;
+
+	if (!vdev->def->create_vol)
+		return ERR_PTR(-ENOTSUP);
 
 	vol = mem_cache_alloc(vol_cache);
 	if (!vol)
@@ -87,14 +91,26 @@ struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
 	avl_create(&vol->objs, objcmp, sizeof(struct obj),
 		   offsetof(struct obj, node));
 
-	/* TODO: to be overwritten by the backend code */
-	xuuid_clear(&vol->id);
+	xuuid_generate(&vol->id);
+
+	ret = vdev->def->create_vol(vol);
+	if (ret)
+		goto err;
 
 	mxlock(&vols_lock);
 	list_insert_tail(&vols, vol_getref(vol));
 	mxunlock(&vols_lock);
 
 	return vol;
+
+err:
+	vdev_putref(vol->vdev);
+
+	free((char *) vol->name);
+
+	mem_cache_free(vol_cache, vol);
+
+	return ERR_PTR(ret);
 }
 
 struct objstore *objstore_vol_lookup(const struct xuuid *volid)
