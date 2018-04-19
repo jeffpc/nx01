@@ -50,9 +50,6 @@ struct posixvdev {
 	struct objstore_vdev *vdev;
 
 	int basefd;	/* base directory */
-
-	/* FIXME: here to avoid compiler errors for now */
-	int vdevfd;
 };
 
 struct posixvol {

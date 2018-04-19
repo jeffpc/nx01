@@ -95,7 +95,6 @@ static int posix_create(struct objstore_vdev *vdev)
 		return -ENOMEM;
 
 	pv->vdev = vdev;
-	pv->vdevfd = -1;
 
 	ret = prep_vdev(vdev->path, pv);
 	if (ret)
