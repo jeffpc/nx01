@@ -25,6 +25,34 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
+static struct mem_cache *vdev_cache;
+
+static struct lock vdevs_lock;
+static struct list vdevs;
+
+int vdev_init(void)
+{
+	vdev_cache = mem_cache_create("vdev", sizeof(struct objstore), 0);
+	if (IS_ERR(vdev_cache))
+		return PTR_ERR(vdev_cache);
+
+	mxinit(&vdevs_lock);
+
+	list_create(&vdevs, sizeof(struct objstore_vdev),
+		    offsetof(struct objstore_vdev, node));
+
+	return 0;
+}
+
+void vdev_fini(void)
+{
+	list_destroy(&vdevs);
+
+	mxdestroy(&vdevs_lock);
+
+	mem_cache_destroy(vdev_cache);
+}
+
 int objstore_vdev_create(struct objstore *vol, const char *type,
 			const char *path)
 {
@@ -53,6 +81,11 @@ int objstore_vdev_create(struct objstore *vol, const char *type,
 	ret = vdev->def->create(vdev);
 	if (ret)
 		goto err_path;
+
+	vdev_getref(vdev);
+	mxlock(&vdevs_lock);
+	list_insert_tail(&vdevs, vdev);
+	mxunlock(&vdevs_lock);
 
 	/* hand off our reference */
 	vol_add_vdev(vol, vdev);

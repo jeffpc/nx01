@@ -34,8 +34,6 @@
 
 static struct list backends;
 
-struct mem_cache *vdev_cache;
-
 struct backend *backend_lookup(const char *name)
 {
 	struct backend *backend;
@@ -120,9 +118,9 @@ int objstore_init(void)
 	list_create(&backends, sizeof(struct backend),
 		    offsetof(struct backend, node));
 
-	vdev_cache = mem_cache_create("vdev", sizeof(struct objstore_vdev), 0);
-	if (IS_ERR(vdev_cache))
-		return PTR_ERR(vdev_cache);
+	ret = vdev_init();
+	if (ret)
+		return ret;
 
 	obj_cache = mem_cache_create("obj", sizeof(struct obj), 0);
 	if (IS_ERR(obj_cache)) {
@@ -156,7 +154,7 @@ err_obj:
 	mem_cache_destroy(obj_cache);
 
 err:
-	mem_cache_destroy(vdev_cache);
+	vdev_fini();
 
 	return ret;
 }

@@ -56,7 +56,8 @@ extern void vol_add_vdev(struct objstore *vol, struct objstore_vdev *vdev);
 REFCNT_INLINE_FXNS(struct objstore, vol, refcnt, vol_free, NULL)
 
 /* internal vdev management */
-extern struct mem_cache *vdev_cache;
+extern int vdev_init(void);
+extern void vdev_fini(void);
 extern void vdev_free(struct objstore_vdev *vdev);
 
 REFCNT_INLINE_FXNS(struct objstore_vdev, vdev, refcnt, vdev_free, NULL)

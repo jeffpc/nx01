@@ -136,6 +136,8 @@ struct objstore_vdev {
 
 	refcnt_t refcnt;
 
+	struct list_node node;
+
 	void *private;
 };
 
