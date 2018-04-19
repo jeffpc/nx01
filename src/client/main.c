@@ -60,9 +60,14 @@ static void connection_acceptor(int fd, struct socksvc_stats *stats, void *arg)
 	avl_destroy(&conn.open_handles);
 }
 
+static int load_vdevs(void)
+{
+	FIXME("not yet implemented");
+	return -ENOTSUP;
+}
+
 int main(int argc, char **argv)
 {
-	struct objstore *vol;
 	int ret;
 
 	ret = ohandle_init();
@@ -83,31 +88,15 @@ int main(int argc, char **argv)
 		goto err;
 	}
 
-	vol = objstore_vol_create("myfiles");
-	cmn_err(CE_DEBUG, "vol = %p", vol);
-
-	if (IS_ERR(vol)) {
-		ret = PTR_ERR(vol);
-		cmn_err(CE_CRIT, "error: %s", xstrerror(ret));
-		goto err_init;
-	}
-
-	ret = objstore_vdev_create(vol, "mem", "fauxpath");
-	cmn_err(CE_DEBUG, "vdev create = %d", ret);
-
+	ret = load_vdevs();
 	if (ret) {
-		cmn_err(CE_CRIT, "error: %s", xstrerror(ret));
-		goto err_vol;
+		cmn_err(CE_CRIT, "Failed to load vdevs: %s", xstrerror(ret));
+		goto err_init;
 	}
 
 	ret = socksvc(NULL, CLIENT_DAEMON_PORT, -1, connection_acceptor, NULL);
 
 	cmn_err(CE_DEBUG, "socksvc() = %d (%s)", ret, xstrerror(ret));
-
-	/* XXX: undo objstore_vdev_create() */
-
-err_vol:
-	/* XXX: undo objstore_vol_create() */
 
 err_init:
 	/* XXX: undo objstore_init() */

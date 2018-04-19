@@ -40,13 +40,8 @@ static int usage(const char *prog)
 
 static int do_format(const char *type, const char *path)
 {
-	struct objstore *vol;
-
-	vol = objstore_vol_create("temp");
-	if (IS_ERR(vol))
-		return PTR_ERR(vol);
-
-	return objstore_vdev_create(vol, type, path);
+	FIXME("not yet implemented");
+	return -ENOTSUP;
 }
 
 int main(int argc, char **argv)
