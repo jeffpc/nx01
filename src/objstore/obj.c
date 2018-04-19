@@ -58,7 +58,7 @@ struct obj *allocobj(void)
 	obj->nlink = 0;
 	obj->private = NULL;
 	obj->state = OBJ_STATE_NEW;
-	obj->vdev = NULL;
+	obj->vol = NULL;
 	obj->ops = NULL;
 
 	refcnt_init(&obj->refcnt, 1);
@@ -79,7 +79,7 @@ void freeobj(struct obj *obj)
 		obj->ops->free(obj);
 
 	mxdestroy(&obj->lock);
-	vdev_putref(obj->vdev);
+	vol_putref(obj->vol);
 	avl_destroy(&obj->versions);
 	mem_cache_free(obj_cache, obj);
 }

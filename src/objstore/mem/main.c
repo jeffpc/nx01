@@ -49,7 +49,7 @@ static int mem_vdev_getroot(struct objstore_vdev *store, struct noid *root)
 
 static int mem_allocobj(struct obj *obj)
 {
-	struct memstore *ms = obj->vdev->private;
+	struct memstore *ms = obj->vol->vdev->private;
 	struct memobj key = {
 		.oid = obj->oid,
 	};

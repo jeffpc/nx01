@@ -50,7 +50,7 @@ struct obj {
 	avl_node_t node;
 
 	/* constant for the lifetime of the object */
-	struct objstore_vdev *vdev;
+	struct objstore *vol;
 	const struct obj_ops *ops;
 };
 

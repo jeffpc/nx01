@@ -283,7 +283,7 @@ static void sync_ver_to_mver(struct objver *ver)
 
 static int mem_obj_getversion(struct objver *ver)
 {
-	struct memstore *ms = ver->obj->vdev->private;
+	struct memstore *ms = ver->obj->vol->vdev->private;
 	struct memver *mver;
 
 	mver = findver_by_hndl(ms, &ver->obj->oid, ver->clock);
@@ -490,7 +490,7 @@ static int mem_obj_create(struct objver *dirver, const char *name,
 	const struct memdentry key = {
 		.name = name,
 	};
-	struct memstore *ms = dirver->obj->vdev->private;
+	struct memstore *ms = dirver->obj->vol->vdev->private;
 	struct memver *dirmver = dirver->private;
 	struct memobj *childobj;
 

@@ -101,7 +101,7 @@ static int posix_getroot(struct objstore_vdev *vdev, struct noid *root)
 
 static int posix_allocobj(struct obj *obj)
 {
-	struct posixvdev *pv = obj->vdev->private;
+	struct posixvdev *pv = obj->vol->vdev->private;
 	char oidstr[32];
 	int objfd;
 

@@ -188,7 +188,7 @@ static struct obj *__find_or_alloc(struct objstore *vol, struct
 		mxlock(&newobj->lock);
 
 		newobj->oid = *oid;
-		newobj->vdev = vdev_getref(vdev);
+		newobj->vol = vol_getref(vol);
 
 		/* retry the search, and insert if necessary */
 	}
@@ -446,7 +446,7 @@ int objstore_close(struct objstore *vol, void *cookie)
 	if (!vol || !objver)
 		return -EINVAL;
 
-	if (vol != objver->obj->vdev->vol)
+	if (vol != objver->obj->vol)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -493,7 +493,7 @@ int objstore_getattr(struct objstore *vol, void *cookie, struct nattr *attr)
 	if (!vol || !objver || !attr)
 		return -EINVAL;
 
-	if (vol != objver->obj->vdev->vol)
+	if (vol != objver->obj->vol)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -518,7 +518,7 @@ int objstore_setattr(struct objstore *vol, void *cookie, struct nattr *attr,
 	if (!vol || !objver || !attr)
 		return -EINVAL;
 
-	if (vol != objver->obj->vdev->vol)
+	if (vol != objver->obj->vol)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -546,7 +546,7 @@ ssize_t objstore_read(struct objstore *vol, void *cookie, void *buf, size_t len,
 	if (len > (SIZE_MAX / 2))
 		return -EOVERFLOW;
 
-	if (vol != objver->obj->vdev->vol)
+	if (vol != objver->obj->vol)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -582,7 +582,7 @@ ssize_t objstore_write(struct objstore *vol, void *cookie, const void *buf,
 	if (len > (SIZE_MAX / 2))
 		return -EOVERFLOW;
 
-	if (vol != objver->obj->vdev->vol)
+	if (vol != objver->obj->vol)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -615,7 +615,7 @@ int objstore_lookup(struct objstore *vol, void *dircookie, const char *name,
 	if (!vol || !dirver || !name || !child)
 		return -EINVAL;
 
-	if (vol != dirver->obj->vdev->vol)
+	if (vol != dirver->obj->vol)
 		return -ENXIO;
 
 	dir = dirver->obj;
@@ -643,7 +643,7 @@ int objstore_create(struct objstore *vol, void *dircookie, const char *name,
 	if (!vol || !dirver || !name || !child)
 		return -EINVAL;
 
-	if (vol != dirver->obj->vdev->vol)
+	if (vol != dirver->obj->vol)
 		return -ENXIO;
 
 	dir = dirver->obj;
@@ -670,7 +670,7 @@ static struct obj *getobj_in_dir(struct objver *dirver, const char *name)
 	if (ret)
 		return ERR_PTR(ret);
 
-	return getobj(dirver->obj->vdev->vol, &child_oid);
+	return getobj(dirver->obj->vol, &child_oid);
 }
 
 int objstore_unlink(struct objstore *vol, void *dircookie, const char *name)
@@ -682,7 +682,7 @@ int objstore_unlink(struct objstore *vol, void *dircookie, const char *name)
 	if (!vol || !dirver || !name)
 		return -EINVAL;
 
-	if (vol != dirver->obj->vdev->vol)
+	if (vol != dirver->obj->vol)
 		return -ENXIO;
 
 	dir = dirver->obj;
@@ -722,7 +722,7 @@ int objstore_getdent(struct objstore *vol, void *dircookie,
 	if (!vol || !dirver)
 		return -EINVAL;
 
-	if (vol != dirver->obj->vdev->vol)
+	if (vol != dirver->obj->vol)
 		return -ENXIO;
 
 	dir = dirver->obj;
