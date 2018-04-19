@@ -68,6 +68,7 @@ struct objstore_vdev *objstore_vdev_create(const char *type, const char *path)
 		return ERR_PTR(-ENOMEM);
 
 	refcnt_init(&vdev->refcnt, 1);
+	xuuid_generate(&vdev->uuid);
 
 	vdev->def = backend->def;
 	vdev->path = strdup(path);
