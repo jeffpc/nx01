@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2017-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 
 #define OIDFMT	"%016"PRIx64
 
-int posix_new_obj(struct posixvol *pv, uint16_t mode, struct noid *oid)
+int posix_new_obj(struct posixvdev *pv, uint16_t mode, struct noid *oid)
 {
 	struct nvclock *clock;
 	char vername[PATH_MAX];
@@ -90,9 +90,9 @@ err_free_clock:
 	return ret;
 }
 
-static int posix_getroot(struct objstore_vol *vol, struct noid *root)
+static int posix_getroot(struct objstore_vdev *vdev, struct noid *root)
 {
-	struct posixvol *pv = vol->private;
+	struct posixvdev *pv = vdev->private;
 
 	*root = pv->root;
 
@@ -101,7 +101,7 @@ static int posix_getroot(struct objstore_vol *vol, struct noid *root)
 
 static int posix_allocobj(struct obj *obj)
 {
-	struct posixvol *pv = obj->vol->private;
+	struct posixvdev *pv = obj->vdev->private;
 	char oidstr[32];
 	int objfd;
 
@@ -115,7 +115,7 @@ static int posix_allocobj(struct obj *obj)
 	return 0;
 }
 
-const struct vol_ops posix_vol_ops = {
+const struct vdev_ops posix_vdev_ops = {
 	.getroot	= posix_getroot,
 	.allocobj	= posix_allocobj,
 };

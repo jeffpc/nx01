@@ -33,10 +33,10 @@
  * objects.
  *
  * The layout is relatively simple.  Assuming /data is the path of the
- * volume, we find:
+ * vdev, we find:
  *
  * /data                   - the data dir
- * /data/vol               - volume info (root OID, uuid, OID bmap, etc.)
+ * /data/vdev              - vdev info (root OID, uuid, OID bmap, etc.)
  * /data/<oid>             - everything related to the object
  * /data/<oid>/<clock>     - one version of the object
  *
@@ -44,21 +44,21 @@
  * etc.) followed by the object contents.
  */
 
-struct posixvol {
+struct posixvdev {
 	int basefd;	/* base directory */
-	int volfd;	/* volume info fd */
+	int vdevfd;	/* vdev info fd */
 
 	uint32_t ds;
 	struct noid root;
 };
 
-extern const struct vol_ops posix_vol_ops;
+extern const struct vdev_ops posix_vdev_ops;
 
-extern int posix_new_obj(struct posixvol *pv, uint16_t mode, struct noid *oid);
+extern int posix_new_obj(struct posixvdev *pv, uint16_t mode, struct noid *oid);
 
-extern int oidbmap_create(struct posixvol *pv);
-extern int oidbmap_set(struct posixvol *pv, uint64_t uniq);
-extern int oidbmap_get_new(struct posixvol *pv, uint64_t *new);
-extern int oidbmap_put(struct posixvol *pv, uint64_t uniq);
+extern int oidbmap_create(struct posixvdev *pv);
+extern int oidbmap_set(struct posixvdev *pv, uint64_t uniq);
+extern int oidbmap_get_new(struct posixvdev *pv, uint64_t *new);
+extern int oidbmap_put(struct posixvdev *pv, uint64_t uniq);
 
 #endif

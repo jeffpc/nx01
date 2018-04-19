@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2015 Holly Sipek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,7 +31,7 @@
 
 #include "mem.h"
 
-static int mem_vol_getroot(struct objstore_vol *store, struct noid *root)
+static int mem_vdev_getroot(struct objstore_vdev *store, struct noid *root)
 {
 	struct memstore *ms;
 
@@ -49,7 +49,7 @@ static int mem_vol_getroot(struct objstore_vol *store, struct noid *root)
 
 static int mem_allocobj(struct obj *obj)
 {
-	struct memstore *ms = obj->vol->private;
+	struct memstore *ms = obj->vdev->private;
 	struct memobj key = {
 		.oid = obj->oid,
 	};
@@ -72,7 +72,7 @@ static int mem_allocobj(struct obj *obj)
 
 /*
  * We're keeping this here to keep it close to mem_allocobj().  As the name
- * implies, this is an object op - not a volume op.
+ * implies, this is an object op - not a vdev op.
  */
 void mem_obj_free(struct obj *obj)
 {
@@ -81,8 +81,8 @@ void mem_obj_free(struct obj *obj)
 	memobj_putref(mobj);
 }
 
-static const struct vol_ops vol_ops = {
-	.getroot = mem_vol_getroot,
+static const struct vdev_ops vdev_ops = {
+	.getroot = mem_vdev_getroot,
 	.allocobj = mem_allocobj,
 };
 
@@ -94,12 +94,12 @@ static int objcmp(const void *va, const void *vb)
 	return noid_cmp(&a->oid, &b->oid);
 }
 
-static int mem_create(struct objstore_vol *vol)
+static int mem_create(struct objstore_vdev *vdev)
 {
 	struct memstore *ms;
 	struct memobj *obj;
 
-	vol->ops = &vol_ops;
+	vdev->ops = &vdev_ops;
 
 	ms = malloc(sizeof(struct memstore));
 	if (!ms)
@@ -124,12 +124,12 @@ static int mem_create(struct objstore_vol *vol)
 	avl_add(&ms->objs, memobj_getref(obj));
 	ms->root = obj; /* hand off our reference */
 
-	vol->private = ms;
+	vdev->private = ms;
 
 	return 0;
 }
 
-const struct objstore_vol_def objvol = {
+const struct objstore_vdev_def objvdev = {
 	.name = "mem",
 
 	.create = mem_create,

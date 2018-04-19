@@ -34,7 +34,7 @@
 
 static struct list backends;
 
-struct mem_cache *vol_cache;
+struct mem_cache *vdev_cache;
 
 struct backend *backend_lookup(const char *name)
 {
@@ -67,7 +67,7 @@ static struct backend *load_backend(const char *name)
 		return ERR_PTR(-ENOENT);
 	}
 
-	backend->def = dlsym(backend->module, "objvol");
+	backend->def = dlsym(backend->module, "objvdev");
 	if (!backend->def) {
 		dlclose(backend->module);
 		free(backend);
@@ -120,9 +120,9 @@ int objstore_init(void)
 	list_create(&backends, sizeof(struct backend),
 		    offsetof(struct backend, node));
 
-	vol_cache = mem_cache_create("vol", sizeof(struct objstore_vol), 0);
-	if (IS_ERR(vol_cache))
-		return PTR_ERR(vol_cache);
+	vdev_cache = mem_cache_create("vdev", sizeof(struct objstore_vdev), 0);
+	if (IS_ERR(vdev_cache))
+		return PTR_ERR(vdev_cache);
 
 	obj_cache = mem_cache_create("obj", sizeof(struct obj), 0);
 	if (IS_ERR(obj_cache)) {
@@ -156,7 +156,7 @@ err_obj:
 	mem_cache_destroy(obj_cache);
 
 err:
-	mem_cache_destroy(vol_cache);
+	mem_cache_destroy(vdev_cache);
 
 	return ret;
 }

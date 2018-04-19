@@ -41,7 +41,7 @@
 /* backend support */
 struct backend {
 	struct list_node node;
-	const struct objstore_vol_def *def;
+	const struct objstore_vdev_def *def;
 	void *module;
 };
 
@@ -50,13 +50,13 @@ extern struct backend *backend_lookup(const char *name);
 
 /* internal pool management */
 extern int pool_init(void);
-extern void pool_add_vol(struct objstore *pool, struct objstore_vol *vol);
+extern void pool_add_vdev(struct objstore *pool, struct objstore_vdev *vdev);
 
-/* internal volume management */
-extern struct mem_cache *vol_cache;
-extern void vol_free(struct objstore_vol *vol);
+/* internal vdev management */
+extern struct mem_cache *vdev_cache;
+extern void vdev_free(struct objstore_vdev *vdev);
 
-REFCNT_INLINE_FXNS(struct objstore_vol, vol, refcnt, vol_free, NULL)
+REFCNT_INLINE_FXNS(struct objstore_vdev, vdev, refcnt, vdev_free, NULL)
 
 /* internal object management */
 extern struct mem_cache *obj_cache;

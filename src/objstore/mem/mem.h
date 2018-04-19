@@ -34,12 +34,12 @@
 /*
  * There is a handful of structures that keep track of everything.  At the
  * highest level, there is `struct memstore'.  It keeps track of the
- * volume's state.  Most importantly, it keeps track of all objects this
- * volume knows about on the `obj' AVL tree.  Each object is represented by
+ * vdev's state.  Most importantly, it keeps track of all objects this
+ * vdev knows about on the `obj' AVL tree.  Each object is represented by
  * a `struct memobj'.
  *
  * Each object has a unique ID - the object ID (`struct noid').  This
- * uniquely identifies it not just within the volume, but also within the
+ * uniquely identifies it not just within the vdev, but also within the
  * pool (thanks to the dataset ID within it).  There can be more than one
  * version of an object.  If there is more than one version of an object,
  * they should be divergent (nvclock_cmp() would return NVC_DIV) since given

@@ -50,7 +50,7 @@ struct obj {
 	avl_node_t node;
 
 	/* constant for the lifetime of the object */
-	struct objstore_vol *vol;
+	struct objstore_vdev *vdev;
 	const struct obj_ops *ops;
 };
 
@@ -113,23 +113,23 @@ struct obj_ops {
 	void (*free)(struct obj *obj);
 };
 
-struct vol_ops {
-	int (*getroot)(struct objstore_vol *store, struct noid *root);
+struct vdev_ops {
+	int (*getroot)(struct objstore_vdev *store, struct noid *root);
 	int (*allocobj)(struct obj *obj);
 };
 
-struct objstore_vol_def {
+struct objstore_vdev_def {
 	const char *name;
 
-	int (*create)(struct objstore_vol *vol);
-	int (*load)(struct objstore_vol *vol);
+	int (*create)(struct objstore_vdev *vdev);
+	int (*load)(struct objstore_vdev *vdev);
 };
 
-struct objstore_vol {
+struct objstore_vdev {
 	struct objstore *pool;
 
-	const struct vol_ops *ops;
-	const struct objstore_vol_def *def;
+	const struct vdev_ops *ops;
+	const struct objstore_vdev_def *def;
 
 	struct xuuid uuid;
 	const char *path;

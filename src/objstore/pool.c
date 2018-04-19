@@ -70,7 +70,7 @@ struct objstore *objstore_pool_create(const char *name)
 		return ERR_PTR(-ENOMEM);
 	}
 
-	pool->vol = NULL;
+	pool->vdev = NULL;
 
 	mxinit(&pool->lock);
 	avl_create(&pool->objs, objcmp, sizeof(struct obj),
@@ -83,11 +83,11 @@ struct objstore *objstore_pool_create(const char *name)
 	return pool;
 }
 
-void pool_add_vol(struct objstore *pool, struct objstore_vol *vol)
+void pool_add_vdev(struct objstore *pool, struct objstore_vdev *vdev)
 {
 	mxlock(&pool->lock);
-	ASSERT3P(pool->vol, ==, NULL);
-	pool->vol = vol;
+	ASSERT3P(pool->vdev, ==, NULL);
+	pool->vdev = vdev;
 	mxunlock(&pool->lock);
 }
 
@@ -104,15 +104,15 @@ struct objstore *objstore_pool_lookup(const char *name)
 	return pool;
 }
 
-static struct objstore_vol *findvol(struct objstore *pool)
+static struct objstore_vdev *findvdev(struct objstore *pool)
 {
-	struct objstore_vol *vol;
+	struct objstore_vdev *vdev;
 
 	mxlock(&pool->lock);
-	vol = vol_getref(pool->vol);
+	vdev = vdev_getref(pool->vdev);
 	mxunlock(&pool->lock);
 
-	return vol;
+	return vdev;
 }
 
 /*
@@ -122,7 +122,7 @@ static struct objstore_vol *findvol(struct objstore *pool)
  * Returns obj (locked and referenced) on success, negated errno on failure.
  */
 static struct obj *__find_or_alloc(struct objstore *pool, struct
-				   objstore_vol *vol, const struct noid *oid)
+				   objstore_vdev *vdev, const struct noid *oid)
 {
 	struct obj key = {
 		.oid = *oid,
@@ -179,7 +179,7 @@ static struct obj *__find_or_alloc(struct objstore *pool, struct
 		mxlock(&newobj->lock);
 
 		newobj->oid = *oid;
-		newobj->vol = vol_getref(vol);
+		newobj->vdev = vdev_getref(vdev);
 
 		/* retry the search, and insert if necessary */
 	}
@@ -194,15 +194,15 @@ static struct obj *__find_or_alloc(struct objstore *pool, struct
  */
 static struct obj *getobj(struct objstore *pool, const struct noid *oid)
 {
-	struct objstore_vol *vol;
+	struct objstore_vdev *vdev;
 	struct obj *obj;
 	int ret;
 
-	vol = findvol(pool);
-	if (!vol)
+	vdev = findvdev(pool);
+	if (!vdev)
 		return ERR_PTR(-ENXIO);
 
-	obj = __find_or_alloc(pool, vol, oid);
+	obj = __find_or_alloc(pool, vdev, oid);
 	if (IS_ERR(obj)) {
 		ret = PTR_ERR(obj);
 		goto err;
@@ -210,8 +210,8 @@ static struct obj *getobj(struct objstore *pool, const struct noid *oid)
 
 	switch (obj->state) {
 		case OBJ_STATE_NEW:
-			if (vol->ops && vol->ops->allocobj &&
-			    (ret = vol->ops->allocobj(obj))) {
+			if (vdev->ops && vdev->ops->allocobj &&
+			    (ret = vdev->ops->allocobj(obj))) {
 				/* the allocobj op failed, mark the obj dead */
 				obj->state = OBJ_STATE_DEAD;
 
@@ -231,7 +231,7 @@ static struct obj *getobj(struct objstore *pool, const struct noid *oid)
 			goto err_obj;
 	}
 
-	vol_putref(vol);
+	vdev_putref(vdev);
 
 	return obj;
 
@@ -240,7 +240,7 @@ err_obj:
 	obj_putref(obj);
 
 err:
-	vol_putref(vol);
+	vdev_putref(vdev);
 
 	return ERR_PTR(ret);
 }
@@ -357,22 +357,22 @@ static struct objver *getver(struct objstore *pool, const struct noid *oid,
 
 int objstore_getroot(struct objstore *pool, struct noid *root)
 {
-	struct objstore_vol *vol;
+	struct objstore_vdev *vdev;
 	int ret;
 
 	if (!pool || !root)
 		return -EINVAL;
 
-	vol = findvol(pool);
-	if (!vol)
+	vdev = findvdev(pool);
+	if (!vdev)
 		return -ENXIO;
 
-	if (vol->ops && vol->ops->getroot)
-		ret = vol->ops->getroot(vol, root);
+	if (vdev->ops && vdev->ops->getroot)
+		ret = vdev->ops->getroot(vdev, root);
 	else
 		ret = -ENOTSUP;
 
-	vol_putref(vol);
+	vdev_putref(vdev);
 
 	return ret;
 }
@@ -437,7 +437,7 @@ int objstore_close(struct objstore *pool, void *cookie)
 	if (!pool || !objver)
 		return -EINVAL;
 
-	if (pool != objver->obj->vol->pool)
+	if (pool != objver->obj->vdev->pool)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -484,7 +484,7 @@ int objstore_getattr(struct objstore *pool, void *cookie, struct nattr *attr)
 	if (!pool || !objver || !attr)
 		return -EINVAL;
 
-	if (pool != objver->obj->vol->pool)
+	if (pool != objver->obj->vdev->pool)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -509,7 +509,7 @@ int objstore_setattr(struct objstore *pool, void *cookie, struct nattr *attr,
 	if (!pool || !objver || !attr)
 		return -EINVAL;
 
-	if (pool != objver->obj->vol->pool)
+	if (pool != objver->obj->vdev->pool)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -537,7 +537,7 @@ ssize_t objstore_read(struct objstore *pool, void *cookie, void *buf, size_t len
 	if (len > (SIZE_MAX / 2))
 		return -EOVERFLOW;
 
-	if (pool != objver->obj->vol->pool)
+	if (pool != objver->obj->vdev->pool)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -573,7 +573,7 @@ ssize_t objstore_write(struct objstore *pool, void *cookie, const void *buf,
 	if (len > (SIZE_MAX / 2))
 		return -EOVERFLOW;
 
-	if (pool != objver->obj->vol->pool)
+	if (pool != objver->obj->vdev->pool)
 		return -ENXIO;
 
 	obj = objver->obj;
@@ -606,7 +606,7 @@ int objstore_lookup(struct objstore *pool, void *dircookie, const char *name,
 	if (!pool || !dirver || !name || !child)
 		return -EINVAL;
 
-	if (pool != dirver->obj->vol->pool)
+	if (pool != dirver->obj->vdev->pool)
 		return -ENXIO;
 
 	dir = dirver->obj;
@@ -634,7 +634,7 @@ int objstore_create(struct objstore *pool, void *dircookie, const char *name,
 	if (!pool || !dirver || !name || !child)
 		return -EINVAL;
 
-	if (pool != dirver->obj->vol->pool)
+	if (pool != dirver->obj->vdev->pool)
 		return -ENXIO;
 
 	dir = dirver->obj;
@@ -661,7 +661,7 @@ static struct obj *getobj_in_dir(struct objver *dirver, const char *name)
 	if (ret)
 		return ERR_PTR(ret);
 
-	return getobj(dirver->obj->vol->pool, &child_oid);
+	return getobj(dirver->obj->vdev->pool, &child_oid);
 }
 
 int objstore_unlink(struct objstore *pool, void *dircookie, const char *name)
@@ -673,7 +673,7 @@ int objstore_unlink(struct objstore *pool, void *dircookie, const char *name)
 	if (!pool || !dirver || !name)
 		return -EINVAL;
 
-	if (pool != dirver->obj->vol->pool)
+	if (pool != dirver->obj->vdev->pool)
 		return -ENXIO;
 
 	dir = dirver->obj;
@@ -713,7 +713,7 @@ int objstore_getdent(struct objstore *pool, void *dircookie,
 	if (!pool || !dirver)
 		return -EINVAL;
 
-	if (pool != dirver->obj->vol->pool)
+	if (pool != dirver->obj->vdev->pool)
 		return -ENXIO;
 
 	dir = dirver->obj;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 
 #include "posix.h"
 
-static int prep_paths(const char *base, struct posixvol *pv)
+static int prep_paths(const char *base, struct posixvdev *pv)
 {
 	int ret;
 
@@ -40,21 +40,21 @@ static int prep_paths(const char *base, struct posixvol *pv)
 		goto err_mkdir;
 	}
 
-	pv->volfd = xopenat(pv->basefd, "vol", O_RDWR | O_CREAT, 0600);
-	if (pv->volfd < 0) {
-		ret = pv->volfd;
+	pv->vdevfd = xopenat(pv->basefd, "vdev", O_RDWR | O_CREAT, 0600);
+	if (pv->vdevfd < 0) {
+		ret = pv->vdevfd;
 		goto err_basefd;
 	}
 
 	ret = oidbmap_create(pv);
 	if (ret < 0)
-		goto err_volfd;
+		goto err_vdevfd;
 
 	return 0;
 
-err_volfd:
-	xclose(pv->volfd);
-	xunlinkat(pv->basefd, "vol", 0);
+err_vdevfd:
+	xclose(pv->vdevfd);
+	xunlinkat(pv->basefd, "vdev", 0);
 
 err_basefd:
 	xclose(pv->basefd);
@@ -65,21 +65,21 @@ err_mkdir:
 	return ret;
 }
 
-static int posix_create(struct objstore_vol *vol)
+static int posix_create(struct objstore_vdev *vdev)
 {
-	struct posixvol *pv;
+	struct posixvdev *pv;
 	int ret;
 
 	cmn_err(CE_WARN, "The POSIX objstore backend is still experimental");
 	cmn_err(CE_WARN, "Do not expect compatibility from version to version");
 
-	pv = malloc(sizeof(struct posixvol));
+	pv = malloc(sizeof(struct posixvdev));
 	if (!pv)
 		return -ENOMEM;
 
 	pv->ds = rand32();
 
-	ret = prep_paths(vol->path, pv);
+	ret = prep_paths(vdev->path, pv);
 	if (ret)
 		goto err_free;
 
@@ -88,10 +88,10 @@ static int posix_create(struct objstore_vol *vol)
 	if (ret)
 		goto err_paths;
 
-	FIXME("flush vol info");
+	FIXME("flush vdev info");
 
-	vol->private = pv;
-	vol->ops = &posix_vol_ops;
+	vdev->private = pv;
+	vdev->ops = &posix_vdev_ops;
 
 	return 0;
 
@@ -104,7 +104,7 @@ err_free:
 	return ret;
 }
 
-const struct objstore_vol_def objvol = {
+const struct objstore_vdev_def objvdev = {
 	.name = "posix",
 
 	.create = posix_create,

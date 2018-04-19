@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ struct obj *allocobj(void)
 	obj->nlink = 0;
 	obj->private = NULL;
 	obj->state = OBJ_STATE_NEW;
-	obj->vol = NULL;
+	obj->vdev = NULL;
 	obj->ops = NULL;
 
 	refcnt_init(&obj->refcnt, 1);
@@ -79,7 +79,7 @@ void freeobj(struct obj *obj)
 		obj->ops->free(obj);
 
 	mxdestroy(&obj->lock);
-	vol_putref(obj->vol);
+	vdev_putref(obj->vdev);
 	avl_destroy(&obj->versions);
 	mem_cache_free(obj_cache, obj);
 }

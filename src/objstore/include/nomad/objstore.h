@@ -36,14 +36,14 @@ enum {
 	OBJ_ATTR_SIZE	= 0x02,
 };
 
-struct objstore_vol;
+struct objstore_vdev;
 
 struct objstore {
 	struct list_node node;
 
 	struct lock lock;
 	const char *name;
-	struct objstore_vol *vol;
+	struct objstore_vdev *vdev;
 
 	avl_tree_t objs;
 };
@@ -54,11 +54,11 @@ extern int objstore_init(void);
 extern struct objstore *objstore_pool_create(const char *name);
 extern struct objstore *objstore_pool_lookup(const char *name);
 
-/* volume management */
-extern int objstore_vol_create(struct objstore *pool, const char *type,
-			       const char *path);
-extern int objstore_vol_load(struct objstore *pool, struct xuuid *uuid,
-			     const char *path);
+/* vdev management */
+extern int objstore_vdev_create(struct objstore *pool, const char *type,
+				const char *path);
+extern int objstore_vdev_load(struct objstore *pool, struct xuuid *uuid,
+			      const char *path);
 
 /* volume operations */
 extern int objstore_getroot(struct objstore *pool, struct noid *root);

@@ -46,7 +46,7 @@ static int do_format(const char *type, const char *path)
 	if (IS_ERR(pool))
 		return PTR_ERR(pool);
 
-	return objstore_vol_create(pool, type, path);
+	return objstore_vdev_create(pool, type, path);
 }
 
 int main(int argc, char **argv)
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 
 	ret = do_format(argv[1], argv[2]);
 	if (ret)
-		cmn_err(CE_CRIT, "Failed to create volume: %s", xstrerror(ret));
+		cmn_err(CE_CRIT, "Failed to create vdev: %s", xstrerror(ret));
 
 	/* XXX: undo objstore_init() */
 

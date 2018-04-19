@@ -92,8 +92,8 @@ int main(int argc, char **argv)
 		goto err_init;
 	}
 
-	ret = objstore_vol_create(pool, "mem", "fauxpath");
-	cmn_err(CE_DEBUG, "vol create = %d", ret);
+	ret = objstore_vdev_create(pool, "mem", "fauxpath");
+	cmn_err(CE_DEBUG, "vdev create = %d", ret);
 
 	if (ret) {
 		cmn_err(CE_CRIT, "error: %s", xstrerror(ret));
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 
 	cmn_err(CE_DEBUG, "socksvc() = %d (%s)", ret, xstrerror(ret));
 
-	/* XXX: undo objstore_vol_create() */
+	/* XXX: undo objstore_vdev_create() */
 
 err_pool:
 	/* XXX: undo objstore_pool_create() */

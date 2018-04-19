@@ -25,10 +25,10 @@
 #include <nomad/objstore.h>
 #include <nomad/objstore_impl.h>
 
-int objstore_vol_create(struct objstore *pool, const char *type,
+int objstore_vdev_create(struct objstore *pool, const char *type,
 			const char *path)
 {
-	struct objstore_vol *vol;
+	struct objstore_vdev *vdev;
 	struct backend *backend;
 	int ret;
 
@@ -36,49 +36,49 @@ int objstore_vol_create(struct objstore *pool, const char *type,
 	if (!backend || !backend->def->create)
 		return -ENOTSUP;
 
-	vol = mem_cache_alloc(vol_cache);
-	if (!vol)
+	vdev = mem_cache_alloc(vdev_cache);
+	if (!vdev)
 		return -ENOMEM;
 
-	refcnt_init(&vol->refcnt, 1);
+	refcnt_init(&vdev->refcnt, 1);
 
-	vol->pool = pool;
-	vol->def = backend->def;
-	vol->path = strdup(path);
-	if (!vol->path) {
+	vdev->pool = pool;
+	vdev->def = backend->def;
+	vdev->path = strdup(path);
+	if (!vdev->path) {
 		ret = -ENOMEM;
 		goto err;
 	}
 
-	ret = vol->def->create(vol);
+	ret = vdev->def->create(vdev);
 	if (ret)
 		goto err_path;
 
 	/* hand off our reference */
-	pool_add_vol(pool, vol);
+	pool_add_vdev(pool, vdev);
 
 	return 0;
 
 err_path:
-	free((char *) vol->path);
+	free((char *) vdev->path);
 
 err:
-	mem_cache_free(vol_cache, vol);
+	mem_cache_free(vdev_cache, vdev);
 
 	return ret;
 }
 
-int objstore_vol_load(struct objstore *pool, struct xuuid *uuid,
+int objstore_vdev_load(struct objstore *pool, struct xuuid *uuid,
 		      const char *path)
 {
 	return -ENOTSUP;
 }
 
-void vol_free(struct objstore_vol *vol)
+void vdev_free(struct objstore_vdev *vdev)
 {
-	if (!vol)
+	if (!vdev)
 		return;
 
-	free((char *) vol->path);
-	mem_cache_free(vol_cache, vol);
+	free((char *) vdev->path);
+	mem_cache_free(vdev_cache, vdev);
 }

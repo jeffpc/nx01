@@ -24,7 +24,7 @@ add_library(nomad_objstore SHARED
 	obj.c
 	objstore.c
 	pool.c
-	vol.c
+	vdev.c
 )
 
 target_link_libraries(nomad_objstore
