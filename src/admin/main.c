@@ -54,6 +54,7 @@ static struct cmd {
 	{ .name = "vdev-create", .fxn = not_implemented, },
 	{ .name = "vdev-list",   .fxn = not_implemented, },
 	{ .name = "vol-create",  .fxn = not_implemented, },
+	{ .name = "vol-import",  .fxn = not_implemented, },
 	{ .name = "vol-list",    .fxn = not_implemented, },
 };
 
