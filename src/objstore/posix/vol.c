@@ -27,7 +27,7 @@
 
 #define OIDFMT	"%016"PRIx64
 
-int posix_new_obj(struct posixvdev *pv, uint16_t mode, struct noid *oid)
+int posix_new_obj(struct posixvol *pvol, uint16_t mode, struct noid *oid)
 {
 	struct nvclock *clock;
 	char vername[PATH_MAX];
@@ -44,17 +44,17 @@ int posix_new_obj(struct posixvdev *pv, uint16_t mode, struct noid *oid)
 	if (ret)
 		goto err_free_clock;
 
-	ret = oidbmap_get_new(pv, &uniq);
+	ret = oidbmap_get_new(pvol, &uniq);
 	if (ret)
 		goto err_free_clock;
 
 	snprintf(dirname, sizeof(dirname), OIDFMT, uniq);
 
-	ret = xmkdirat(pv->basefd, dirname, 0700);
+	ret = xmkdirat(pvol->basefd, dirname, 0700);
 	if (ret)
 		goto err_free_uniq;
 
-	fd = xopenat(pv->basefd, dirname, O_RDONLY, 0);
+	fd = xopenat(pvol->basefd, dirname, O_RDONLY, 0);
 	if (fd < 0) {
 		ret = fd;
 		goto err_unlink_dir;
@@ -71,7 +71,7 @@ int posix_new_obj(struct posixvdev *pv, uint16_t mode, struct noid *oid)
 
 	nvclock_free(clock);
 
-	noid_set(oid, &pv->vdev->uuid, uniq);
+	noid_set(oid, &pvol->vol->id, uniq);
 
 	return 0;
 
@@ -79,10 +79,10 @@ err_close:
 	xclose(fd);
 
 err_unlink_dir:
-	xunlinkat(pv->basefd, dirname, 0);
+	xunlinkat(pvol->basefd, dirname, 0);
 
 err_free_uniq:
-	oidbmap_put(pv, uniq);
+	oidbmap_put(pvol, uniq);
 
 err_free_clock:
 	nvclock_free(clock);
@@ -92,22 +92,22 @@ err_free_clock:
 
 static int posix_getroot(struct objstore *vol, struct noid *root)
 {
-	struct posixvdev *pv = vol->vdev->private;
+	struct posixvol *pvol = vol->private;
 
-	*root = pv->root;
+	*root = pvol->root;
 
 	return 0;
 }
 
 static int posix_allocobj(struct obj *obj)
 {
-	struct posixvdev *pv = obj->vol->vdev->private;
+	struct posixvol *pvol = obj->vol->private;
 	char oidstr[32];
 	int objfd;
 
 	snprintf(oidstr, sizeof(oidstr), OIDFMT, obj->oid.uniq);
 
-	objfd = xopenat(pv->basefd, oidstr, O_RDONLY, 0);
+	objfd = xopenat(pvol->basefd, oidstr, O_RDONLY, 0);
 	ASSERT3S(objfd, >=, 0);
 
 	FIXME("allocobj not fully implemented");

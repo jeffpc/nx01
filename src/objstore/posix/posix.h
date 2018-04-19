@@ -53,17 +53,24 @@ struct posixvdev {
 
 	/* FIXME: here to avoid compiler errors for now */
 	int vdevfd;
+};
+
+struct posixvol {
+	struct objstore *vol;
 
 	struct noid root;
+
+	int basefd;	/* base directory */
+	int volfd;	/* volume info file */
 };
 
 extern const struct vol_ops posix_vol_ops;
 
-extern int posix_new_obj(struct posixvdev *pv, uint16_t mode, struct noid *oid);
+extern int posix_new_obj(struct posixvol *pvol, uint16_t mode, struct noid *oid);
 
-extern int oidbmap_create(struct posixvdev *pv);
-extern int oidbmap_set(struct posixvdev *pv, uint64_t uniq);
-extern int oidbmap_get_new(struct posixvdev *pv, uint64_t *new);
-extern int oidbmap_put(struct posixvdev *pv, uint64_t uniq);
+extern int oidbmap_create(struct posixvol *pvol);
+extern int oidbmap_set(struct posixvol *pvol, uint64_t uniq);
+extern int oidbmap_get_new(struct posixvol *pvol, uint64_t *new);
+extern int oidbmap_put(struct posixvol *pvol, uint64_t uniq);
 
 #endif

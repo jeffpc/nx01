@@ -29,18 +29,18 @@
 #define OID_BMAP_SIZE	(MAX_OID_UNIQ / 8)
 #define OID_BMAP_OFFSET	4096
 
-int oidbmap_create(struct posixvdev *pv)
+int oidbmap_create(struct posixvol *pvol)
 {
 	int ret;
 
-	ret = xftruncate(pv->vdevfd, OID_BMAP_SIZE + OID_BMAP_OFFSET);
+	ret = xftruncate(pvol->volfd, OID_BMAP_SIZE + OID_BMAP_OFFSET);
 	if (ret)
 		return ret;
 
-	return oidbmap_set(pv, 0); /* reserve 0 - it is illegal */
+	return oidbmap_set(pvol, 0); /* reserve 0 - it is illegal */
 }
 
-int oidbmap_set(struct posixvdev *pv, uint64_t uniq)
+int oidbmap_set(struct posixvol *pvol, uint64_t uniq)
 {
 	const off_t off = (uniq / 8) + OID_BMAP_OFFSET;
 	const uint8_t bit = 1 << (uniq % 8);
@@ -49,16 +49,16 @@ int oidbmap_set(struct posixvdev *pv, uint64_t uniq)
 
 	/* TODO: locking */
 
-	ret = xpread(pv->vdevfd, &tmp, sizeof(tmp), off);
+	ret = xpread(pvol->volfd, &tmp, sizeof(tmp), off);
 	if (ret)
 		return ret;
 
 	tmp |= bit;
 
-	return xpwrite(pv->vdevfd, &tmp, sizeof(tmp), off);
+	return xpwrite(pvol->volfd, &tmp, sizeof(tmp), off);
 }
 
-int oidbmap_get_new(struct posixvdev *pv, uint64_t *new)
+int oidbmap_get_new(struct posixvol *pvol, uint64_t *new)
 {
 	off_t off;
 	int ret;
@@ -73,7 +73,7 @@ int oidbmap_get_new(struct posixvdev *pv, uint64_t *new)
 		uint8_t tmp;
 		int bitno;
 
-		ret = xpread(pv->vdevfd, &tmp, sizeof(tmp), file_off);
+		ret = xpread(pvol->volfd, &tmp, sizeof(tmp), file_off);
 		if (ret)
 			return ret;
 
@@ -87,7 +87,7 @@ int oidbmap_get_new(struct posixvdev *pv, uint64_t *new)
 
 		tmp |= 1 << bitno;
 
-		ret = xpwrite(pv->vdevfd, &tmp, sizeof(tmp), file_off);
+		ret = xpwrite(pvol->volfd, &tmp, sizeof(tmp), file_off);
 		if (ret)
 			return ret;
 
@@ -99,7 +99,7 @@ int oidbmap_get_new(struct posixvdev *pv, uint64_t *new)
 	return -ENOSPC;
 }
 
-int oidbmap_put(struct posixvdev *pv, uint64_t uniq)
+int oidbmap_put(struct posixvol *pvol, uint64_t uniq)
 {
 	const off_t off = (uniq / 8) + OID_BMAP_OFFSET;
 	const uint8_t bit = 1 << (uniq % 8);
@@ -108,11 +108,11 @@ int oidbmap_put(struct posixvdev *pv, uint64_t uniq)
 
 	/* TODO: locking */
 
-	ret = xpread(pv->vdevfd, &tmp, sizeof(tmp), off);
+	ret = xpread(pvol->volfd, &tmp, sizeof(tmp), off);
 	if (ret)
 		return ret;
 
 	tmp &= ~bit;
 
-	return xpwrite(pv->vdevfd, &tmp, sizeof(tmp), off);
+	return xpwrite(pvol->volfd, &tmp, sizeof(tmp), off);
 }
