@@ -71,7 +71,7 @@ int posix_new_obj(struct posixvdev *pv, uint16_t mode, struct noid *oid)
 
 	nvclock_free(clock);
 
-	noid_set(oid, &pv->volid, uniq);
+	noid_set(oid, &pv->vdev->uuid, uniq);
 
 	return 0;
 
