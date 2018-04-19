@@ -101,7 +101,7 @@ static int posix_create(struct objstore_vdev *vdev)
 		goto err_free;
 
 	vdev->private = pv;
-	vdev->ops = &posix_vdev_ops;
+	vdev->ops = &posix_vol_ops;
 
 	return 0;
 

@@ -57,7 +57,7 @@ struct posixvdev {
 	struct noid root;
 };
 
-extern const struct vdev_ops posix_vdev_ops;
+extern const struct vol_ops posix_vol_ops;
 
 extern int posix_new_obj(struct posixvdev *pv, uint16_t mode, struct noid *oid);
 

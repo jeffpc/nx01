@@ -37,7 +37,7 @@ enum {
 };
 
 struct objstore_vdev {
-	const struct vdev_ops *ops;
+	const struct vol_ops *ops;
 	const struct objstore_vdev_def *def;
 
 	struct xuuid uuid;

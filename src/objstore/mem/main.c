@@ -81,7 +81,7 @@ void mem_obj_free(struct obj *obj)
 	memobj_putref(mobj);
 }
 
-static const struct vdev_ops vdev_ops = {
+static const struct vol_ops vol_ops = {
 	.getroot = mem_vdev_getroot,
 	.allocobj = mem_allocobj,
 };
@@ -99,7 +99,7 @@ static int mem_create(struct objstore_vdev *vdev)
 	struct memstore *ms;
 	struct memobj *obj;
 
-	vdev->ops = &vdev_ops;
+	vdev->ops = &vol_ops;
 
 	ms = malloc(sizeof(struct memstore));
 	if (!ms)

@@ -115,7 +115,7 @@ static int posix_allocobj(struct obj *obj)
 	return 0;
 }
 
-const struct vdev_ops posix_vdev_ops = {
+const struct vol_ops posix_vol_ops = {
 	.getroot	= posix_getroot,
 	.allocobj	= posix_allocobj,
 };

@@ -113,7 +113,7 @@ struct obj_ops {
 	void (*free)(struct obj *obj);
 };
 
-struct vdev_ops {
+struct vol_ops {
 	int (*getroot)(struct objstore_vdev *store, struct noid *root);
 	int (*allocobj)(struct obj *obj);
 };
