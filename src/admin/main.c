@@ -43,14 +43,14 @@ static struct cmd {
 	const char *name;
 	int (*fxn)(int argc, char **argv);
 } cmdtbl[] = {
-	{ .name = "conn-add",    .fxn = not_implemented, },
-	{ .name = "conn-list",   .fxn = not_implemented, },
-	{ .name = "host-id",     .fxn = cmd_host_id, },
-	{ .name = "vdev-create", .fxn = not_implemented, },
-	{ .name = "vdev-list",   .fxn = not_implemented, },
-	{ .name = "vol-create",  .fxn = not_implemented, },
-	{ .name = "vol-import",  .fxn = not_implemented, },
-	{ .name = "vol-list",    .fxn = not_implemented, },
+	{ "conn-add",    not_implemented, },
+	{ "conn-list",   not_implemented, },
+	{ "host-id",     cmd_host_id, },
+	{ "vdev-import", not_implemented, },
+	{ "vdev-list",   not_implemented, },
+	{ "vol-create",  not_implemented, },
+	{ "vol-import",  not_implemented, },
+	{ "vol-list",    not_implemented, },
 };
 
 static void usage(char *msg)
