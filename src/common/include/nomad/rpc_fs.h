@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+ * Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
  * Copyright (c) 2016 Steve Dougherty
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,17 +29,17 @@
 
 #define NRPC_VERSION 0x00000001
 
-#define NRPC_NOP	0x0000
-#define NRPC_LOGIN	0x0001
-#define NRPC_GETATTR	0x0002
-#define NRPC_LOOKUP	0x0003
-#define NRPC_CREATE	0x0004
-#define NRPC_UNLINK	0x0005
-#define NRPC_OPEN	0x0006
-#define NRPC_CLOSE	0x0007
-#define NRPC_READ	0x0008
-#define NRPC_WRITE	0x0009
-#define NRPC_SETATTR	0x000A
-#define NRPC_GETDENT	0x000B
+#define NRPC_NOP		0x0000
+#define NRPC_LOGIN		0x0001
+#define NRPC_GETATTR		0x0002
+#define NRPC_LOOKUP		0x0003
+#define NRPC_CREATE		0x0004
+#define NRPC_UNLINK		0x0005
+#define NRPC_OPEN		0x0006
+#define NRPC_CLOSE		0x0007
+#define NRPC_READ		0x0008
+#define NRPC_WRITE		0x0009
+#define NRPC_SETATTR		0x000A
+#define NRPC_GETDENT		0x000B
 
 #endif
