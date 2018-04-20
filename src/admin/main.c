@@ -42,15 +42,16 @@ static int cmd_host_id(int argc, char **argv)
 static struct cmd {
 	const char *name;
 	int (*fxn)(int argc, char **argv);
+	const char *summary;
 } cmdtbl[] = {
-	{ "conn-add",    not_implemented, },
-	{ "conn-list",   not_implemented, },
-	{ "host-id",     cmd_host_id, },
-	{ "vdev-import", not_implemented, },
-	{ "vdev-list",   not_implemented, },
-	{ "vol-create",  not_implemented, },
-	{ "vol-import",  not_implemented, },
-	{ "vol-list",    not_implemented, },
+	{ "conn-add",    not_implemented, "add a new connection" },
+	{ "conn-list",   not_implemented, "list existing connections" },
+	{ "host-id",     cmd_host_id, "display host ID" },
+	{ "vdev-import", not_implemented, "import a previously created vdev" },
+	{ "vdev-list",   not_implemented, "list currently imported vdevs" },
+	{ "vol-create",  not_implemented, "create a new volume" },
+	{ "vol-import",  not_implemented, "import a previously created volume" },
+	{ "vol-list",    not_implemented, "list currently imported volumes" },
 };
 
 static void usage(char *msg)
@@ -64,7 +65,8 @@ static void usage(char *msg)
 	fprintf(stderr, "Available commands:\n");
 
 	for (i = 0; i < ARRAY_LEN(cmdtbl); i++)
-		fprintf(stderr, "\t%-16s\n", cmdtbl[i].name);
+		fprintf(stderr, "\t%-13s - %s\n", cmdtbl[i].name,
+			cmdtbl[i].summary);
 
 	exit(1);
 }
