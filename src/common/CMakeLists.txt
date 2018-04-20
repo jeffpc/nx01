@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2015-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 # Copyright (c) 2015 Joshua Kahn <josh@joshuak.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +26,7 @@ rpcgen(rpc_fs)
 add_library(nomad_common SHARED
 	attr.c
 	error.c
+	fscall.c
 	init.c
 	node.c
 	oid.c
@@ -43,6 +44,7 @@ target_link_libraries(nomad_common
 install(TARGETS nomad_common DESTINATION lib
 	PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 install(FILES	include/nomad/attr.h
+		include/nomad/fscall.h
 		include/nomad/init.h
 		include/nomad/iter.h
 		include/nomad/types.h

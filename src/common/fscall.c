@@ -21,11 +21,10 @@
  * SOFTWARE.
  */
 
-#include "fscall.h"
-
 #include <jeffpc/sock.h>
 
 #include <nomad/rpc_fs.h>
+#include <nomad/fscall.h>
 
 static int __fscall_req(int fd, uint32_t opcode,
 			int (*xmit)(XDR *, void *),

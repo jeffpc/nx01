@@ -20,6 +20,9 @@
  * SOFTWARE.
  */
 
+#ifndef __NOMAD_FSCALL_H
+#define __NOMAD_FSCALL_H
+
 #include <jeffpc/int.h>
 #include <jeffpc/uuid.h>
 
@@ -59,3 +62,5 @@ extern int fscall_getdent(struct fscall_state *state, const uint32_t handle,
 extern int fscall_connect(const char *host, uint16_t port,
 			  const struct xuuid *volid,
 			  struct fscall_state *state);
+
+#endif
