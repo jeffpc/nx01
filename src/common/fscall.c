@@ -338,6 +338,32 @@ int fscall_getdent(struct fscall_state *state, const uint32_t handle,
 	return 0;
 }
 
+int fscall_vdev_import(struct fscall_state *state, const char *type,
+		       const char *path, bool create,
+		       struct xuuid *uuid)
+{
+	struct rpc_vdev_import_req vdev_import_req;
+	struct rpc_vdev_import_res vdev_import_res;
+	int ret;
+
+	vdev_import_req.type = (char *) type;
+	vdev_import_req.path = (char *) path;
+	vdev_import_req.create = create;
+
+	ret = __fscall(state->sock, NRPC_VDEV_IMPORT,
+		       (void *) xdr_rpc_vdev_import_req,
+		       (void *) xdr_rpc_vdev_import_res,
+		       &vdev_import_req,
+		       &vdev_import_res,
+		       sizeof(vdev_import_res));
+	if (ret)
+		return ret;
+
+	*uuid = vdev_import_res.uuid;
+
+	return 0;
+}
+
 static int __fscall_handshake(int fd)
 {
 	struct rpc_handshake_req request;

@@ -150,3 +150,14 @@ struct rpc_getdent_res {
 	string name<>;
 	uint64_t entry_size;
 };
+
+%/***** VDEV_IMPORT *****/
+struct rpc_vdev_import_req {
+	string type<>;
+	string path<>;
+	bool create;
+};
+
+struct rpc_vdev_import_res {
+	struct xuuid uuid;
+};

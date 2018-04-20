@@ -41,5 +41,6 @@
 #define NRPC_WRITE		0x0009
 #define NRPC_SETATTR		0x000A
 #define NRPC_GETDENT		0x000B
+#define NRPC_VDEV_IMPORT	0x0100
 
 #endif

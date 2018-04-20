@@ -58,6 +58,9 @@ extern int fscall_write(struct fscall_state *state, const uint32_t handle,
 extern int fscall_getdent(struct fscall_state *state, const uint32_t handle,
 			  const uint64_t off, struct noid *oid, char **name,
 			  uint64_t *entry_size);
+extern int fscall_vdev_import(struct fscall_state *state, const char *type,
+			      const char *path, bool create,
+			      struct xuuid *uuid);
 
 extern int fscall_connect(const char *host, uint16_t port,
 			  const struct xuuid *volid,

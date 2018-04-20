@@ -308,6 +308,22 @@ Limitations
 Fails with `EPROTO` if the client hasn't gotten a successful LOGIN.
 
 
+VDEV_IMPORT (0x0100)
+====================
+
+Import or create a vdev.
+
+Inputs
+------
+* type of vdev (e.g., posix or mem)
+* path
+* create volume bool (true = create, false = import)
+
+Outputs
+-------
+* vdev uuid
+
+
 Other RPCs that may end up useful
 =================================
 
