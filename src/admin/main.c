@@ -59,12 +59,21 @@ static struct cmd {
 	{ "vol-list",    not_implemented, "list currently imported volumes" },
 };
 
-static void usage(char *msg)
+static __attribute__ ((format (printf, 1, 2))) void usage(char *msg, ...)
 {
 	int i;
 
-	if (msg)
-		fprintf(stderr, "%s\n\n", msg);
+	if (msg) {
+		va_list ap;
+
+		fprintf(stderr, "Error: ");
+
+		va_start(ap, msg);
+		vfprintf(stderr, msg, ap);
+		va_end(ap);
+
+		fprintf(stderr, ".\n\n");
+	}
 
 	fprintf(stderr, "Usage: %s <command>\n\n", prog);
 	fprintf(stderr, "Available commands:\n");
