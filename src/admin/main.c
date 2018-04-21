@@ -22,7 +22,12 @@
 
 #include "admin.h"
 
+#define DEFAULT_HOSTNAME	"localhost"
+#define DEFAULT_PORT		2323
+
 const char *prog;
+static const char *hostname = DEFAULT_HOSTNAME;
+static uint16_t port = DEFAULT_PORT;
 
 static int not_implemented(int argc, char **argv)
 {
@@ -73,15 +78,47 @@ static void usage(char *msg)
 
 int main(int argc, char **argv)
 {
+	bool got_host;
+	bool got_port;
+	int opt;
 	int i;
 
 	prog = argv[0];
 
-	if (argc < 2)
+	got_host = false;
+	got_port = false;
+	while ((opt = getopt(argc, argv, "+h:p:")) != -1) {
+		switch (opt) {
+			case 'h':
+				if (got_host)
+					usage("-h can be used only once");
+
+				hostname = optarg;
+				got_host = true;
+				break;
+			case 'p':
+				if (got_port)
+					usage("-p can be used only once");
+
+				if (str2u16(optarg, &port)) {
+					fprintf(stderr, "Error: '%s' is not a "
+						"valid port number.\n\n",
+						optarg);
+					usage(NULL);
+				}
+				got_port = true;
+				break;
+			default:
+				usage(NULL);
+		}
+	}
+
+	/* missing command? */
+	if (optind == argc)
 		usage(NULL);
 
 	for (i = 0; i < ARRAY_LEN(cmdtbl); i++)
-		if (!strcmp(argv[1], cmdtbl[i].name))
+		if (!strcmp(argv[optind], cmdtbl[i].name))
 			return cmdtbl[i].fxn(argc, argv);
 
 	usage("unknown command");
