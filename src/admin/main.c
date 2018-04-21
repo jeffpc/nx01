@@ -128,5 +128,5 @@ int main(int argc, char **argv)
 		if (!strcmp(argv[optind], cmdtbl[i].name))
 			return cmdtbl[i].fxn(argc, argv);
 
-	usage("unknown command");
+	usage("unknown command '%s'", argv[optind]);
 }
