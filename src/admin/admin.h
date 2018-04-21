@@ -29,4 +29,7 @@
 
 #include <nomad/types.h>
 
+extern __attribute__ ((format (printf, 2, 3)))
+void print_option(const char *name, const char *descr, ...);
+
 #endif

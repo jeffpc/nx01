@@ -59,6 +59,29 @@ static struct cmd {
 	{ "vol-list",    not_implemented, "list currently imported volumes" },
 };
 
+__attribute__ ((format (printf, 2, 3)))
+void print_option(const char *name, const char *descr, ...)
+{
+	va_list ap;
+
+	fprintf(stderr, "  %-13s  - ", name);
+
+	va_start(ap, descr);
+	vfprintf(stderr, descr, ap);
+	va_end(ap);
+
+	fprintf(stderr, "\n");
+}
+
+static void usage_global_opts(void)
+{
+	fprintf(stderr, "\nGlobal options:\n");
+	print_option("-h <hostname>",
+		     "hostname to connect to (default: %s)", DEFAULT_HOSTNAME);
+	print_option("-p <port>",
+		     "TCP port to connect to (default: %hu)", DEFAULT_PORT);
+}
+
 static __attribute__ ((format (printf, 1, 2))) void usage(char *msg, ...)
 {
 	int i;
@@ -75,12 +98,14 @@ static __attribute__ ((format (printf, 1, 2))) void usage(char *msg, ...)
 		fprintf(stderr, ".\n\n");
 	}
 
-	fprintf(stderr, "Usage: %s <command>\n\n", prog);
+	fprintf(stderr, "Usage: %s [<global opts>] <command>\n\n", prog);
 	fprintf(stderr, "Available commands:\n");
 
 	for (i = 0; i < ARRAY_LEN(cmdtbl); i++)
 		fprintf(stderr, "\t%-13s - %s\n", cmdtbl[i].name,
 			cmdtbl[i].summary);
+
+	usage_global_opts();
 
 	exit(1);
 }
