@@ -31,10 +31,8 @@ static uint16_t port = DEFAULT_PORT;
 
 static int not_implemented(int argc, char **argv)
 {
-	fprintf(stderr, "'%s' command is not yet implemented\n",
-		argv[1]);
+	return PRINT_USAGE;
 
-	return 99;
 }
 
 static int cmd_host_id(int argc, char **argv)
@@ -110,6 +108,15 @@ static __attribute__ ((format (printf, 1, 2))) void usage(char *msg, ...)
 	exit(1);
 }
 
+static void cmd_usage(const struct cmd *cmd)
+{
+	fprintf(stderr, "Usage: %s [<global opts>] %s\n", prog, cmd->name);
+
+	usage_global_opts();
+
+	exit(1);
+}
+
 int main(int argc, char **argv)
 {
 	bool got_host;
@@ -149,9 +156,21 @@ int main(int argc, char **argv)
 	if (optind == argc)
 		usage(NULL);
 
-	for (i = 0; i < ARRAY_LEN(cmdtbl); i++)
-		if (!strcmp(argv[optind], cmdtbl[i].name))
-			return cmdtbl[i].fxn(argc, argv);
+	for (i = 0; i < ARRAY_LEN(cmdtbl); i++) {
+		if (!strcmp(argv[optind], cmdtbl[i].name)) {
+			int ret;
+
+			ret = cmdtbl[i].fxn(argc, argv);
+			if (ret == PRINT_USAGE) {
+				cmd_usage(&cmdtbl[i]);
+				return -1;
+			}
+
+			ASSERT3S(ret, ==, 0);
+
+			return 0;
+		}
+	}
 
 	usage("unknown command '%s'", argv[optind]);
 }

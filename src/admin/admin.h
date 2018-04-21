@@ -29,6 +29,8 @@
 
 #include <nomad/types.h>
 
+#define PRINT_USAGE	0x76543210
+
 extern __attribute__ ((format (printf, 2, 3)))
 void print_option(const char *name, const char *descr, ...);
 
