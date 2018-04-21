@@ -110,10 +110,8 @@ int main(int argc, char **argv)
 					usage("-p can be used only once");
 
 				if (str2u16(optarg, &port)) {
-					fprintf(stderr, "Error: '%s' is not a "
-						"valid port number.\n\n",
+					usage("'%s' is not a valid port number",
 						optarg);
-					usage(NULL);
 				}
 				got_port = true;
 				break;
