@@ -86,6 +86,7 @@ static const struct cmdtbl {
 	CMD_ARG_RET(NRPC_READ,          read,          cmd_read,        true),
 	CMD_ARG_RET(NRPC_SETATTR,       setattr,       cmd_setattr,     true),
 	CMD_ARG    (NRPC_UNLINK,        unlink,        cmd_unlink,      true),
+	CMD_ARG_RET(NRPC_VDEV_IMPORT,	vdev_import,   cmd_vdev_import,	false),
 	CMD_ARG    (NRPC_WRITE,         write,         cmd_write,       true),
 };
 

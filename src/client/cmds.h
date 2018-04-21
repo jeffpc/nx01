@@ -91,6 +91,12 @@ union cmd {
 		struct rpc_unlink_req req;
 	} unlink;
 
+	/* vdev import */
+	struct {
+		struct rpc_vdev_import_req req;
+		struct rpc_vdev_import_res res;
+	} vdev_import;
+
 	/* write */
 	struct {
 		struct rpc_write_req req;
@@ -120,5 +126,6 @@ extern int cmd_read(struct fsconn *conn, union cmd *cmd);
 extern int cmd_setattr(struct fsconn *conn, union cmd *cmd);
 extern int cmd_unlink(struct fsconn *conn, union cmd *cmd);
 extern int cmd_write(struct fsconn *conn, union cmd *cmd);
+extern int cmd_vdev_import(struct fsconn *conn, union cmd *cmd);
 
 #endif
