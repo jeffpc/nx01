@@ -60,12 +60,6 @@ static void connection_acceptor(int fd, struct socksvc_stats *stats, void *arg)
 	avl_destroy(&conn.open_handles);
 }
 
-static int load_vdevs(void)
-{
-	FIXME("not yet implemented");
-	return -ENOTSUP;
-}
-
 int main(int argc, char **argv)
 {
 	int ret;
@@ -88,17 +82,10 @@ int main(int argc, char **argv)
 		goto err;
 	}
 
-	ret = load_vdevs();
-	if (ret) {
-		cmn_err(CE_CRIT, "Failed to load vdevs: %s", xstrerror(ret));
-		goto err_init;
-	}
-
 	ret = socksvc(NULL, CLIENT_DAEMON_PORT, -1, connection_acceptor, NULL);
 
 	cmn_err(CE_DEBUG, "socksvc() = %d (%s)", ret, xstrerror(ret));
 
-err_init:
 	/* XXX: undo objstore_init() */
 
 err:
