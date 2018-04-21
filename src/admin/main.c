@@ -32,7 +32,12 @@ static uint16_t port = DEFAULT_PORT;
 static int not_implemented(int argc, char **argv)
 {
 	return PRINT_USAGE;
+}
 
+static void no_usage(void)
+{
+	fprintf(stderr, "\n\n");
+	fprintf(stderr, "Command is not yet implemented.\n");
 }
 
 static int cmd_host_id(int argc, char **argv)
@@ -45,16 +50,17 @@ static int cmd_host_id(int argc, char **argv)
 static struct cmd {
 	const char *name;
 	int (*fxn)(int argc, char **argv);
+	void (*usage)(void);
 	const char *summary;
 } cmdtbl[] = {
-	{ "conn-add",    not_implemented, "add a new connection" },
-	{ "conn-list",   not_implemented, "list existing connections" },
-	{ "host-id",     cmd_host_id, "display host ID" },
-	{ "vdev-import", not_implemented, "import a previously created vdev" },
-	{ "vdev-list",   not_implemented, "list currently imported vdevs" },
-	{ "vol-create",  not_implemented, "create a new volume" },
-	{ "vol-import",  not_implemented, "import a previously created volume" },
-	{ "vol-list",    not_implemented, "list currently imported volumes" },
+	{ "conn-add",    not_implemented, no_usage, "add a new connection" },
+	{ "conn-list",   not_implemented, no_usage, "list existing connections" },
+	{ "host-id",     cmd_host_id, NULL, "display host ID" },
+	{ "vdev-import", not_implemented, no_usage, "import a previously created vdev" },
+	{ "vdev-list",   not_implemented, no_usage, "list currently imported vdevs" },
+	{ "vol-create",  not_implemented, no_usage, "create a new volume" },
+	{ "vol-import",  not_implemented, no_usage, "import a previously created volume" },
+	{ "vol-list",    not_implemented, no_usage, "list currently imported volumes" },
 };
 
 __attribute__ ((format (printf, 2, 3)))
@@ -110,7 +116,12 @@ static __attribute__ ((format (printf, 1, 2))) void usage(char *msg, ...)
 
 static void cmd_usage(const struct cmd *cmd)
 {
-	fprintf(stderr, "Usage: %s [<global opts>] %s\n", prog, cmd->name);
+	fprintf(stderr, "Usage: %s [<global opts>] %s ", prog, cmd->name);
+
+	if (cmd->usage)
+		cmd->usage();
+	else
+		fprintf(stderr, "\n");
 
 	usage_global_opts();
 
