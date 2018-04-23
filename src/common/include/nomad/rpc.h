@@ -31,8 +31,9 @@
  * Note: When adding new error codes, don't forget to update errno_to_nerr
  * and nerr_to_errno in error.c!
  */
-#define NERR_RPC_ERROR         -2
-#define NERR_UNKNOWN_ERROR     -1
+#define NERR_RPC_ERROR         0xfffe
+#define NERR_UNKNOWN_ERROR     0xffff
+
 #define NERR_SUCCESS           0
 #define NERR_EPERM             1
 #define NERR_ENOENT            2
