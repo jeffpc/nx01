@@ -49,6 +49,15 @@ static int cmd_host_id(int argc, char **argv)
 
 static struct cmd {
 	const char *name;
+
+	/*
+	 * The handler functions return zero on success, and a non-zero on
+	 * failure.  Returning PRINT_USAGE will print the usage message and
+	 * exit with 1.  Returning a positive number will exit with 2 (it
+	 * assumes that the handler printed an error message).  Returning a
+	 * negative number will print the error string for the negated
+	 * errno, and exit with 2.
+	 */
 	int (*fxn)(int argc, char **argv);
 	void (*usage)(void);
 	const char *summary;
@@ -172,14 +181,15 @@ int main(int argc, char **argv)
 			int ret;
 
 			ret = cmdtbl[i].fxn(argc, argv);
-			if (ret == PRINT_USAGE) {
+
+			if (ret == PRINT_USAGE)
 				cmd_usage(&cmdtbl[i]);
-				return -1;
-			}
 
-			ASSERT3S(ret, ==, 0);
+			/* Print negated errnos generically */
+			if (ret < 0)
+				fprintf(stderr, "Error: %s\n", xstrerror(ret));
 
-			return 0;
+			exit(ret ? 2 : 0);
 		}
 	}
 
