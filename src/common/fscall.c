@@ -22,6 +22,7 @@
  */
 
 #include <jeffpc/sock.h>
+#include <jeffpc/io.h>
 
 #include <nomad/rpc_fs.h>
 #include <nomad/fscall.h>
@@ -399,6 +400,11 @@ int fscall_connect(struct fscall_state *state, int fd)
 	state->sock = fd;
 
 	return 0;
+}
+
+void fscall_disconnect(struct fscall_state *state)
+{
+	xclose(state->sock);
 }
 
 int fscall_mount(struct fscall_state *state, const struct xuuid *volid)

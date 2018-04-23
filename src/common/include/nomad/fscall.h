@@ -63,6 +63,7 @@ extern int fscall_vdev_import(struct fscall_state *state, const char *type,
 			      struct xuuid *uuid);
 
 extern int fscall_connect(struct fscall_state *state, int fd);
+extern void fscall_disconnect(struct fscall_state *state);
 extern int fscall_mount(struct fscall_state *state, const struct xuuid *volid);
 
 #endif
