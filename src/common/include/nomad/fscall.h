@@ -36,6 +36,10 @@ struct fscall_state {
 	uint32_t root_ohandle;
 };
 
+/*
+ * All the functions here return NERR_* on error, and 0 on success.
+ */
+
 extern int fscall_login(struct fscall_state *state, const char *conn,
 			const struct xuuid *volid);
 extern int fscall_open(struct fscall_state *state, const struct noid *oid,
