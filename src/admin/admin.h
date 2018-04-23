@@ -28,10 +28,17 @@
 #include <jeffpc/error.h>
 
 #include <nomad/types.h>
+#include <nomad/fscall.h>
+#include <nomad/rpc.h>
 
 #define PRINT_USAGE	0x76543210
 
 extern __attribute__ ((format (printf, 2, 3)))
 void print_option(const char *name, const char *descr, ...);
+
+extern struct fscall_state state;
+
+extern int connect_to_server(void);
+extern void disconnect_from_server(void);
 
 #endif

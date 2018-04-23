@@ -22,12 +22,17 @@
 
 #include "admin.h"
 
+#include <jeffpc/sock.h>
+#include <jeffpc/io.h>
+
 #define DEFAULT_HOSTNAME	"localhost"
 #define DEFAULT_PORT		2323
 
 const char *prog;
 static const char *hostname = DEFAULT_HOSTNAME;
 static uint16_t port = DEFAULT_PORT;
+
+struct fscall_state state;
 
 static int not_implemented(int argc, char **argv)
 {
@@ -135,6 +140,36 @@ static void cmd_usage(const struct cmd *cmd)
 	usage_global_opts();
 
 	exit(1);
+}
+
+/*
+ * Returns 0 on success, negated errnos on connection failure (caller should
+ * handle error message printing), or NERR_* on handshare error (for which
+ * we already print an error message).
+ */
+int connect_to_server(void)
+{
+	int ret;
+	int fd;
+
+	fd = connect_ip(hostname, port, true, true, IP_TCP);
+	if (fd < 0)
+		return fd;
+
+	ret = fscall_connect(&state, fd);
+	if (ret)
+		xclose(fd);
+
+	if (ret > 0)
+		fprintf(stderr, "Error: RPC handshake failed: %s",
+			xstrerror(nerr_to_errno(ret)));
+
+	return ret;
+}
+
+void disconnect_from_server(void)
+{
+	fscall_disconnect(&state);
 }
 
 int main(int argc, char **argv)
