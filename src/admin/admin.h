@@ -41,4 +41,10 @@ extern struct fscall_state state;
 extern int connect_to_server(void);
 extern void disconnect_from_server(void);
 
+extern void cmd_vdev_create_usage(void);
+extern void cmd_vdev_import_usage(void);
+
+extern int cmd_vdev_create(int argc, char **argv);
+extern int cmd_vdev_import(int argc, char **argv);
+
 #endif
