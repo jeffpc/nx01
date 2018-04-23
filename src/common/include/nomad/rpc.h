@@ -30,6 +30,20 @@
  *
  * Note: When adding new error codes, don't forget to update errno_to_nerr
  * and nerr_to_errno in error.c!
+ *
+ * NERR_RPC_ERROR and NERR_UNKNOWN_ERROR are special.  While all other codes
+ * map 1:1 to standard errno's, these two are used in very specific
+ * situations:
+ *
+ *   NERR_UNKNOWN_ERROR:
+ *       Used when the server has trouble mapping an errno to an NERR_*
+ *       value.  Ideally, we should never see this error on the client as
+ *       there should be an NERR_* value defined for every errno.
+ *
+ *   NERR_RPC_ERROR:
+ *       An error occured inside the RPC layers.  They cannot return an NERR
+ *       since the caller then wouldn't know if the error originated on the
+ *       client or on the server.
  */
 #define NERR_RPC_ERROR         0xfffe
 #define NERR_UNKNOWN_ERROR     0xffff
