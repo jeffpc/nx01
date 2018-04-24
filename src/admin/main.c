@@ -180,6 +180,9 @@ int main(int argc, char **argv)
 		if (!strcmp(argv[optind], cmdtbl[i].name)) {
 			int ret;
 
+			/* skip over the command name */
+			optind++;
+
 			ret = cmdtbl[i].fxn(argc, argv);
 
 			if (ret == PRINT_USAGE)
