@@ -517,13 +517,22 @@ int main(int argc, char *argv[])
 	struct xuuid tmp;
 	char *mountpoint;
 	int ret;
+	int fd;
 
 	/* FIXME: parse from mount args */
 	xuuid_generate(&tmp);
 
-	ret = fscall_connect("localhost", 2323, &tmp, &state);
+	fd = connect_ip("localhost", 2323, true, true, IP_TCP);
+	if (fd < 0)
+		panic("failed to connect to nomad-client: %s", xstrerror(fd));
+
+	ret = fscall_connect(&state, fd);
 	if (ret)
-		panic("failed to connect to nomad-client");
+		panic("failed RPC handshake with nomad-client");
+
+	ret = fscall_mount(&state, &tmp);
+	if (ret)
+		panic("failed to mount volume");
 
 	/* see comment by root_ino_buddy definition */
 	root_ino_buddy = state.root_oid.uniq; // XXX: use accessors

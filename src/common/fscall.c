@@ -387,22 +387,23 @@ err:
 	return ret;
 }
 
-int fscall_connect(const char *host, uint16_t port, const struct xuuid *volid,
-		   struct fscall_state *state)
+int fscall_connect(struct fscall_state *state, int fd)
 {
 	int ret;
 
-	ret = connect_ip(host, port, true, true, IP_TCP);
-	cmn_err(CE_DEBUG, "connect_ip() = %d", ret);
-	if (ret < 0)
-		return ret;
-
-	state->sock = ret;
-
-	ret = __fscall_handshake(state->sock);
+	ret = __fscall_handshake(fd);
 	cmn_err(CE_DEBUG, "__fscall_handshake() = %d", ret);
 	if (ret)
 		return ret;
+
+	state->sock = fd;
+
+	return 0;
+}
+
+int fscall_mount(struct fscall_state *state, const struct xuuid *volid)
+{
+	int ret;
 
 	ret = fscall_login(state, "unused", volid);
 	cmn_err(CE_DEBUG, "fscall_login() = %d", ret);
