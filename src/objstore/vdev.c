@@ -39,7 +39,7 @@ int vdev_init(void)
 	if (IS_ERR(vdev_cache))
 		return PTR_ERR(vdev_cache);
 
-	mxinit(&loaded_vdevs.lock);
+	MXINIT(&loaded_vdevs.lock);
 
 	list_create(&loaded_vdevs.list, sizeof(struct objstore_vdev),
 		    offsetof(struct objstore_vdev, node));
@@ -51,7 +51,7 @@ void vdev_fini(void)
 {
 	list_destroy(&loaded_vdevs.list);
 
-	mxdestroy(&loaded_vdevs.lock);
+	MXDESTROY(&loaded_vdevs.lock);
 
 	mem_cache_destroy(vdev_cache);
 }
@@ -121,9 +121,9 @@ static struct objstore_vdev *vdev_load(const char *type, const char *path,
 	if (ret)
 		goto err;
 
-	mxlock(&loaded_vdevs.lock);
+	MXLOCK(&loaded_vdevs.lock);
 	list_insert_tail(&loaded_vdevs.list, vdev_getref(vdev));
-	mxunlock(&loaded_vdevs.lock);
+	MXUNLOCK(&loaded_vdevs.lock);
 
 	return vdev;
 

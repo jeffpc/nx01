@@ -40,7 +40,7 @@ int vol_init(void)
 	if (IS_ERR(vol_cache))
 		return PTR_ERR(vol_cache);
 
-	mxinit(&vols_lock);
+	MXINIT(&vols_lock);
 
 	list_create(&vols, sizeof(struct objstore),
 		    offsetof(struct objstore, node));
@@ -52,7 +52,7 @@ void vol_fini(void)
 {
 	list_destroy(&vols);
 
-	mxdestroy(&vols_lock);
+	MXDESTROY(&vols_lock);
 
 	mem_cache_destroy(vol_cache);
 }
@@ -88,7 +88,7 @@ struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
 	vol->vdev = vdev_getref(vdev);
 	vol->private = NULL;
 
-	mxinit(&vol->lock);
+	MXINIT(&vol->lock);
 	avl_create(&vol->objs, objcmp, sizeof(struct obj),
 		   offsetof(struct obj, node));
 
@@ -98,9 +98,9 @@ struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
 	if (ret)
 		goto err;
 
-	mxlock(&vols_lock);
+	MXLOCK(&vols_lock);
 	list_insert_tail(&vols, vol_getref(vol));
-	mxunlock(&vols_lock);
+	MXUNLOCK(&vols_lock);
 
 	return vol;
 
@@ -118,14 +118,14 @@ struct objstore *objstore_vol_lookup(const struct xuuid *volid)
 {
 	struct objstore *vol;
 
-	mxlock(&vols_lock);
+	MXLOCK(&vols_lock);
 	list_for_each(vol, &vols) {
 		if (!xuuid_compare(volid, &vol->id))
 			break;
 	}
 
 	vol = vol_getref(vol);
-	mxunlock(&vols_lock);
+	MXUNLOCK(&vols_lock);
 
 	return vol ? vol : ERR_PTR(-ENOENT);
 }
@@ -160,7 +160,7 @@ static struct obj *__find_or_alloc(struct objstore *vol, const struct noid *oid)
 	newobj = NULL;
 
 	for (;;) {
-		mxlock(&vol->lock);
+		MXLOCK(&vol->lock);
 
 		/* try to find the object */
 		obj = obj_getref(avl_find(&vol->objs, &key, &where));
@@ -173,23 +173,23 @@ static struct obj *__find_or_alloc(struct objstore *vol, const struct noid *oid)
 			inserted = true;
 		}
 
-		mxunlock(&vol->lock);
+		MXUNLOCK(&vol->lock);
 
 		/* found or inserted -> we're done */
 		if (obj) {
 			/* newly inserted objects are already locked */
 			if (!inserted)
-				mxlock(&obj->lock);
+				MXLOCK(&obj->lock);
 
 			if (obj->state == OBJ_STATE_DEAD) {
 				/* this is a dead one, try again */
-				mxunlock(&obj->lock);
+				MXUNLOCK(&obj->lock);
 				obj_putref(obj);
 				continue;
 			}
 
 			if (newobj) {
-				mxunlock(&newobj->lock);
+				MXUNLOCK(&newobj->lock);
 				obj_putref(newobj);
 			}
 
@@ -201,7 +201,7 @@ static struct obj *__find_or_alloc(struct objstore *vol, const struct noid *oid)
 		if (!newobj)
 			return ERR_PTR(-ENOMEM);
 
-		mxlock(&newobj->lock);
+		MXLOCK(&newobj->lock);
 
 		newobj->oid = *oid;
 		newobj->vol = vol_getref(vol);
@@ -236,9 +236,9 @@ static struct obj *getobj(struct objstore *vol, const struct noid *oid)
 				obj->state = OBJ_STATE_DEAD;
 
 				/* remove the object from the objs list */
-				mxlock(&vol->lock);
+				MXLOCK(&vol->lock);
 				avl_remove(&vol->objs, obj);
-				mxunlock(&vol->lock);
+				MXUNLOCK(&vol->lock);
 				goto err_obj;
 			}
 
@@ -254,7 +254,7 @@ static struct obj *getobj(struct objstore *vol, const struct noid *oid)
 	return obj;
 
 err_obj:
-	mxunlock(&obj->lock);
+	MXUNLOCK(&obj->lock);
 	obj_putref(obj);
 
 err:
@@ -366,7 +366,7 @@ static struct objver *getver(struct objstore *vol, const struct noid *oid,
 		ver = ERR_PTR(-ENOTUNIQ);
 	}
 
-	mxunlock(&obj->lock);
+	MXUNLOCK(&obj->lock);
 	obj_putref(obj);
 	return ver;
 }
@@ -410,7 +410,7 @@ void *objstore_open(struct objstore *vol, const struct noid *oid,
 			ret = 0;
 
 		if (ret) {
-			mxunlock(&obj->lock);
+			MXUNLOCK(&obj->lock);
 			obj_putref(obj);
 			return ERR_PTR(ret);
 		}
@@ -431,7 +431,7 @@ void *objstore_open(struct objstore *vol, const struct noid *oid,
 	 * well.
 	 */
 
-	mxunlock(&obj->lock);
+	MXUNLOCK(&obj->lock);
 
 	return objver;
 }
@@ -459,7 +459,7 @@ int objstore_close(struct objstore *vol, void *cookie)
 	 * network.
 	 */
 
-	mxlock(&obj->lock);
+	MXLOCK(&obj->lock);
 	objver->open_count--;
 	putref = true;
 
@@ -475,7 +475,7 @@ int objstore_close(struct objstore *vol, void *cookie)
 
 	if (ret)
 		objver->open_count++; /* undo earlier decrement */
-	mxunlock(&obj->lock);
+	MXUNLOCK(&obj->lock);
 
 	/* release the reference obtained in objstore_open() */
 	if (putref && !ret)
@@ -501,9 +501,9 @@ int objstore_getattr(struct objstore *vol, void *cookie, struct nattr *attr)
 	if (!obj->ops || !obj->ops->getattr)
 		return -ENOTSUP;
 
-	mxlock(&obj->lock);
+	MXLOCK(&obj->lock);
 	ret = obj->ops->getattr(objver, attr);
-	mxunlock(&obj->lock);
+	MXUNLOCK(&obj->lock);
 
 	return ret;
 }
@@ -526,9 +526,9 @@ int objstore_setattr(struct objstore *vol, void *cookie, struct nattr *attr,
 	if (!obj->ops || !obj->ops->setattr)
 		return -ENOTSUP;
 
-	mxlock(&obj->lock);
+	MXLOCK(&obj->lock);
 	ret = obj->ops->setattr(objver, attr, valid);
-	mxunlock(&obj->lock);
+	MXUNLOCK(&obj->lock);
 
 	return ret;
 }
@@ -558,13 +558,13 @@ ssize_t objstore_read(struct objstore *vol, void *cookie, void *buf, size_t len,
 	if (!len)
 		return 0;
 
-	mxlock(&obj->lock);
+	MXLOCK(&obj->lock);
 	if (NATTR_ISDIR(objver->attrs.mode))
 		/* TODO: do we need to check for other types? */
 		ret = -EISDIR;
 	else
 		ret = obj->ops->read(objver, buf, len, offset);
-	mxunlock(&obj->lock);
+	MXUNLOCK(&obj->lock);
 
 	return ret;
 }
@@ -594,13 +594,13 @@ ssize_t objstore_write(struct objstore *vol, void *cookie, const void *buf,
 	if (!len)
 		return 0;
 
-	mxlock(&obj->lock);
+	MXLOCK(&obj->lock);
 	if (NATTR_ISDIR(objver->attrs.mode))
 		/* TODO: do we need to check for other types? */
 		ret = -EISDIR;
 	else
 		ret = obj->ops->write(objver, buf, len, offset);
-	mxunlock(&obj->lock);
+	MXUNLOCK(&obj->lock);
 
 	return ret;
 }
@@ -623,12 +623,12 @@ int objstore_lookup(struct objstore *vol, void *dircookie, const char *name,
 	if (!dir->ops || !dir->ops->lookup)
 		return -ENOTSUP;
 
-	mxlock(&dir->lock);
+	MXLOCK(&dir->lock);
 	if (!NATTR_ISDIR(dirver->attrs.mode))
 		ret = -ENOTDIR;
 	else
 		ret = dir->ops->lookup(dirver, name, child);
-	mxunlock(&dir->lock);
+	MXUNLOCK(&dir->lock);
 
 	return ret;
 }
@@ -651,12 +651,12 @@ int objstore_create(struct objstore *vol, void *dircookie, const char *name,
 	if (!dir->ops || !dir->ops->create)
 		return -ENOTSUP;
 
-	mxlock(&dir->lock);
+	MXLOCK(&dir->lock);
 	if (!NATTR_ISDIR(dirver->attrs.mode))
 		ret = -ENOTDIR;
 	else
 		ret = dir->ops->create(dirver, name, mode, child);
-	mxunlock(&dir->lock);
+	MXUNLOCK(&dir->lock);
 
 	return ret;
 }
@@ -690,7 +690,7 @@ int objstore_unlink(struct objstore *vol, void *dircookie, const char *name)
 	if (!dir->ops || !dir->ops->unlink || !dir->ops->lookup)
 		return -ENOTSUP;
 
-	mxlock(&dir->lock);
+	MXLOCK(&dir->lock);
 	if (!NATTR_ISDIR(dirver->attrs.mode)) {
 		ret = -ENOTDIR;
 	} else {
@@ -700,13 +700,13 @@ int objstore_unlink(struct objstore *vol, void *dircookie, const char *name)
 		if (!IS_ERR(child)) {
 			ret = dir->ops->unlink(dirver, name, child);
 
-			mxunlock(&child->lock);
+			MXUNLOCK(&child->lock);
 			obj_putref(child);
 		} else {
 			ret = PTR_ERR(child);
 		}
 	}
-	mxunlock(&dir->lock);
+	MXUNLOCK(&dir->lock);
 
 	return ret;
 }
@@ -730,13 +730,13 @@ int objstore_getdent(struct objstore *vol, void *dircookie,
 	if (!dir->ops || !dir->ops->getdent)
 		return -ENOTSUP;
 
-	mxlock(&dir->lock);
+	MXLOCK(&dir->lock);
 	if (!NATTR_ISDIR(dirver->attrs.mode))
 		ret = -ENOTDIR;
 	else
 		ret = dir->ops->getdent(dirver, offset, child, childname,
 					entry_size);
-	mxunlock(&dir->lock);
+	MXUNLOCK(&dir->lock);
 
 	return ret;
 }

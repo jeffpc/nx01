@@ -35,9 +35,9 @@ static int mem_vdev_getroot(struct objstore *vol, struct noid *root)
 {
 	struct memstore *ms = vol->vdev->private;
 
-	mxlock(&ms->lock);
+	MXLOCK(&ms->lock);
 	*root = ms->root->oid;
-	mxunlock(&ms->lock);
+	MXUNLOCK(&ms->lock);
 
 	return 0;
 }
@@ -50,9 +50,9 @@ static int mem_allocobj(struct obj *obj)
 	};
 	struct memobj *mobj;
 
-	mxlock(&ms->lock);
+	MXLOCK(&ms->lock);
 	mobj = memobj_getref(avl_find(&ms->objs, &key, NULL));
-	mxunlock(&ms->lock);
+	MXUNLOCK(&ms->lock);
 
 	if (!mobj)
 		return -ENOENT;
@@ -104,7 +104,7 @@ static int mem_create(struct objstore_vdev *vdev)
 	avl_create(&ms->objs, objcmp, sizeof(struct memobj),
 		   offsetof(struct memobj, node));
 
-	mxinit(&ms->lock);
+	MXINIT(&ms->lock);
 
 	obj = newmemobj(ms, NATTR_DIR | 0777);
 	if (IS_ERR(obj)) {

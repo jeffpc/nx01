@@ -211,9 +211,9 @@ struct memver *findver_by_hndl(struct memstore *store,
 	struct memobj *obj;
 	struct memver *ver;
 
-	mxlock(&store->lock);
+	MXLOCK(&store->lock);
 	obj = findmemobj(store, oid);
-	mxunlock(&store->lock);
+	MXUNLOCK(&store->lock);
 
 	if (!obj)
 		return ERR_PTR(-ENOENT);
@@ -477,9 +477,9 @@ static struct memobj *__obj_create(struct memstore *store, struct memver *dir,
 	mchild->nlink++;
 
 	/* add object to the global list */
-	mxlock(&store->lock);
+	MXLOCK(&store->lock);
 	avl_add(&store->objs, memobj_getref(mchild));
-	mxunlock(&store->lock);
+	MXUNLOCK(&store->lock);
 
 	return mchild;
 }
