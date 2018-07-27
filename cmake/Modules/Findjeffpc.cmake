@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016-2017 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+# Copyright (c) 2016-2018 Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,10 @@
 # This module defines:
 #   JEFFPC_INCLUDE_DIR
 #   JEFFPC_LIBRARY
-#   JEFFPC_COMM_LIBRARY
 #   JEFFPC_FOUND
 #
 # Use the following variables to help locate the library and header files.
 #   WITH_JEFFPC_LIB=x      - directory containing libjeffpc.so
-#   WITH_JEFFPC_COMM_LIB=x - directory containing libjeffpc-comm.so
 #   WITH_JEFFPC_INCLUDES=x - directory containing jeffpc/jeffpc.h
 #   WITH_JEFFPC=x          - same as setting WITH_JEFFPC_LIB=x/lib and
 #                            WITH_JEFFPC_INCLUDES=x/include
@@ -40,9 +38,6 @@
 if (WITH_JEFFPC)
 	if (NOT WITH_JEFFPC_LIB)
 		set(WITH_JEFFPC_LIB "${WITH_JEFFPC}/lib")
-	endif()
-	if (NOT WITH_JEFFPC_COMM_LIB)
-		set(WITH_JEFFPC_COMM_LIB "${WITH_JEFFPC}/lib")
 	endif()
 	if (NOT WITH_JEFFPC_INCLUDES)
 		set(WITH_JEFFPC_INCLUDES "${WITH_JEFFPC}/include")
@@ -54,9 +49,6 @@ find_path(JEFFPC_INCLUDE_DIR jeffpc/jeffpc.h
 find_library(JEFFPC_LIBRARY NAMES jeffpc
 	PATHS ${WITH_JEFFPC_LIB}
 )
-find_library(JEFFPC_COMM_LIBRARY NAMES jeffpc-comm
-	PATHS ${WITH_JEFFPC_COMM_LIB}
-)
 
 #
 # Handle the QUIETLY and REQUIRED arguments and set JEFFPC_FOUND to TRUE if
@@ -64,6 +56,4 @@ find_library(JEFFPC_COMM_LIBRARY NAMES jeffpc-comm
 #
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(JEFFPC DEFAULT_MSG JEFFPC_LIBRARY
-	JEFFPC_INCLUDE_DIR)
-find_package_handle_standard_args(JEFFPC_COMM DEFAULT_MSG JEFFPC_COMM_LIBRARY
 	JEFFPC_INCLUDE_DIR)

@@ -36,7 +36,6 @@ add_executable(nomad-client
 target_link_libraries(nomad-client
 	${BASE_LIBS}
 	${AVL_LIBRARY}
-	${JEFFPC_COMM_LIBRARY}
 	common
 	nomad_objstore
 	nsl
