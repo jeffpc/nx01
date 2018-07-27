@@ -31,6 +31,8 @@
 
 #include "mem.h"
 
+static struct lock_class memstore_lc;
+
 static int mem_vdev_getroot(struct objstore *vol, struct noid *root)
 {
 	struct memstore *ms = vol->vdev->private;
@@ -104,7 +106,7 @@ static int mem_create(struct objstore_vdev *vdev)
 	avl_create(&ms->objs, objcmp, sizeof(struct memobj),
 		   offsetof(struct memobj, node));
 
-	MXINIT(&ms->lock);
+	MXINIT(&ms->lock, &memstore_lc);
 
 	obj = newmemobj(ms, NATTR_DIR | 0777);
 	if (IS_ERR(obj)) {

@@ -31,6 +31,9 @@
 
 static struct mem_cache *vol_cache;
 
+static struct lock_class vols_lc;
+static struct lock_class vol_lc;
+
 static struct lock vols_lock;
 static struct list vols;
 
@@ -40,7 +43,7 @@ int vol_init(void)
 	if (IS_ERR(vol_cache))
 		return PTR_ERR(vol_cache);
 
-	MXINIT(&vols_lock);
+	MXINIT(&vols_lock, &vols_lc);
 
 	list_create(&vols, sizeof(struct objstore),
 		    offsetof(struct objstore, node));
@@ -88,7 +91,7 @@ struct objstore *objstore_vol_create(struct objstore_vdev *vdev,
 	vol->vdev = vdev_getref(vdev);
 	vol->private = NULL;
 
-	MXINIT(&vol->lock);
+	MXINIT(&vol->lock, &vol_lc);
 	avl_create(&vol->objs, objcmp, sizeof(struct obj),
 		   offsetof(struct obj, node));
 

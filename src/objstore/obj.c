@@ -30,6 +30,8 @@
 struct mem_cache *obj_cache;
 struct mem_cache *objver_cache;
 
+static struct lock_class obj_lc;
+
 static int ver_cmp(const void *va, const void *vb)
 {
 	const struct objver *a = va;
@@ -62,7 +64,7 @@ struct obj *allocobj(void)
 	obj->ops = NULL;
 
 	refcnt_init(&obj->refcnt, 1);
-	MXINIT(&obj->lock);
+	MXINIT(&obj->lock, &obj_lc);
 
 	return obj;
 }

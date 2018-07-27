@@ -27,6 +27,8 @@
 
 static struct mem_cache *vdev_cache;
 
+static struct lock_class vdev_lc;
+
 static struct {
 	struct lock lock;
 	struct list list;
@@ -39,7 +41,7 @@ int vdev_init(void)
 	if (IS_ERR(vdev_cache))
 		return PTR_ERR(vdev_cache);
 
-	MXINIT(&loaded_vdevs.lock);
+	MXINIT(&loaded_vdevs.lock, &vdev_lc);
 
 	list_create(&loaded_vdevs.list, sizeof(struct objstore_vdev),
 		    offsetof(struct objstore_vdev, node));
